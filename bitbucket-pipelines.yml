@@ -1,0 +1,81 @@
+definitions:
+  services:
+    postgres:
+      image: postgres
+      environment:
+        POSTGRES_DB: test_audio_db
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: audio
+  caches:
+    nodemodules: ./node_modules
+  steps:
+    - step: &build-and-test
+        name: 'Build and test'
+        image: node:lts
+        services:
+          - postgres
+        script:
+          - export HUSKY=0
+          - npm i
+          - TEST_POSTGRES_PORT=5432 npm run test:codecov
+        caches:
+          - nodemodules
+        artifacts:
+          - node_modules/**
+    - step: &slack-notification
+        name: Slack Notification
+        script:
+          - pipe: atlassian/slack-notify:1.0.1
+            variables:
+              WEBHOOK_URL: $SLACK_WEBHOOK
+              MESSAGE: 'A new build of Audio Service ($BITBUCKET_COMMIT) has been push with the "$BITBUCKET_BRANCH" tag'
+
+  script: &build-and-push-to-aws
+    - pip3 install -U awscli
+
+    - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
+    - export REPO=$DOCKER_REPO_URL/kidsloop-audio # DOCKER_REPO_URL is workspace wide variable
+    - export COMMIT_TAG=$(echo $BITBUCKET_COMMIT | cut -c1-7)
+    - printf '"Git tag":"%s", "Git commit":"%s" "ECR repo":"%s"' $BRANCH_TAG $COMMIT_TAG $REPO
+
+    - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
+
+    - docker build -t kidsloop-audio .
+    - docker tag kidsloop-audio:latest $REPO:$BRANCH_TAG
+    - docker tag kidsloop-audio:latest $REPO:$BRANCH_TAG-latest
+    - docker tag kidsloop-audio:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+    - docker tag kidsloop-audio:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
+
+    - docker push $REPO:$BRANCH_TAG
+    - docker push $REPO:$BRANCH_TAG-latest
+    - docker push $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+    - docker push $REPO:$BRANCH_TAG-$COMMIT_TAG
+
+pipelines:
+  pull-requests:
+    '**': # This runs as default for any branch not elsewhere defined.:
+      - step: *build-and-test
+
+  branches:
+    master:
+      - step: *build-and-test
+    alpha:
+      - step: *build-and-test
+      - step:
+          name: 'Docker build and push to AWS'
+          deployment: alpha
+          image: python:3.9-alpine
+          services:
+            - docker
+          script: *build-and-push-to-aws
+      - step: *slack-notification
+    production:
+      - step: *build-and-test
+      - step:
+          name: 'Docker build and push to AWS'
+          deployment: production
+          image: python:3.9-alpine
+          services:
+            - docker
+          script: *build-and-push-to-aws
+      - step: *slack-notification

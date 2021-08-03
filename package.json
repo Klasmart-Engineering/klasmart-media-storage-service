@@ -1,0 +1,93 @@
+{
+  "name": "kidsloop-audio-service",
+  "version": "0.1.0",
+  "description": "A service for uploading and downloading audio files.",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node -r dotenv/config src/index.ts",
+    "minio": "ts-node -r dotenv/config src/s3.ts",
+    "tweetnacl": "ts-node -r dotenv/config src/tweetnacl.ts",
+    "dev": "ts-node-dev --respawn --transpile-only --watch src/**/*.ts -r dotenv/config src/index.ts",
+    "build": "tsc -p tsconfig-build.json --outDir ./dist",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:coverage": "nyc --reporter=lcov --report-dir ./test-results/coverage.lcov npm run test",
+    "test:codecov": "nyc --reporter=cobertura --report-dir ./test-results/coverage.xml npm test && npx codecov",
+    "test:unit": "mocha --require ts-node/register tests/unit/**/*.test.ts",
+    "test:integration": "mocha --require ts-node/register tests/integration/**/*.test.ts --timeout 8000",
+    "lint": "eslint \"{src,tests}/**/*.ts\" --ext .ts",
+    "lint-and-fix": "eslint \"{src,tests}/**/*.ts\" --ext .ts --fix",
+    "format:check": "prettier --check \"{src,tests}/**/*.ts\" \"*.json\"",
+    "format": "prettier --write \"{src,tests}/**/*.ts\" \"*.json\"",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "release": "standard-version --no-verify"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint",
+      "prettier --check"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "^13.1.0",
+    "@fluffy-spoon/substitute": "^1.208.0",
+    "@types/chai": "^4.2.21",
+    "@types/chai-as-promised": "^7.1.4",
+    "@types/compression": "^1.7.1",
+    "@types/cookie-parser": "^1.4.2",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.13",
+    "@types/graphql-upload": "^8.0.6",
+    "@types/jsonwebtoken": "^8.5.4",
+    "@types/minio": "^7.0.9",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.4.10",
+    "@types/node-fetch": "^2.5.12",
+    "@types/uuid": "^8.3.1",
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "commitlint": "^13.1.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^7.0.1",
+    "lint-staged": "^11.1.1",
+    "minio": "^7.0.18",
+    "mocha": "^9.0.3",
+    "node-mocks-http": "^1.10.1",
+    "nyc": "^15.1.0",
+    "prettier": "2.3.2",
+    "standard-version": "^9.3.1",
+    "ts-node": "^10.1.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.3.5",
+    "uuid": "^8.3.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.25.0",
+    "apollo-server-express": "^3.1.2",
+    "aws-sdk": "^2.963.0",
+    "class-validator": "^0.13.1",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "graphql": "^15.5.1",
+    "jsonwebtoken": "^8.5.1",
+    "kidsloop-token-validation": "git+ssh://git@bitbucket.org/calmisland/kidsloop-token-validation.git",
+    "kidsloop-xapi-uploader": "file:../h5p-xapi-uploader",
+    "pg": "^8.7.1",
+    "reflect-metadata": "^0.1.13",
+    "tweetnacl": "^1.0.3",
+    "type-graphql": "^1.1.1",
+    "typeorm": "^0.2.36"
+  }
+}
