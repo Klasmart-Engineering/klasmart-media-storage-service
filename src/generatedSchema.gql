@@ -20,11 +20,12 @@ scalar DateTime
 type Query {
   audioMetadataForRoom(roomId: String!): [AudioMetadata!]!
   audioMetadataForUser(userId: String!): [AudioMetadata!]!
-  getAudioFile(audioId: String!, organizationId: String!): String!
-  getRequiredUploadInfo(base64UserPublicKey: String!, h5pId: String!, h5pSubId: String, organizationId: String!, roomId: String!): RequiredUploadInfo!
+  getOrganizationPublicKey(organizationId: String!): String!
+  getPresignedUploadUrl(base64EncryptedSymmetricKey: String!, base64UserPublicKey: String!, h5pId: String!, h5pSubId: String, mimeType: String!, roomId: String!): String!
+  getRequiredDownloadInfo(audioId: String!, organizationId: String!): RequiredDownloadInfo!
 }
 
-type RequiredUploadInfo {
-  base64OrgPublicKey: String!
+type RequiredDownloadInfo {
+  base64SymmetricKey: String!
   presignedUrl: String!
 }

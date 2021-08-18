@@ -1,14 +1,11 @@
 import { getRepository } from 'typeorm'
 import { AudioMetadata } from '../entities/audioMetadata'
-import IAudioFileStorage from '../interfaces/audioFileStorage'
 import IKeyStorage from '../interfaces/keyStorage'
-import IUploadUrlProvider from '../interfaces/uploadUrlProvider'
+import IUploadUrlProvider from '../interfaces/presignedUrlProvider'
 import { AudioResolver } from '../resolvers/audioResolver'
 import { KeyPairProvider } from './keyPairProvider'
-import { AudioFileRetriever } from './audioFileRetriever'
 import { S3KeyStorage } from './s3KeyStorage'
-import { S3UploadUrlProvider } from './s3UploadUrlProvider'
-import { S3AudioFileStorage } from './s3AudioFileStorage'
+import { S3PresignedUrlProvider } from './s3PresignedUrlProvider'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
 import TweetnaclDecryption from './tweetnaclDecryption'
 import { Config } from './config'
@@ -20,8 +17,8 @@ export class CompositionRoot {
     return new AudioResolver(
       getRepository(AudioMetadata),
       this.getKeyPairProvider(),
-      this.getAudioFileRetriver(),
-      this.getUploadUrlProvider(),
+      this.getDecryptionProvider(),
+      this.getPresignedUrlProvider(),
     )
   }
 
@@ -33,22 +30,8 @@ export class CompositionRoot {
     )
   }
 
-  private getUploadUrlProvider(): IUploadUrlProvider {
-    return new S3UploadUrlProvider(
-      Config.getAudioFileBucket(),
-      Config.getS3Client(),
-    )
-  }
-
-  private getAudioFileRetriver(): AudioFileRetriever {
-    return new AudioFileRetriever(
-      this.getAudioFileStorage(),
-      this.getDecryptionProvider(),
-    )
-  }
-
-  private getAudioFileStorage(): IAudioFileStorage {
-    return new S3AudioFileStorage(
+  private getPresignedUrlProvider(): IUploadUrlProvider {
+    return new S3PresignedUrlProvider(
       Config.getAudioFileBucket(),
       Config.getS3Client(),
     )

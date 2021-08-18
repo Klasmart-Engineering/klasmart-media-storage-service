@@ -15,12 +15,12 @@ import createAudioServer from '../../src/helpers/createAudioServer'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
 import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
 import { box } from 'tweetnacl'
-import fs from 'fs'
 import { encrypt } from '../../src/helpers/tweetnaclUtil'
-import path from 'path'
 import { v4 } from 'uuid'
+import { RequiredDownloadInfo } from '../../src/graphqlResultTypes/requiredDownloadInfo'
+import { generateToken } from '../utils/generateToken'
 
-describe('audioResolver.getAudioFile', () => {
+describe('audioResolver.getRequiredDownloadInfo', () => {
   let connection: Connection
   let testClient: ApolloServerTestClient
   let s3Client: AWS.S3
@@ -44,10 +44,11 @@ describe('audioResolver.getAudioFile', () => {
   })
 
   context(
-    '0 audio files in storage, 0 public/private keys in storage, 0 metadata entries in the database',
+    '1 audio file in storage, 1 key pair in storage, 1 metadata entry in the database',
     () => {
-      it('returns empty list', async () => {
+      it('returns expected presignedUrl and base64SymmetricKey', async () => {
         // Arrange
+        const userId = 'user1'
         const audioId = v4()
         const organizationId = 'org1'
 
@@ -56,12 +57,12 @@ describe('audioResolver.getAudioFile', () => {
         const base64UserPublicKey = Buffer.from(userKeyPair.publicKey).toString(
           'base64',
         )
-        const audioBlob = fs.readFileSync(path.join(__dirname, '../audioBlob'))
         const userSharedKey = box.before(
           orgKeyPair.publicKey,
           userKeyPair.secretKey,
         )
-        const encryptedAudio = encrypt(userSharedKey, audioBlob)
+        const symmetricKey = box.keyPair().secretKey
+        const base64EncryptedSymmetricKey = encrypt(userSharedKey, symmetricKey)
 
         await s3Client
           .putObject({
@@ -77,58 +78,60 @@ describe('audioResolver.getAudioFile', () => {
             Body: Buffer.from(orgKeyPair.secretKey),
           })
           .promise()
-        await s3Client
-          .putObject({
-            Bucket: Config.getAudioFileBucket(),
-            Key: audioId,
-            Body: encryptedAudio,
-          })
-          .promise()
         const metadata = await new AudioMetadataBuilder()
           .withId(audioId)
           .withBase64UserPublicKey(base64UserPublicKey)
+          .withBase64EncryptedSymmetricKey(base64EncryptedSymmetricKey)
           .buildAndPersist()
         await connection.getRepository(AudioMetadata).save(metadata)
 
         // Act
-        const base64AudioFile = await getAudioFileQuery(
+        const result = await getRequiredDownloadInfoQuery(
           testClient,
           audioId,
           organizationId,
+          { authorization: generateToken(userId) },
         )
 
         // Assert
-        expect(base64AudioFile).to.not.be.null
-        expect(base64AudioFile).to.not.be.undefined
-        const expectedAudioResult = Buffer.from(audioBlob).toString('base64')
-        expect(base64AudioFile).to.equal(expectedAudioResult)
+        expect(result).to.not.be.null
+        expect(result).to.not.be.undefined
+        expect(result.presignedUrl).to.not.be.null
+        expect(result.presignedUrl).to.not.be.undefined
+        expect(result.presignedUrl).to.not.be.empty
+        expect(result.base64SymmetricKey).to.not.be.null
+        expect(result.base64SymmetricKey).to.not.be.undefined
+        expect(result.base64SymmetricKey).to.not.be.empty
       })
     },
   )
 })
 
-const GET_AUDIO_FILE = `
-query getAudioFile(
+const GET_REQUIRED_DOWNLOAD_INFO = `
+query getRequiredDownloadInfo(
     $audioId: String!
     $organizationId: String!,) {
-  getAudioFile(
+  getRequiredDownloadInfo(
     audioId: $audioId,
     organizationId: $organizationId,
-  )
+  ) {
+    base64SymmetricKey
+    presignedUrl
+  }
 }
 `
-async function getAudioFileQuery(
+async function getRequiredDownloadInfoQuery(
   testClient: ApolloServerTestClient,
   audioId: string,
   organizationId: string,
-  logErrors = true,
   headers?: Headers,
+  logErrors = true,
 ) {
   const { query } = testClient
 
   const operation = () =>
     query({
-      query: GET_AUDIO_FILE,
+      query: GET_REQUIRED_DOWNLOAD_INFO,
       variables: {
         audioId,
         organizationId,
@@ -137,5 +140,5 @@ async function getAudioFileQuery(
     })
 
   const res = await gqlTry(operation, logErrors)
-  return res.data?.getAudioFile as string
+  return res.data?.getRequiredDownloadInfo as RequiredDownloadInfo
 }

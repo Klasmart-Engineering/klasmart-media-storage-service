@@ -4,7 +4,7 @@ import { KidsloopAuthenticationToken } from 'kidsloop-token-validation'
 export interface Context {
   token?: KidsloopAuthenticationToken
   ip?: string | string[]
-  userId: string
+  userId?: string
 }
 
 export function UserID(): ParameterDecorator {

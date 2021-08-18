@@ -27,12 +27,37 @@ describe('audio blob transformations', () => {
 
       // Uncomment the following statement if you want to listen to the output, as a sanity check.
       // fs.writeFileSync(
-      //   path.join(__dirname, '../decryptedAudioBlob.webm'),
+      //   path.join(__dirname, '../decryptedAudioBlob2.webm'),
       //   decoded,
       // )
 
       // Assert
       expect(decoded).to.deep.equal(audioBlob)
+    })
+  })
+
+  context('blob test', () => {
+    it('blob test', async () => {
+      // Arrange
+      const userPublicKey = Buffer.from(
+        'BAPo6vS0OTVMTZyqCLbuHyiBXt8L++u2ERmxtO9zbj0=',
+        'base64',
+      )
+      const encryptedSymmetricKey =
+        'zuVWG9RmB+jnpgFxvDd7ICYGakxrur9BLFScVuPPdufw28MRKlMQgC97vmQ/t4u9zvd+JM3k4G+9PMhXH/uBYM77+w+90SiJ'
+      const audioBlob = fs.readFileSync(path.join(__dirname, '../audioBlob2'))
+      const orgPrivateKey = fs.readFileSync(
+        path.join(__dirname, '../audioBlob2OrgPrivateKey'),
+      )
+      const orgSharedKey = box.before(userPublicKey, orgPrivateKey)
+      const symmetricKey = decrypt(orgSharedKey, encryptedSymmetricKey)
+      const decryptedAudio = decrypt(symmetricKey, audioBlob.toString())
+
+      // Uncomment the following statement if you want to listen to the output, as a sanity check.
+      // fs.writeFileSync(
+      //   path.join(__dirname, '../decryptedAudioBlob2.webm'),
+      //   decryptedAudio,
+      // )
     })
   })
 })

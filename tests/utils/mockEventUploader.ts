@@ -1,4 +1,4 @@
-import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadInfo'
+import { RequiredDownloadInfo } from '../../src/graphqlResultTypes/requiredDownloadInfo'
 
 export class MockEventUploader {
   public async run(): Promise<void> {
@@ -8,7 +8,7 @@ export class MockEventUploader {
     await this.uploadAudioFile(encryptedAudio, presignedUrl)
   }
 
-  private requestRequiredUploadInfo(): Promise<RequiredUploadInfo> {
+  private requestRequiredUploadInfo(): Promise<RequiredDownloadInfo> {
     return Promise.resolve({ base64OrgPublicKey: '', presignedUrl: '' })
   }
 

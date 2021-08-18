@@ -1,7 +1,5 @@
 import { expect } from 'chai'
-import { Connection, getRepository, Repository } from 'typeorm'
-import { createApolloServer } from '../../src/helpers/createApolloServer'
-import buildDefaultSchema from '../../src/helpers/buildDefaultSchema'
+import { Connection } from 'typeorm'
 import {
   ApolloServerTestClient,
   createTestClient,
@@ -9,12 +7,10 @@ import {
 import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
 import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
-import { AudioMetadata } from '../../src/entities/audioMetadata'
-import dotenv from 'dotenv'
 import { Config } from '../../src/helpers/config'
 import { connectToMetadataDatabase } from '../../src/helpers/connectToMetadataDatabase'
 import createAudioServer from '../../src/helpers/createAudioServer'
-dotenv.config({ path: '.env.test' })
+import { generateToken } from '../utils/generateToken'
 
 describe('audioResolver', () => {
   let connection: Connection
@@ -41,9 +37,12 @@ describe('audioResolver', () => {
       it('returns empty list', async () => {
         // Arrange
         const roomId = 'room1'
+        const userId = 'user1'
 
         // Act
-        const result = await audioMetadataForRoomQuery(testClient, roomId)
+        const result = await audioMetadataForRoomQuery(testClient, roomId, {
+          authorization: generateToken(userId),
+        })
 
         // Assert
         expect(result).to.not.be.null
@@ -55,10 +54,13 @@ describe('audioResolver', () => {
       it('returns empty list', async () => {
         // Arrange
         const roomId = 'room1'
+        const userId = 'user1'
         await new AudioMetadataBuilder().buildAndPersist()
 
         // Act
-        const result = await audioMetadataForRoomQuery(testClient, roomId)
+        const result = await audioMetadataForRoomQuery(testClient, roomId, {
+          authorization: generateToken(userId),
+        })
 
         // Assert
         expect(result).to.not.be.null
@@ -70,13 +72,16 @@ describe('audioResolver', () => {
       it('returns list containing 1 item', async () => {
         // Arrange
         const roomId = 'room1'
+        const userId = 'user1'
         await new AudioMetadataBuilder().buildAndPersist()
         const matchingAudioMetadata = await new AudioMetadataBuilder()
           .withRoomId(roomId)
           .buildAndPersist()
 
         // Act
-        const result = await audioMetadataForRoomQuery(testClient, roomId)
+        const result = await audioMetadataForRoomQuery(testClient, roomId, {
+          authorization: generateToken(userId),
+        })
 
         // Assert
         expect(result).to.not.be.null
@@ -102,8 +107,8 @@ query audioMetadataForRoom($roomId: String!) {
 async function audioMetadataForRoomQuery(
   testClient: ApolloServerTestClient,
   roomId: string,
-  logErrors = true,
   headers?: Headers,
+  logErrors = true,
 ) {
   const { query } = testClient
 

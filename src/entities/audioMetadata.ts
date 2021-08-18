@@ -29,5 +29,11 @@ export class AudioMetadata {
   public readonly creationDate!: Date
 
   @Column()
+  public readonly mimeType!: string
+
+  @Column()
   public readonly base64UserPublicKey!: string
+
+  @Column()
+  public readonly base64EncryptedSymmetricKey!: string
 }

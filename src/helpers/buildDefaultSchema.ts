@@ -26,13 +26,10 @@ class CustomIocContainer {
   get(objectType: ClassType): unknown {
     if (objectType === AudioResolver) {
       if (!this.audioResolver) {
-        console.log('constructing AudioResolver')
         this.audioResolver = this.compositionRoot.constructAudioResolver()
       }
       return this.audioResolver
     }
-    console.log('constructing unknown')
     return new objectType()
-    //throw new Error()
   }
 }

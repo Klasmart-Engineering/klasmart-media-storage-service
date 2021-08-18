@@ -4,9 +4,9 @@ import { AudioResolver } from '../../src/resolvers/audioResolver'
 import { KeyPairProvider } from '../../src/helpers/keyPairProvider'
 import { Repository } from 'typeorm'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
-import { AudioFileRetriever } from '../../src/helpers/audioFileRetriever'
-import IUploadUrlProvider from '../../src/interfaces/uploadUrlProvider'
+import IUploadUrlProvider from '../../src/interfaces/presignedUrlProvider'
 import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
+import IDecryptionProvider from '../../src/interfaces/decryptionProvider'
 
 describe('AudioResolver', () => {
   context('1 metadata entry exists matching provided roomId', () => {
@@ -14,7 +14,7 @@ describe('AudioResolver', () => {
       // Arrange
       const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
       const keyPairProvider = Substitute.for<KeyPairProvider>()
-      const fileRetriever = Substitute.for<AudioFileRetriever>()
+      const decryptionProvider = Substitute.for<IDecryptionProvider>()
       const uploadUrlProvider = Substitute.for<IUploadUrlProvider>()
 
       const roomId = 'room1'
@@ -30,7 +30,7 @@ describe('AudioResolver', () => {
       const sut = new AudioResolver(
         metadataRepository,
         keyPairProvider,
-        fileRetriever,
+        decryptionProvider,
         uploadUrlProvider,
       )
 

@@ -11,8 +11,8 @@ export class Config {
       // Needed with minio.
       s3ForcePathStyle: true,
       signatureVersion: 'v4',
-      // TODO: Set this to true when not localhost.
-      sslEnabled: false,
+      sslEnabled: process.env.NODE_ENV === 'production',
+      correctClockSkew: true,
     })
   }
 
