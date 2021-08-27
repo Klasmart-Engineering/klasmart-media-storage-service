@@ -32,6 +32,7 @@ definitions:
 
   script: &build-and-push-to-aws
     - pip3 install -U awscli
+    - AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY_ALPHA_OLD" AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID_ALPHA_OLD"
 
     - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
     - export REPO=$DOCKER_REPO_URL/kidsloop-audio # DOCKER_REPO_URL is workspace wide variable
