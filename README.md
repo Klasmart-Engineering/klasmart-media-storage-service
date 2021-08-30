@@ -46,19 +46,19 @@ Create MinIO container
 
 ```
 docker run \
+  -d \
   -p 9000:9000 \
   -p 9001:9001 \
   -e "MINIO_ROOT_USER=minio" \
-  -e "MINIO_ROOT_PASSWORD=minio" \
+  -e "MINIO_ROOT_PASSWORD=minio123" \
   minio/minio server /data --console-address ":9001"
 ```
 
-MinIO service account setup
+MinIO config
 
-1. Open your browser to http://localhost:9001.
-2. Click _Account_, _Create Service Account_, _Create_.
-3. Copy/paste the keys to AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your `.env` and `.env.test` files.
-4. Create 3 buckets for PUBLIC_KEY_BUCKET, PRIVATE_KEY_BUCKET, AUDIO_FILE_BUCKET in your `.env` file.
+1. In your `.env` and `.env.test` files, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY equal to the values of MINIO_ROOT_USER and MINIO_ROOT_PASSWORD from the previous step.
+2. Open your browser to http://localhost:9001.
+3. Create 3 buckets for PUBLIC_KEY_BUCKET, PRIVATE_KEY_BUCKET, AUDIO_FILE_BUCKET in your `.env` file.
 
 ### Running
 

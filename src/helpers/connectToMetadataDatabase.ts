@@ -27,7 +27,7 @@ export async function connectToMetadataDatabase(
     )
     logger.info('🐘 Connected to postgres: Metadata database')
     return connection
-  } catch (e) {
+  } catch (e: any) {
     if (createIfDoesntExist && e.code === INVALID_CATALOG_NAME) {
       logger.info(
         "Metadata database doesn't exist. Attempting to create now...",
@@ -64,7 +64,7 @@ export async function tryCreateMetadataDatabase(
     logger.info(`database '${databaseName}' created successfully`)
     await connection.close()
     return true
-  } catch (e) {
+  } catch (e: any) {
     // We expect one of the following two errors to occur the first time
     // this service is deployed in a new environment because all instances will try
     // to create the missing database at the same time, but only one will succeed.

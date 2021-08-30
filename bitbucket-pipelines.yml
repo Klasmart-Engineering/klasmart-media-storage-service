@@ -5,19 +5,33 @@ definitions:
       environment:
         POSTGRES_DB: test_audio_db
         POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: audio
+        POSTGRES_PASSWORD: kidsloop
   caches:
     nodemodules: ./node_modules
   steps:
+    - step: &commitlint-check
+        name: 'Conventional Commits check'
+        image: node:lts
+        script:
+          - /bin/bash commitlint-pipeline-check.sh
     - step: &build-and-test
         name: 'Build and test'
         image: node:lts
         services:
           - postgres
+          - docker
         script:
+          - >
+            docker run
+            -d
+            -p 9000:9000
+            -p 9001:9001
+            -e "MINIO_ACCESS_KEY=minio"
+            -e "MINIO_SECRET_KEY=minio123"
+            minio/minio server /data --console-address ":9001"
           - export HUSKY=0
           - npm i
-          - TEST_POSTGRES_PORT=5432 npm run test:codecov
+          - CI=true npm run test:codecov
         caches:
           - nodemodules
         artifacts:
@@ -56,9 +70,10 @@ pipelines:
   pull-requests:
     '**': # This runs as default for any branch not elsewhere defined.:
       - step: *build-and-test
+      - step: *commitlint-check
 
   branches:
-    master:
+    main:
       - step: *build-and-test
     alpha:
       - step: *build-and-test
