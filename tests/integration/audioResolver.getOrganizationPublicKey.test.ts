@@ -11,9 +11,6 @@ import { connectToMetadataDatabase } from '../../src/helpers/connectToMetadataDa
 import createAudioServer from '../../src/helpers/createAudioServer'
 import { generateToken } from '../utils/generateToken'
 import { box } from 'tweetnacl'
-import path from 'path'
-import fs from 'fs'
-import { decrypt } from '../../src/helpers/tweetnaclUtil'
 
 describe('audioResolver.getOrganizationPublicKey', () => {
   let connection: Connection
