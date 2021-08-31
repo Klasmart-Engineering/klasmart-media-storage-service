@@ -14,8 +14,8 @@ definitions:
         image: node:lts
         script:
           - /bin/bash commitlint-pipeline-check.sh
-    - step: &build-and-test
-        name: 'Build and test'
+    - step: &npm-install-and-test
+        name: 'Install npm dependencies and run tests'
         image: node:lts
         services:
           - postgres
@@ -46,20 +46,21 @@ definitions:
 
   script: &build-and-push-to-aws
     - pip3 install -U awscli
-    - AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY_ALPHA_OLD" AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID_ALPHA_OLD"
 
+    - export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_KEY" AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY"
     - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
-    - export REPO=$DOCKER_REPO_URL/kidsloop-audio # DOCKER_REPO_URL is workspace wide variable
+    - export REPO=$DOCKER_REPO_URL/audio-storage # DOCKER_REPO_URL is workspace wide variable
     - export COMMIT_TAG=$(echo $BITBUCKET_COMMIT | cut -c1-7)
     - printf '"Git tag":"%s", "Git commit":"%s" "ECR repo":"%s"' $BRANCH_TAG $COMMIT_TAG $REPO
-
+    - export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $(aws sts assume-role --role-arn arn:aws:iam::942095822719:role/cross_account_role_ecr_push --role-session-name MySessionName --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" --output text))
     - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
 
-    - docker build -t kidsloop-audio .
-    - docker tag kidsloop-audio:latest $REPO:$BRANCH_TAG
-    - docker tag kidsloop-audio:latest $REPO:$BRANCH_TAG-latest
-    - docker tag kidsloop-audio:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
-    - docker tag kidsloop-audio:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
+    - docker build -t audio-storage .
+
+    - docker tag audio-storage:latest $REPO:$BRANCH_TAG
+    - docker tag audio-storage:latest $REPO:$BRANCH_TAG-latest
+    - docker tag audio-storage:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
+    - docker tag audio-storage:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
 
     - docker push $REPO:$BRANCH_TAG
     - docker push $REPO:$BRANCH_TAG-latest
@@ -69,14 +70,21 @@ definitions:
 pipelines:
   pull-requests:
     '**': # This runs as default for any branch not elsewhere defined.:
-      - step: *build-and-test
+      - step: *npm-install-and-test
       - step: *commitlint-check
 
   branches:
     main:
-      - step: *build-and-test
+      - step: *npm-install-and-test
     alpha:
-      - step: *build-and-test
+      - step: *npm-install-and-test
+      - step:
+          name: 'Run npm build'
+          image: node:lts
+          script:
+            - npm run build
+          artifacts:
+            - dist/**
       - step:
           name: 'Docker build and push to AWS'
           deployment: alpha
@@ -84,9 +92,15 @@ pipelines:
           services:
             - docker
           script: *build-and-push-to-aws
-      - step: *slack-notification
     production:
-      - step: *build-and-test
+      - step: *npm-install-and-test
+      - step:
+          name: 'Run npm build'
+          image: node:lts
+          script:
+            - npm run build
+          artifacts:
+            - dist/**
       - step:
           name: 'Docker build and push to AWS'
           deployment: production
