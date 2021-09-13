@@ -29,9 +29,7 @@ export async function connectToMetadataDatabase(
     return connection
   } catch (e: any) {
     if (createIfDoesntExist && e.code === INVALID_CATALOG_NAME) {
-      logger.info(
-        "Metadata database doesn't exist. Attempting to create now...",
-      )
+      logger.info(`${e.message}. Attempting to create now...`)
       const success = await tryCreateMetadataDatabase(url, logger)
       if (!success) {
         // Another instance already created (or is in the process of creating)
@@ -55,10 +53,10 @@ export async function tryCreateMetadataDatabase(
   url: string,
   logger: ILogger,
 ): Promise<boolean> {
+  const urlObject = new URL(url)
+  // Use substring to omit the leading slash from the name e.g. /audio_db
+  const databaseName = urlObject.pathname.substring(1)
   try {
-    const urlObject = new URL(url)
-    // Use substring to omit the leading slash from the name e.g. /audio_db
-    const databaseName = urlObject.pathname.substring(1)
     const connection = await createBootstrapPostgresConnection(urlObject)
     await connection.query(`CREATE DATABASE ${databaseName};`)
     logger.info(`database '${databaseName}' created successfully`)
@@ -70,16 +68,16 @@ export async function tryCreateMetadataDatabase(
     // to create the missing database at the same time, but only one will succeed.
     if (e.code === UNIQUE_VIOLATION || e.code === DUPLICATE_DATABASE) {
       logger.info(
-        `Failed to create metadata database (expected error): ${e.message}`,
+        `Failed to create '${databaseName}' database (expected error): ${e.message}`,
       )
     } else if (e.code === INVALID_CATALOG_NAME) {
       throw new Error(
-        'Failed to create metadata database: Tried to connect to the default ' +
-          "'postgres' database to bootstrap the creation, but it doesn't exist.",
+        `Failed to create ${databaseName} database: Tried to connect to the default ` +
+          `'postgres' database to bootstrap the creation, but it doesn't exist.\n${e.message}`,
       )
     } else {
       throw new Error(
-        `Failed to create metadata database (unexpected error): ${e.message}`,
+        `Failed to create ${databaseName} database (unexpected error): ${e.message}`,
       )
     }
     return false
@@ -89,8 +87,7 @@ export async function tryCreateMetadataDatabase(
 const createBootstrapPostgresConnection = (
   urlObject: URL,
 ): Promise<Connection> => {
-  // Remove the database component so it connects to the default 'postgres' database.
-  urlObject.pathname = ''
+  urlObject.pathname = '/postgres'
   const url = urlObject.toString()
   return createConnection({
     type: 'postgres',

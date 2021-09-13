@@ -3,9 +3,6 @@ import { throwExpression } from './throwExpression'
 
 export class Config {
   public static getS3Client(): AWS.S3 {
-    if (!process.env.S3_BUCKET_ENDPOINT) {
-      throw new Error('S3_ENDPOINT must be defined')
-    }
     return new AWS.S3({
       endpoint: process.env.S3_BUCKET_ENDPOINT,
       // Needed with minio.
