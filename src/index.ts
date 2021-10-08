@@ -1,3 +1,4 @@
+import 'newrelic'
 import 'reflect-metadata'
 import { Config } from './helpers/config'
 import { connectToMetadataDatabase } from './helpers/connectToMetadataDatabase'

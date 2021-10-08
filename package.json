@@ -79,6 +79,7 @@
     "graphql": "^15.5.1",
     "jsonwebtoken": "^8.5.1",
     "kidsloop-token-validation": "bitbucket:calmisland/kidsloop-token-validation",
+    "newrelic": "^8.4.0",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "tweetnacl": "^1.0.3",
