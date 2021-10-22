@@ -6,9 +6,9 @@ import { v4 } from 'uuid'
 export default class AudioMetadataBuilder {
   private id: string = v4()
   private userId: string = v4()
-  private roomId: string | null = v4()
+  private roomId: string = v4()
   private mimeType = 'audio/webm'
-  private h5pId: string | null = v4()
+  private h5pId: string = v4()
   private h5pSubId: string | null = v4()
   private creationDate: Date = new Date()
   private base64UserPublicKey = v4()
@@ -24,7 +24,7 @@ export default class AudioMetadataBuilder {
     return this
   }
 
-  public withRoomId(value: string | null): this {
+  public withRoomId(value: string): this {
     this.roomId = value
     return this
   }
@@ -34,7 +34,7 @@ export default class AudioMetadataBuilder {
     return this
   }
 
-  public withH5pId(value: string | null): this {
+  public withH5pId(value: string): this {
     this.h5pId = value
     return this
   }
