@@ -29,38 +29,6 @@ export class AudioResolver {
 
   @Authorized()
   @Query(() => [AudioMetadata])
-  public async audioMetadataForUser(
-    @Arg('userId') userId: string,
-    @UserID() endUserId?: string,
-  ): Promise<AudioMetadata[]> {
-    if (endUserId !== userId) {
-      throw new UnauthorizedError()
-    }
-    if (!userId) {
-      return []
-    }
-    const results = await this.metadataRepository.find({ userId })
-    return results
-  }
-
-  @Authorized()
-  @Query(() => [AudioMetadata])
-  public async audioMetadataForRoom(
-    @Arg('roomId') roomId: string,
-    @UserID() endUserId?: string,
-  ): Promise<AudioMetadata[]> {
-    if (!endUserId) {
-      throw new UnauthorizedError()
-    }
-    const results = await this.metadataRepository.find({
-      roomId,
-      userId: endUserId, // Authorization, only allow access to their show users their own audio.
-    })
-    return results
-  }
-
-  @Authorized()
-  @Query(() => [AudioMetadata])
   public async audioMetadata(
     @Arg('userId') userId: string,
     @Arg('roomId') roomId: string,
@@ -143,12 +111,12 @@ export class AudioResolver {
     }
     const audioMetadata = await this.metadataRepository.findOne({
       id: audioId,
-      userId: endUserId, // Authorization, only allow access to their show users their own audio.
+      userId: endUserId, // Authorization, only allow access to their own audio.
     })
 
     if (!audioMetadata) {
       throw new Error(
-        `audio metadata not found for audioId(${audioId}), userId(${endUserId})`,
+        `Audio metadata not found for audioId(${audioId}), userId(${endUserId}).`,
       )
     }
     const roomId = audioMetadata.roomId

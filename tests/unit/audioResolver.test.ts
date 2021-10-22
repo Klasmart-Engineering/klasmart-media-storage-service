@@ -7,10 +7,11 @@ import { AudioMetadata } from '../../src/entities/audioMetadata'
 import IPresignedUrlProvider from '../../src/interfaces/presignedUrlProvider'
 import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
 import IDecryptionProvider from '../../src/interfaces/decryptionProvider'
+import { v4 } from 'uuid'
 
 describe('AudioResolver', () => {
-  describe('audioMetadataForRoom', () => {
-    context('1 metadata entry exists matching provided roomId', () => {
+  describe('audioMetadata', () => {
+    context('1 matching metadata entry exists', () => {
       it('returns an array of 1 item', async () => {
         // Arrange
         const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
@@ -19,14 +20,19 @@ describe('AudioResolver', () => {
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
 
         const roomId = 'room1'
-        const endUserId = 'user123'
+        const userId = v4()
+        const endUserId = userId
+        const h5pId = 'h5p1'
+        const h5pSubId = 'h5pSub1'
         const matchingMetadata = new AudioMetadataBuilder()
           .withRoomId(roomId)
-          .withUserId(endUserId)
+          .withUserId(userId)
+          .withH5pId(h5pId)
+          .withH5pSubId(h5pSubId)
           .build()
 
         metadataRepository
-          .find({ roomId, userId: endUserId })
+          .find({ roomId, userId, h5pId, h5pSubId })
           .resolves([matchingMetadata])
 
         const sut = new AudioResolver(
@@ -38,7 +44,13 @@ describe('AudioResolver', () => {
 
         // Act
         const expected = [matchingMetadata]
-        const actual = await sut.audioMetadataForRoom(roomId, endUserId)
+        const actual = await sut.audioMetadata(
+          userId,
+          roomId,
+          h5pId,
+          h5pSubId,
+          endUserId,
+        )
 
         // Assert
         expect(actual).to.deep.equal(expected)

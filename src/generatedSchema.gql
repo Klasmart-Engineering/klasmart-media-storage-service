@@ -23,8 +23,6 @@ type Mutation {
 
 type Query {
   audioMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [AudioMetadata!]!
-  audioMetadataForRoom(roomId: String!): [AudioMetadata!]!
-  audioMetadataForUser(userId: String!): [AudioMetadata!]!
   getRequiredDownloadInfo(audioId: String!): RequiredDownloadInfo!
   getRequiredUploadInfo(mimeType: String!): RequiredUploadInfo!
 }

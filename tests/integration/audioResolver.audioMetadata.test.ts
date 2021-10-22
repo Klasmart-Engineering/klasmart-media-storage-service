@@ -16,6 +16,7 @@ import {
   generateLiveAuthorizationToken,
 } from '../utils/generateToken'
 import { v4 } from 'uuid'
+import { AudioMetadata } from '../../src/entities/audioMetadata'
 
 describe('audioResolver', () => {
   let connection: Connection
@@ -37,18 +38,31 @@ describe('audioResolver', () => {
     await connection?.synchronize(true)
   })
 
-  describe('audioMetadataForRoom', () => {
+  describe('audioMetadata', () => {
     context('0 database entries', () => {
       it('returns empty list', async () => {
         // Arrange
         const roomId = 'room1'
         const userId = v4()
+        const endUserId = userId
+        const h5pId = 'h5p1'
+        const h5pSubId = 'h5pSub1'
 
         // Act
-        const result = await audioMetadataForRoomQuery(testClient, roomId, {
-          authentication: generateAuthenticationToken(userId),
-          'live-authorization': generateLiveAuthorizationToken(userId, roomId),
-        })
+        const result = await audioMetadataQuery(
+          testClient,
+          userId,
+          roomId,
+          h5pId,
+          h5pSubId,
+          {
+            authentication: generateAuthenticationToken(endUserId),
+            'live-authorization': generateLiveAuthorizationToken(
+              endUserId,
+              roomId,
+            ),
+          },
+        )
 
         // Assert
         expect(result).to.not.be.null
@@ -56,18 +70,31 @@ describe('audioResolver', () => {
       })
     })
 
-    context('1 database entry which does not match roomId', () => {
+    context('1 database entry which does not match provided arguments', () => {
       it('returns empty list', async () => {
         // Arrange
         const roomId = 'room1'
         const userId = v4()
+        const endUserId = userId
+        const h5pId = 'h5p1'
+        const h5pSubId = 'h5pSub1'
         await new AudioMetadataBuilder().buildAndPersist()
 
         // Act
-        const result = await audioMetadataForRoomQuery(testClient, roomId, {
-          authentication: generateAuthenticationToken(userId),
-          'live-authorization': generateLiveAuthorizationToken(userId, roomId),
-        })
+        const result = await audioMetadataQuery(
+          testClient,
+          userId,
+          roomId,
+          h5pId,
+          h5pSubId,
+          {
+            authentication: generateAuthenticationToken(endUserId),
+            'live-authorization': generateLiveAuthorizationToken(
+              endUserId,
+              roomId,
+            ),
+          },
+        )
 
         // Assert
         expect(result).to.not.be.null
@@ -75,34 +102,68 @@ describe('audioResolver', () => {
       })
     })
 
-    context('2 database entries, 1 of which matches roomId', () => {
+    context('2 database entries, 1 of which matches provided arguments', () => {
       it('returns list containing 1 item', async () => {
         // Arrange
         const roomId = 'room1'
         const userId = v4()
+        const endUserId = userId
+        const h5pId = 'h5p1'
+        const h5pSubId = 'h5pSub1'
         await new AudioMetadataBuilder().buildAndPersist()
         const matchingAudioMetadata = await new AudioMetadataBuilder()
           .withRoomId(roomId)
+          .withUserId(userId)
+          .withH5pId(h5pId)
+          .withH5pSubId(h5pSubId)
           .buildAndPersist()
 
         // Act
-        const result = await audioMetadataForRoomQuery(testClient, roomId, {
-          authentication: generateAuthenticationToken(userId),
-          'live-authorization': generateLiveAuthorizationToken(userId, roomId),
-        })
+        const result = await audioMetadataQuery(
+          testClient,
+          userId,
+          roomId,
+          h5pId,
+          h5pSubId,
+          {
+            authentication: generateAuthenticationToken(endUserId),
+            'live-authorization': generateLiveAuthorizationToken(
+              endUserId,
+              roomId,
+            ),
+          },
+        )
 
         // Assert
         expect(result).to.not.be.null
         expect(result).to.not.be.undefined
-        //expect(result).to.equal(matchingAudioMetadata)
+        expect(result).to.deep.equal([
+          {
+            id: matchingAudioMetadata.id,
+            userId,
+            roomId,
+            h5pId,
+            h5pSubId,
+            creationDate: matchingAudioMetadata.creationDate.toISOString(),
+          },
+        ])
       })
     })
   })
 })
 
-export const AUDIO_METADATA_FOR_ROOM = `
-query audioMetadataForRoom($roomId: String!) {
-  audioMetadataForRoom(roomId: $roomId) {
+export const AUDIO_METADATA = `
+query audioMetadata(
+    $userId: String!
+    $roomId: String!
+    $h5pId: String!
+    $h5pSubId: String) {
+  audioMetadata(
+    userId: $userId
+    roomId: $roomId
+    h5pId: $h5pId
+    h5pSubId: $h5pSubId
+  ) {
     id
     userId
     roomId
@@ -112,52 +173,24 @@ query audioMetadataForRoom($roomId: String!) {
   }
 }
 `
-async function audioMetadataForRoomQuery(
-  testClient: ApolloServerTestClient,
-  roomId: string,
-  headers?: Headers,
-  logErrors = true,
-) {
-  const { query } = testClient
-
-  const operation = () =>
-    query({
-      query: AUDIO_METADATA_FOR_ROOM,
-      variables: { roomId: roomId },
-      headers,
-    })
-
-  const res = await gqlTry(operation, logErrors)
-  return res.data?.audioMetadataForRoom
-}
-
-export const AUDIO_METADATA_FOR_USER = `
-query audioMetadataForUser($userId: String!) {
-  audioMetadataForUser(userId: $userId) {
-    id
-    userId
-    roomId
-    h5pId
-    h5pSubId
-    creationDate
-  }
-}
-`
-async function audioMetadataForUserQuery(
+async function audioMetadataQuery(
   testClient: ApolloServerTestClient,
   userId: string,
-  logErrors = true,
+  roomId: string,
+  h5pId: string,
+  h5pSubId: string,
   headers?: Headers,
+  logErrors = true,
 ) {
   const { query } = testClient
 
   const operation = () =>
     query({
-      query: AUDIO_METADATA_FOR_USER,
-      variables: { userId: userId },
+      query: AUDIO_METADATA,
+      variables: { userId, roomId, h5pId, h5pSubId },
       headers,
     })
 
   const res = await gqlTry(operation, logErrors)
-  return res.data?.audioMetadataForUser
+  return res.data?.audioMetadata as AudioMetadata[]
 }
