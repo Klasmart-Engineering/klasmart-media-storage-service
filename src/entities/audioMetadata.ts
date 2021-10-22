@@ -8,17 +8,17 @@ export class AudioMetadata {
   @PrimaryColumn('uuid')
   public readonly id!: string
 
-  @Field(() => String, { nullable: true })
-  @Column({ type: 'varchar', nullable: true })
-  public readonly roomId!: string | null
+  @Field(() => String)
+  @Column({ type: 'varchar' })
+  public readonly roomId!: string
 
-  @Field()
-  @Column()
+  @Field(() => ID)
+  @Column({ type: 'uuid' })
   public readonly userId!: string
 
-  @Field(() => String, { nullable: true })
-  @Column({ type: 'varchar', nullable: true })
-  public readonly h5pId!: string | null
+  @Field(() => String)
+  @Column({ type: 'varchar' })
+  public readonly h5pId!: string
 
   @Field(() => String, { nullable: true })
   @Column({ type: 'varchar', nullable: true })

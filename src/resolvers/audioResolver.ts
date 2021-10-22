@@ -29,9 +29,9 @@ export class AudioResolver {
   @Query(() => [AudioMetadata])
   public async audioMetadataForUser(
     @Arg('userId') userId: string,
-    @UserID() requestee?: string,
+    @UserID() endUserId?: string,
   ): Promise<AudioMetadata[]> {
-    if (requestee !== userId) {
+    if (endUserId !== userId) {
       throw new UnauthorizedError()
     }
     if (!userId) {
@@ -45,12 +45,15 @@ export class AudioResolver {
   @Query(() => [AudioMetadata])
   public async audioMetadataForRoom(
     @Arg('roomId') roomId: string,
-    @UserID() userId?: string,
+    @UserID() endUserId?: string,
   ): Promise<AudioMetadata[]> {
-    if (!userId) {
+    if (!endUserId) {
       throw new UnauthorizedError()
     }
-    const results = await this.metadataRepository.find({ roomId, userId })
+    const results = await this.metadataRepository.find({
+      roomId,
+      userId: endUserId, // Authorization, only allow access to their show users their own audio.
+    })
     return results
   }
 
@@ -60,9 +63,10 @@ export class AudioResolver {
     if (!roomId) {
       throw new UnauthorizedError()
     }
-    const orgPublicKey = await this.keyPairProvider.getPublicKey(roomId)
-    const encoded = Buffer.from(orgPublicKey).toString('base64')
-    return encoded
+    const serverPublicKey = await this.keyPairProvider.getPublicKey(roomId)
+    const base64ServerPublicKey =
+      Buffer.from(serverPublicKey).toString('base64')
+    return base64ServerPublicKey
   }
 
   @Authorized()
@@ -73,11 +77,11 @@ export class AudioResolver {
     @Arg('mimeType') mimeType: string,
     @Arg('h5pId') h5pId: string,
     @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
-    @UserID() userId?: string,
+    @UserID() endUserId?: string,
     @RoomID() roomId?: string,
   ): Promise<string> {
-    if (!userId) {
-      throw new Error('Unkown user')
+    if (!endUserId || !roomId) {
+      throw new UnauthorizedError()
     }
     const audioId = v4()
     const presignedUrl = await this.presignedUrlProvider.getUploadUrl(
@@ -87,7 +91,7 @@ export class AudioResolver {
 
     const entity = this.metadataRepository.create({
       id: audioId,
-      userId,
+      userId: endUserId,
       base64UserPublicKey,
       base64EncryptedSymmetricKey,
       creationDate: new Date(),
@@ -105,22 +109,24 @@ export class AudioResolver {
   @Query(() => RequiredDownloadInfo)
   public async getRequiredDownloadInfo(
     @Arg('audioId') audioId: string,
-    @UserID() userId?: string,
+    @UserID() endUserId?: string,
   ): Promise<RequiredDownloadInfo> {
-    if (!userId) {
-      throw new Error('Unkown user')
+    if (!endUserId) {
+      throw new UnauthorizedError()
     }
     const audioMetadata = await this.metadataRepository.findOne({
       id: audioId,
-      userId, // Authorization, only allow access to their show users their own audio
+      userId: endUserId, // Authorization, only allow access to their show users their own audio.
     })
 
     if (!audioMetadata) {
-      throw new Error(`audio metadata not found for id ${audioId}`)
+      throw new Error(
+        `audio metadata not found for audioId(${audioId}), userId(${endUserId})`,
+      )
     }
     const roomId = audioMetadata.roomId
     if (!roomId) {
-      throw new Error('Unable to decrypt audio')
+      throw new Error('No room ID is associated with the audio file.')
     }
 
     const userPublicKey = Buffer.from(
@@ -128,10 +134,10 @@ export class AudioResolver {
       'base64',
     )
 
-    const orgPrivateKey = await this.keyPairProvider.getPrivateKey(roomId)
+    const serverPrivateKey = await this.keyPairProvider.getPrivateKey(roomId)
     const symmetricKey = this.decryptionProvider.decrypt(
       userPublicKey,
-      orgPrivateKey,
+      serverPrivateKey,
       audioMetadata.base64EncryptedSymmetricKey,
     )
     const base64SymmetricKey = Buffer.from(symmetricKey).toString('base64')
