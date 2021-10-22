@@ -23,23 +23,28 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
         const ip = (req.headers['x-forwarded-for'] || req.ip) as string
         // Authentication (userId)
         const encodedAuthenticationToken =
-          validateHeader(req.headers.authentication) || req.cookies.access
+          extractHeader(req.headers.authentication) || req.cookies.access
         const authenticationToken = await checkAuthenticationToken(
           encodedAuthenticationToken,
         )
         const userId = authenticationToken.id
 
-        // Live Authorization (roomId from live)
-        const encodedLiveAuthorizationToken = validateHeader(
-          req.headers['live-authorization'],
-        )
-        const authorizationToken = await checkLiveAuthorizationToken(
-          encodedLiveAuthorizationToken,
-        )
-        const roomId =
-          authorizationToken.userid === userId
-            ? authorizationToken.roomid
-            : undefined
+        let roomId: string | undefined
+        try {
+          // Live Authorization (roomId from live)
+          const encodedLiveAuthorizationToken = extractHeader(
+            req.headers['live-authorization'],
+          )
+          const authorizationToken = await checkLiveAuthorizationToken(
+            encodedLiveAuthorizationToken,
+          )
+          roomId =
+            authorizationToken.userid === userId
+              ? authorizationToken.roomid
+              : undefined
+        } catch (e) {
+          // Don't log anything. Token validation errors just clutter the logs.
+        }
 
         return {
           authenticationToken,
@@ -54,7 +59,7 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   })
 }
 
-function validateHeader(headers?: string | string[]): string | undefined {
+function extractHeader(headers?: string | string[]): string | undefined {
   if (typeof headers === 'string') {
     return headers
   }
