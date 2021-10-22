@@ -1,3 +1,4 @@
+import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
 import { Connection } from 'typeorm'
 import {
@@ -9,14 +10,17 @@ import { Headers } from 'node-mocks-http'
 import { box } from 'tweetnacl'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
 import AWS from 'aws-sdk'
-import '../utils/globalIntegrationTestHooks'
 import { Config } from '../../src/helpers/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
 import createAudioServer from '../../src/helpers/createAudioServer'
 import { connectToMetadataDatabase } from '../../src/helpers/connectToMetadataDatabase'
-import { generateToken } from '../utils/generateToken'
+import {
+  generateAuthenticationToken,
+  generateLiveAuthorizationToken,
+} from '../utils/generateToken'
+import { v4 } from 'uuid'
 
-describe('audioResolver.getPresignedUploadUrl', () => {
+describe('audioResolver.setMetadata', () => {
   let connection: Connection
   let testClient: ApolloServerTestClient
   let s3Client: AWS.S3
@@ -51,38 +55,46 @@ describe('audioResolver.getPresignedUploadUrl', () => {
           box.keyPair().secretKey,
         ).toString('base64')
         const roomId = 'room1'
+        const audioId = v4()
         const mimeType = 'audio/webm'
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
-        const userId = 'user1'
+        const endUserId = v4()
 
         // Act
-        const result = await getPresignedUploadUrlQuery(
+        const success = await setMetadataQuery(
           testClient,
+          audioId,
           base64UserPublicKey,
           base64EncryptedSymmetricKey,
-          roomId,
           mimeType,
           h5pId,
           h5pSubId,
-          { authorization: generateToken(userId) },
+          {
+            authentication: generateAuthenticationToken(endUserId),
+            'live-authorization': generateLiveAuthorizationToken(
+              endUserId,
+              roomId,
+            ),
+          },
         )
 
         // Assert
-        expect(result).to.not.be.null
-        expect(result).to.not.be.undefined
-        expect(result).is.not.empty
+        expect(success).to.not.be.null
+        expect(success).to.not.be.undefined
+        expect(success).to.be.true
 
         // Ensure metadata is saved in the database.
         const count = await connection.getRepository(AudioMetadata).count()
         expect(count).to.equal(1)
         const entry = await connection.getRepository(AudioMetadata).findOne({
           where: {
+            id: audioId,
             roomId,
             mimeType,
             h5pId,
             h5pSubId,
-            userId,
+            userId: endUserId,
             base64UserPublicKey,
             base64EncryptedSymmetricKey,
           },
@@ -93,44 +105,44 @@ describe('audioResolver.getPresignedUploadUrl', () => {
   )
 })
 
-export const GET_PRESIGNED_UPLOAD_URL = `
-query getPresignedUploadUrl(
+export const SET_METADATA = `
+mutation setMetadata(
+    $audioId: String!,
     $base64UserPublicKey: String!,
     $base64EncryptedSymmetricKey: String!,
-    $roomId: String!,
     $mimeType: String!,
     $h5pId: String!,
     $h5pSubId: String) {
-  getPresignedUploadUrl(
+  setMetadata(
+    audioId: $audioId,
     base64UserPublicKey: $base64UserPublicKey,
     base64EncryptedSymmetricKey: $base64EncryptedSymmetricKey,
-    roomId: $roomId,
     mimeType: $mimeType,
     h5pId: $h5pId,
     h5pSubId: $h5pSubId
   )
 }
 `
-async function getPresignedUploadUrlQuery(
+async function setMetadataQuery(
   testClient: ApolloServerTestClient,
+  audioId: string,
   base64UserPublicKey: string,
   base64EncryptedSymmetricKey: string,
-  roomId: string,
   mimeType: string,
   h5pId: string,
   h5pSubId: string | null,
   headers?: Headers,
   logErrors = true,
 ) {
-  const { query } = testClient
+  const { mutate } = testClient
 
   const operation = () =>
-    query({
-      query: GET_PRESIGNED_UPLOAD_URL,
+    mutate({
+      mutation: SET_METADATA,
       variables: {
+        audioId,
         base64UserPublicKey,
         base64EncryptedSymmetricKey,
-        roomId,
         mimeType,
         h5pId,
         h5pSubId,
@@ -139,5 +151,5 @@ async function getPresignedUploadUrlQuery(
     })
 
   const res = await gqlTry(operation, logErrors)
-  return res.data?.getPresignedUploadUrl as string
+  return res.data?.setMetadata as boolean
 }

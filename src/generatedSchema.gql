@@ -17,15 +17,25 @@ The javascript `Date` as string. Type represents date and time as the ISO Date s
 """
 scalar DateTime
 
+type Mutation {
+  setMetadata(audioId: String!, base64EncryptedSymmetricKey: String!, base64UserPublicKey: String!, h5pId: String!, h5pSubId: String, mimeType: String!): Boolean!
+}
+
 type Query {
+  audioMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [AudioMetadata!]!
   audioMetadataForRoom(roomId: String!): [AudioMetadata!]!
   audioMetadataForUser(userId: String!): [AudioMetadata!]!
-  getPresignedUploadUrl(base64EncryptedSymmetricKey: String!, base64UserPublicKey: String!, h5pId: String!, h5pSubId: String, mimeType: String!): String!
-  getPublicKey: String!
   getRequiredDownloadInfo(audioId: String!): RequiredDownloadInfo!
+  getRequiredUploadInfo(mimeType: String!): RequiredUploadInfo!
 }
 
 type RequiredDownloadInfo {
   base64SymmetricKey: String!
+  presignedUrl: String!
+}
+
+type RequiredUploadInfo {
+  audioId: String!
+  base64ServerPublicKey: String!
   presignedUrl: String!
 }

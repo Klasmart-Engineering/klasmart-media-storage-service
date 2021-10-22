@@ -1,6 +1,7 @@
 import {
   Arg,
   Authorized,
+  Mutation,
   Query,
   Resolver,
   UnauthorizedError,
@@ -14,6 +15,7 @@ import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import { v4 } from 'uuid'
 import { RequiredDownloadInfo } from '../graphqlResultTypes/requiredDownloadInfo'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
+import { RequiredUploadInfo } from '../graphqlResultTypes/requiredUploadInfo'
 
 @Resolver(AudioMetadata)
 export class AudioResolver {
@@ -58,20 +60,51 @@ export class AudioResolver {
   }
 
   @Authorized()
-  @Query(() => String)
-  public async getPublicKey(@RoomID() roomId?: string): Promise<string> {
+  @Query(() => [AudioMetadata])
+  public async audioMetadata(
+    @Arg('userId') userId: string,
+    @Arg('roomId') roomId: string,
+    @Arg('h5pId') h5pId: string,
+    @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
+    @UserID() endUserId?: string,
+  ): Promise<AudioMetadata[]> {
+    if (endUserId !== userId) {
+      throw new UnauthorizedError()
+    }
+    const results = await this.metadataRepository.find({
+      userId,
+      roomId,
+      h5pId,
+      h5pSubId,
+    })
+    return results
+  }
+
+  @Authorized()
+  @Query(() => RequiredUploadInfo)
+  public async getRequiredUploadInfo(
+    @Arg('mimeType') mimeType: string,
+    @RoomID() roomId?: string,
+  ): Promise<RequiredUploadInfo> {
     if (!roomId) {
       throw new UnauthorizedError()
     }
     const serverPublicKey = await this.keyPairProvider.getPublicKey(roomId)
     const base64ServerPublicKey =
       Buffer.from(serverPublicKey).toString('base64')
-    return base64ServerPublicKey
+    const audioId = v4()
+    const presignedUrl = await this.presignedUrlProvider.getUploadUrl(
+      audioId,
+      mimeType,
+    )
+
+    return { audioId, base64ServerPublicKey, presignedUrl }
   }
 
   @Authorized()
-  @Query(() => String)
-  public async getPresignedUploadUrl(
+  @Mutation(() => Boolean)
+  public async setMetadata(
+    @Arg('audioId') audioId: string,
     @Arg('base64UserPublicKey') base64UserPublicKey: string,
     @Arg('base64EncryptedSymmetricKey') base64EncryptedSymmetricKey: string,
     @Arg('mimeType') mimeType: string,
@@ -79,16 +112,10 @@ export class AudioResolver {
     @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
     @UserID() endUserId?: string,
     @RoomID() roomId?: string,
-  ): Promise<string> {
+  ): Promise<boolean> {
     if (!endUserId || !roomId) {
       throw new UnauthorizedError()
     }
-    const audioId = v4()
-    const presignedUrl = await this.presignedUrlProvider.getUploadUrl(
-      audioId,
-      mimeType,
-    )
-
     const entity = this.metadataRepository.create({
       id: audioId,
       userId: endUserId,
@@ -102,7 +129,7 @@ export class AudioResolver {
     })
     await this.metadataRepository.save(entity)
 
-    return presignedUrl
+    return true
   }
 
   @Authorized()

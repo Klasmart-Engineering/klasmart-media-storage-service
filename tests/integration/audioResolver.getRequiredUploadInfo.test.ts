@@ -1,3 +1,4 @@
+import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
 import { Connection } from 'typeorm'
 import {
@@ -9,10 +10,15 @@ import { Headers } from 'node-mocks-http'
 import { Config } from '../../src/helpers/config'
 import { connectToMetadataDatabase } from '../../src/helpers/connectToMetadataDatabase'
 import createAudioServer from '../../src/helpers/createAudioServer'
-import { generateToken } from '../utils/generateToken'
+import {
+  generateAuthenticationToken,
+  generateLiveAuthorizationToken,
+} from '../utils/generateToken'
 import { box } from 'tweetnacl'
+import { v4 } from 'uuid'
+import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadInfo'
 
-describe('audioResolver.getOrganizationPublicKey', () => {
+describe('audioResolver.getRequiredUploadInfo', () => {
   let connection: Connection
   let testClient: ApolloServerTestClient
   let s3Client: AWS.S3
@@ -34,20 +40,18 @@ describe('audioResolver.getOrganizationPublicKey', () => {
     await connection?.synchronize(true)
   })
 
-  context('organization key pair does not exist in storage', () => {
-    it('returns expected organization public key', async () => {
+  context('server key pair does not exist in storage', () => {
+    it('returns expected upload info', async () => {
       // Arrange
-      const userId = 'user1'
-      const organizationId = 'org1'
+      const endUserId = v4()
+      const roomId = 'room1'
+      const mimeType = 'audio/webm'
 
       // Act
-      const result = await getOrganizationPublicKeyQuery(
-        testClient,
-        organizationId,
-        {
-          authorization: generateToken(userId),
-        },
-      )
+      const result = await getRequiredUploadInfoQuery(testClient, mimeType, {
+        authentication: generateAuthenticationToken(endUserId),
+        'live-authorization': generateLiveAuthorizationToken(endUserId, roomId),
+      })
 
       // Assert
       expect(result).to.not.be.null
@@ -61,62 +65,68 @@ describe('audioResolver.getOrganizationPublicKey', () => {
       expect(publicKeyBucket.Contents).to.not.be.undefined
       expect(publicKeyBucket.Contents).to.have.lengthOf(1)
       expect(publicKeyBucket.Contents?.[0].Size).to.equal(32)
-      expect(publicKeyBucket.Contents?.[0].Key).to.equal(organizationId)
+      expect(publicKeyBucket.Contents?.[0].Key).to.equal(roomId)
       const privateKeyBucket = await s3Client
         .listObjectsV2({ Bucket: Config.getPrivateKeyBucket() })
         .promise()
       expect(privateKeyBucket.Contents).to.not.be.undefined
       expect(privateKeyBucket.Contents).to.have.lengthOf(1)
       expect(privateKeyBucket.Contents?.[0].Size).to.equal(32)
-      expect(privateKeyBucket.Contents?.[0].Key).to.equal(organizationId)
+      expect(privateKeyBucket.Contents?.[0].Key).to.equal(roomId)
     })
   })
 
-  context('organization key pair exists in storage', () => {
-    it('returns expected organization public key', async () => {
+  context('server key pair exists in storage', () => {
+    it('returns expected upload info', async () => {
       // Arrange
-      const userId = 'user1'
-      const organizationId = 'org1'
-      const orgKeyPair = box.keyPair()
+      const endUserId = v4()
+      const roomId = 'room1'
+      const mimeType = 'audio/webm'
+      const serverKeyPair = box.keyPair()
+
       await s3Client
         .putObject({
           Bucket: Config.getPublicKeyBucket(),
-          Key: organizationId,
-          Body: Buffer.from(orgKeyPair.publicKey),
+          Key: roomId,
+          Body: Buffer.from(serverKeyPair.publicKey),
         })
         .promise()
       await s3Client
         .putObject({
           Bucket: Config.getPrivateKeyBucket(),
-          Key: organizationId,
-          Body: Buffer.from(orgKeyPair.secretKey),
+          Key: roomId,
+          Body: Buffer.from(serverKeyPair.secretKey),
         })
         .promise()
 
       // Act
-      const result = await getOrganizationPublicKeyQuery(
-        testClient,
-        organizationId,
-        {
-          authorization: generateToken(userId),
-        },
-      )
+      const result = await getRequiredUploadInfoQuery(testClient, mimeType, {
+        authentication: generateAuthenticationToken(endUserId),
+        'live-authorization': generateLiveAuthorizationToken(endUserId, roomId),
+      })
 
       // Assert
-      const expected = Buffer.from(orgKeyPair.publicKey).toString('base64')
-      expect(result).to.equal(expected)
+      expect(result).to.not.be.null
+      expect(result).to.not.be.undefined
+      expect(result.audioId).to.not.be.null
+      expect(result.audioId).to.not.be.undefined
+      expect(result.presignedUrl).to.not.be.null
+      expect(result.presignedUrl).to.not.be.undefined
+      expect(result.base64ServerPublicKey).to.equal(
+        Buffer.from(serverKeyPair.publicKey).toString('base64'),
+      )
 
       // Ensure same keys are still saved in their respective buckets.
       const publicKeyBucket = await s3Client
         .listObjectsV2({ Bucket: Config.getPublicKeyBucket() })
         .promise()
       const publicKeyInBucket = await s3Client
-        .getObject({ Bucket: Config.getPublicKeyBucket(), Key: organizationId })
+        .getObject({ Bucket: Config.getPublicKeyBucket(), Key: roomId })
         .promise()
       expect(publicKeyBucket.Contents).to.not.be.undefined
       expect(publicKeyBucket.Contents).to.have.lengthOf(1)
       expect(publicKeyInBucket.Body).to.deep.equal(
-        Buffer.from(orgKeyPair.publicKey),
+        Buffer.from(serverKeyPair.publicKey),
       )
       const privateKeyBucket = await s3Client
         .listObjectsV2({ Bucket: Config.getPrivateKeyBucket() })
@@ -124,29 +134,30 @@ describe('audioResolver.getOrganizationPublicKey', () => {
       const privateKeyInBucket = await s3Client
         .getObject({
           Bucket: Config.getPrivateKeyBucket(),
-          Key: organizationId,
+          Key: roomId,
         })
         .promise()
       expect(privateKeyBucket.Contents).to.not.be.undefined
       expect(privateKeyBucket.Contents).to.have.lengthOf(1)
       expect(privateKeyInBucket.Body).to.deep.equal(
-        Buffer.from(orgKeyPair.secretKey),
+        Buffer.from(serverKeyPair.secretKey),
       )
     })
   })
 })
 
-export const GET_ORGANIZATION_PUBLIC_KEY = `
-query getOrganizationPublicKey(
-    $organizationId: String!) {
-  getOrganizationPublicKey(
-    organizationId: $organizationId,
-  )
+export const GET_REQUIRED_UPLOAD_INFO = `
+query getRequiredUploadInfo($mimeType: String!) {
+  getRequiredUploadInfo(mimeType: $mimeType) {
+    audioId
+    base64ServerPublicKey
+    presignedUrl
+  }
 }
 `
-async function getOrganizationPublicKeyQuery(
+async function getRequiredUploadInfoQuery(
   testClient: ApolloServerTestClient,
-  organizationId: string,
+  mimeType: string,
   headers?: Headers,
   logErrors = true,
 ) {
@@ -154,13 +165,13 @@ async function getOrganizationPublicKeyQuery(
 
   const operation = () =>
     query({
-      query: GET_ORGANIZATION_PUBLIC_KEY,
+      query: GET_REQUIRED_UPLOAD_INFO,
       variables: {
-        organizationId,
+        mimeType,
       },
       headers,
     })
 
   const res = await gqlTry(operation, logErrors)
-  return res.data?.getOrganizationPublicKey as string
+  return res.data?.getRequiredUploadInfo as RequiredUploadInfo
 }

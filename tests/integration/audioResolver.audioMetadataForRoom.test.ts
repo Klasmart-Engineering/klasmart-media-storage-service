@@ -1,3 +1,4 @@
+import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
 import { Connection } from 'typeorm'
 import {
@@ -10,7 +11,11 @@ import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
 import { Config } from '../../src/helpers/config'
 import { connectToMetadataDatabase } from '../../src/helpers/connectToMetadataDatabase'
 import createAudioServer from '../../src/helpers/createAudioServer'
-import { generateToken } from '../utils/generateToken'
+import {
+  generateAuthenticationToken,
+  generateLiveAuthorizationToken,
+} from '../utils/generateToken'
+import { v4 } from 'uuid'
 
 describe('audioResolver', () => {
   let connection: Connection
@@ -37,11 +42,12 @@ describe('audioResolver', () => {
       it('returns empty list', async () => {
         // Arrange
         const roomId = 'room1'
-        const userId = 'user1'
+        const userId = v4()
 
         // Act
         const result = await audioMetadataForRoomQuery(testClient, roomId, {
-          authorization: generateToken(userId),
+          authentication: generateAuthenticationToken(userId),
+          'live-authorization': generateLiveAuthorizationToken(userId, roomId),
         })
 
         // Assert
@@ -54,12 +60,13 @@ describe('audioResolver', () => {
       it('returns empty list', async () => {
         // Arrange
         const roomId = 'room1'
-        const userId = 'user1'
+        const userId = v4()
         await new AudioMetadataBuilder().buildAndPersist()
 
         // Act
         const result = await audioMetadataForRoomQuery(testClient, roomId, {
-          authorization: generateToken(userId),
+          authentication: generateAuthenticationToken(userId),
+          'live-authorization': generateLiveAuthorizationToken(userId, roomId),
         })
 
         // Assert
@@ -72,7 +79,7 @@ describe('audioResolver', () => {
       it('returns list containing 1 item', async () => {
         // Arrange
         const roomId = 'room1'
-        const userId = 'user1'
+        const userId = v4()
         await new AudioMetadataBuilder().buildAndPersist()
         const matchingAudioMetadata = await new AudioMetadataBuilder()
           .withRoomId(roomId)
@@ -80,7 +87,8 @@ describe('audioResolver', () => {
 
         // Act
         const result = await audioMetadataForRoomQuery(testClient, roomId, {
-          authorization: generateToken(userId),
+          authentication: generateAuthenticationToken(userId),
+          'live-authorization': generateLiveAuthorizationToken(userId, roomId),
         })
 
         // Assert

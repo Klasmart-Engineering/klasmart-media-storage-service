@@ -1,3 +1,4 @@
+import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
 import { Connection } from 'typeorm'
 import {
@@ -7,7 +8,6 @@ import {
 import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
 import AWS from 'aws-sdk'
-import '../utils/globalIntegrationTestHooks'
 import { Config } from '../../src/helpers/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
 import { connectToMetadataDatabase } from '../../src/helpers/connectToMetadataDatabase'
@@ -18,7 +18,10 @@ import { box } from 'tweetnacl'
 import { encrypt } from '../../src/helpers/tweetnaclUtil'
 import { v4 } from 'uuid'
 import { RequiredDownloadInfo } from '../../src/graphqlResultTypes/requiredDownloadInfo'
-import { generateToken } from '../utils/generateToken'
+import {
+  generateAuthenticationToken,
+  generateLiveAuthorizationToken,
+} from '../utils/generateToken'
 
 describe('audioResolver.getRequiredDownloadInfo', () => {
   let connection: Connection
@@ -48,17 +51,17 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
     () => {
       it('returns expected presignedUrl and base64SymmetricKey', async () => {
         // Arrange
-        const userId = 'user1'
+        const endUserId = v4()
+        const roomId = 'room1'
         const audioId = v4()
-        const organizationId = 'org1'
 
-        const orgKeyPair = box.keyPair()
+        const serverKeyPair = box.keyPair()
         const userKeyPair = box.keyPair()
         const base64UserPublicKey = Buffer.from(userKeyPair.publicKey).toString(
           'base64',
         )
         const userSharedKey = box.before(
-          orgKeyPair.publicKey,
+          serverKeyPair.publicKey,
           userKeyPair.secretKey,
         )
         const symmetricKey = box.keyPair().secretKey
@@ -67,31 +70,34 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
         await s3Client
           .putObject({
             Bucket: Config.getPublicKeyBucket(),
-            Key: organizationId,
-            Body: Buffer.from(orgKeyPair.publicKey),
+            Key: roomId,
+            Body: Buffer.from(serverKeyPair.publicKey),
           })
           .promise()
         await s3Client
           .putObject({
             Bucket: Config.getPrivateKeyBucket(),
-            Key: organizationId,
-            Body: Buffer.from(orgKeyPair.secretKey),
+            Key: roomId,
+            Body: Buffer.from(serverKeyPair.secretKey),
           })
           .promise()
         const metadata = await new AudioMetadataBuilder()
           .withId(audioId)
+          .withUserId(endUserId)
+          .withRoomId(roomId)
           .withBase64UserPublicKey(base64UserPublicKey)
           .withBase64EncryptedSymmetricKey(base64EncryptedSymmetricKey)
           .buildAndPersist()
         await connection.getRepository(AudioMetadata).save(metadata)
 
         // Act
-        const result = await getRequiredDownloadInfoQuery(
-          testClient,
-          audioId,
-          organizationId,
-          { authorization: generateToken(userId) },
-        )
+        const result = await getRequiredDownloadInfoQuery(testClient, audioId, {
+          authentication: generateAuthenticationToken(endUserId),
+          'live-authorization': generateLiveAuthorizationToken(
+            endUserId,
+            roomId,
+          ),
+        })
 
         // Assert
         expect(result).to.not.be.null
@@ -108,12 +114,9 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
 })
 
 const GET_REQUIRED_DOWNLOAD_INFO = `
-query getRequiredDownloadInfo(
-    $audioId: String!
-    $organizationId: String!,) {
+query getRequiredDownloadInfo($audioId: String!) {
   getRequiredDownloadInfo(
     audioId: $audioId,
-    organizationId: $organizationId,
   ) {
     base64SymmetricKey
     presignedUrl
@@ -123,7 +126,6 @@ query getRequiredDownloadInfo(
 async function getRequiredDownloadInfoQuery(
   testClient: ApolloServerTestClient,
   audioId: string,
-  organizationId: string,
   headers?: Headers,
   logErrors = true,
 ) {
@@ -134,7 +136,6 @@ async function getRequiredDownloadInfoQuery(
       query: GET_REQUIRED_DOWNLOAD_INFO,
       variables: {
         audioId,
-        organizationId,
       },
       headers,
     })
