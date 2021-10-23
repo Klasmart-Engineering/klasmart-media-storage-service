@@ -1,30 +1,44 @@
 import { Field, ID, ObjectType } from 'type-graphql'
 import { Column, Entity, PrimaryColumn } from 'typeorm'
 
-@ObjectType()
+@ObjectType({
+  description: 'The metadata associated with an uploaded audio file.',
+})
 @Entity()
 export class AudioMetadata {
-  @Field(() => ID)
+  @Field(() => ID, { description: 'The UUID that identifies this audio file.' })
   @PrimaryColumn('uuid')
   public readonly id!: string
 
-  @Field(() => String)
+  @Field(() => String, {
+    description: 'The ID of the Live room where this audio was recorded.',
+  })
   @Column({ type: 'varchar' })
   public readonly roomId!: string
 
-  @Field(() => ID)
+  @Field(() => ID, {
+    description: 'The ID of the user that recorded this audio.',
+  })
   @Column({ type: 'uuid' })
   public readonly userId!: string
 
-  @Field(() => String)
+  @Field(() => String, {
+    description: 'The ID of the H5P activity where this audio was recorded.',
+  })
   @Column({ type: 'varchar' })
   public readonly h5pId!: string
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String, {
+    nullable: true,
+    description:
+      'The ID of the H5P sub-activity where this audio was recorded.',
+  })
   @Column({ type: 'varchar', nullable: true })
   public readonly h5pSubId!: string | null
 
-  @Field()
+  @Field({
+    description: 'The date/time when this audio was recorded.', //TODO: Timezone???
+  })
   @Column()
   public readonly creationDate!: Date
 

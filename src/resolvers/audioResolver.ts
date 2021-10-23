@@ -28,7 +28,10 @@ export class AudioResolver {
   ) {}
 
   @Authorized()
-  @Query(() => [AudioMetadata])
+  @Query(() => [AudioMetadata], {
+    description:
+      'Returns a list of audio metadata matching the provided arguments.',
+  })
   public async audioMetadata(
     @Arg('userId') userId: string,
     @Arg('roomId') roomId: string,
@@ -49,11 +52,16 @@ export class AudioResolver {
   }
 
   @Authorized()
-  @Query(() => RequiredUploadInfo)
+  @Query(() => RequiredUploadInfo, {
+    description:
+      'Returns a generated audio ID, a base64 encoded server public key\n' +
+      'and a presigned upload URL. This should be called *before* setMetadata.',
+  })
   public async getRequiredUploadInfo(
     @Arg('mimeType') mimeType: string,
     @RoomID() roomId?: string,
   ): Promise<RequiredUploadInfo> {
+    // TODO: Should we allow audio to be uploaded if it wasn't done in Live?
     if (!roomId) {
       throw new UnauthorizedError()
     }
@@ -70,7 +78,12 @@ export class AudioResolver {
   }
 
   @Authorized()
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, {
+    description:
+      'Stores the audio metadata in persistent storage.\n' +
+      'This should be called *after* getRequiredUploadInfo and *after* successfully\n' +
+      'uploading the audio file.',
+  })
   public async setMetadata(
     @Arg('audioId') audioId: string,
     @Arg('base64UserPublicKey') base64UserPublicKey: string,
@@ -81,6 +94,7 @@ export class AudioResolver {
     @UserID() endUserId?: string,
     @RoomID() roomId?: string,
   ): Promise<boolean> {
+    // TODO: Should we allow audio to be uploaded if it wasn't done in Live?
     if (!endUserId || !roomId) {
       throw new UnauthorizedError()
     }
@@ -101,7 +115,12 @@ export class AudioResolver {
   }
 
   @Authorized()
-  @Query(() => RequiredDownloadInfo)
+  @Query(() => RequiredDownloadInfo, {
+    description:
+      'Returns a presigned download URL and the base64 encoded symmetric key\n' +
+      'that was used to encrypt the audio file when it was uploaded.\n' +
+      'The symmetric key can be used to decrypt the audio file after downloading.',
+  })
   public async getRequiredDownloadInfo(
     @Arg('audioId') audioId: string,
     @UserID() endUserId?: string,

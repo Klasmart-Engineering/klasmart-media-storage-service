@@ -3,12 +3,24 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+"""The metadata associated with an uploaded audio file."""
 type AudioMetadata {
+  """The date/time when this audio was recorded."""
   creationDate: DateTime!
+
+  """The ID of the H5P activity where this audio was recorded."""
   h5pId: String!
+
+  """The ID of the H5P sub-activity where this audio was recorded."""
   h5pSubId: String
+
+  """The UUID that identifies this audio file."""
   id: ID!
+
+  """The ID of the Live room where this audio was recorded."""
   roomId: String!
+
+  """The ID of the user that recorded this audio."""
   userId: ID!
 }
 
@@ -18,22 +30,51 @@ The javascript `Date` as string. Type represents date and time as the ISO Date s
 scalar DateTime
 
 type Mutation {
+  """
+  Stores the audio metadata in persistent storage.
+  This should be called *after* getRequiredUploadInfo and *after* successfully
+  uploading the audio file.
+  """
   setMetadata(audioId: String!, base64EncryptedSymmetricKey: String!, base64UserPublicKey: String!, h5pId: String!, h5pSubId: String, mimeType: String!): Boolean!
 }
 
 type Query {
+  """Returns a list of audio metadata matching the provided arguments."""
   audioMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [AudioMetadata!]!
+
+  """
+  Returns a presigned download URL and the base64 encoded symmetric key
+  that was used to encrypt the audio file when it was uploaded.
+  The symmetric key can be used to decrypt the audio file after downloading.
+  """
   getRequiredDownloadInfo(audioId: String!): RequiredDownloadInfo!
+
+  """
+  Returns a generated audio ID, a base64 encoded server public key
+  and a presigned upload URL. This should be called *before* setMetadata.
+  """
   getRequiredUploadInfo(mimeType: String!): RequiredUploadInfo!
 }
 
+"""The info required to download an audio file."""
 type RequiredDownloadInfo {
+  """
+  A base64 encoded symmetric key. Used to decrypt the same audio file that it encrypted.
+  """
   base64SymmetricKey: String!
+
+  """A presigned download URL."""
   presignedUrl: String!
 }
 
+"""The info required to upload an audio file."""
 type RequiredUploadInfo {
+  """A generated UUID to identify an audio file."""
   audioId: String!
+
+  """A base64 encoded server public key."""
   base64ServerPublicKey: String!
+
+  """A presigned upload URL."""
   presignedUrl: String!
 }
