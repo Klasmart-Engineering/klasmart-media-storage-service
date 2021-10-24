@@ -1,6 +1,8 @@
 # KidsLoop Audio Service
 
-[![codecov](https://codecov.io/bb/calmisland/kidsloop-audio-service/branch/master/graph/badge.svg?token=6DVLZB3HSY)](https://codecov.io/bb/calmisland/kidsloop-audio-service) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+[![codecov](https://codecov.io/bb/calmisland/kidsloop-audio-service/branch/main/graph/badge.svg?token=6DVLZB3HSY)](https://codecov.io/bb/calmisland/kidsloop-audio-service)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 [TOC]
 
@@ -141,7 +143,7 @@ The Bitbucket pipeline builds and pushes a new docker image to the _Kidsloop Inf
 
 ### Alpha
 
-1. Head over to the [ECS service](https://ap-northeast-2.console.aws.amazon.com/ecs/home?region=ap-northeast-2#/clusters/kidsloop-alpha/services/kidsloop-alpha-audio/details) in the _Kidsloop Dev_ account.
+1. Head over to the [ECS service](https://ap-northeast-2.console.aws.amazon.com/ecs/home?region=ap-northeast-2#/clusters/kidsloop-alpha/services/kl-alpha-h5p-audio/details) in the _Kidsloop Dev_ account.
 2. Click "Update" in the top right corner.
 3. Check the "Force new deployment" checkbox.
 4. Click "Skip to review"
@@ -155,12 +157,12 @@ Make a PR in the [kidsloop-infra](https://bitbucket.org/calmisland/kidsloop-infr
 
 - Account name: Kidsloop Dev
 - Cluster: kidsloop-alpha
-- Service: kidsloop-alpha-audio
+- Service: kl-alpha-h5p-audio
 - Region: ap-northeast-2
 
 _Where can I find the environment variable values for the alpha environment?_
 
-Once you're granted access to the above account, head to the [service task list](https://ap-northeast-2.console.aws.amazon.com/ecs/home?region=ap-northeast-2#/clusters/kidsloop-alpha/services/kidsloop-alpha-audio/tasks), and you'll find the values specified in the latest task definition.
+Once you're granted access to the above account, head to the [service task list](https://ap-northeast-2.console.aws.amazon.com/ecs/home?region=ap-northeast-2#/clusters/kidsloop-alpha/services/kl-alpha-h5p-audio/tasks), and you'll find the values specified in the latest task definition.
 
 ---
 
