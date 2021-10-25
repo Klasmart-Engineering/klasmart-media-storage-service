@@ -23,7 +23,7 @@ export default async function createAudioServer(): Promise<{
     throw Error('The DOMAIN environment variable was not set')
   }
   const domainRegex = new RegExp(
-    `^https://(.*\\.)?${escapeRegex(domain)}(:\\d{1,5})?$`,
+    `^http(s)?://(.*\\.)?${escapeRegex(domain)}(:\\d{1,5})?$`,
   )
 
   const corsOptions: CorsOptions = {

@@ -48,6 +48,9 @@ export class AudioMetadata {
   @Column({ type: 'timestamptz' })
   public readonly creationDate!: Date
 
+  @Field({
+    description: 'The mime type of the recorded audio.',
+  })
   @Column()
   public readonly mimeType!: string
 
