@@ -116,7 +116,6 @@ describe('AudioResolver', () => {
 
         const mimeType = 'audio/webm'
         const roomId = 'room1'
-        const audioId = v4()
         const presignedUrl = 'my-upload-url'
         const serverPublicKey = Uint8Array.from([1, 2, 3])
         const base64ServerPublicKey =
@@ -147,7 +146,7 @@ describe('AudioResolver', () => {
     })
 
     context('roomId is undefined', () => {
-      it('throws UnauthorizedError', async () => {
+      it('returns expected upload info', async () => {
         // Arrange
         const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
         const keyPairProvider = Substitute.for<KeyPairProvider>()
@@ -156,6 +155,17 @@ describe('AudioResolver', () => {
 
         const mimeType = 'audio/webm'
         const roomId: string | undefined = undefined
+        const presignedUrl = 'my-upload-url'
+        const serverPublicKey = Uint8Array.from([1, 2, 3])
+        const base64ServerPublicKey =
+          Buffer.from(serverPublicKey).toString('base64')
+
+        presignedUrlProvider
+          .getUploadUrl(Arg.any(), mimeType)
+          .resolves(presignedUrl)
+        keyPairProvider
+          .getPublicKey(AudioResolver.NoRoomIdKeyName)
+          .resolves(serverPublicKey)
 
         const sut = new AudioResolver(
           metadataRepository,
@@ -165,10 +175,14 @@ describe('AudioResolver', () => {
         )
 
         // Act
-        const fn = () => sut.getRequiredUploadInfo(mimeType, roomId)
+        const expected = {
+          presignedUrl,
+          base64ServerPublicKey,
+        }
+        const actual = await sut.getRequiredUploadInfo(mimeType, roomId)
 
         // Assert
-        await expect(fn()).to.be.rejectedWith(UnauthorizedErrorMessage)
+        expect(actual).to.deep.include(expected)
       })
     })
   })
@@ -321,6 +335,7 @@ describe('AudioResolver', () => {
         const mimeType = 'audio/webm'
         const base64UserPublicKey = 'user-public-key'
         const base64EncryptedSymmetricKey = 'symmetric-key'
+        const description = 'some description'
 
         const sut = new AudioResolver(
           metadataRepository,
@@ -338,6 +353,7 @@ describe('AudioResolver', () => {
             mimeType,
             h5pId,
             h5pSubId,
+            description,
             endUserId,
             roomId,
           )
@@ -347,46 +363,46 @@ describe('AudioResolver', () => {
       })
     })
 
-    context('roomId is undefined', () => {
-      it('throws UnauthorizedError', async () => {
-        // Arrange
-        const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
-        const keyPairProvider = Substitute.for<KeyPairProvider>()
-        const decryptionProvider = Substitute.for<IDecryptionProvider>()
-        const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+    it('calls repository.save, and returns true', async () => {
+      // Arrange
+      const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
+      const keyPairProvider = Substitute.for<KeyPairProvider>()
+      const decryptionProvider = Substitute.for<IDecryptionProvider>()
+      const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
 
-        const roomId: string | undefined = undefined
-        const audioId = v4()
-        const endUserId = v4()
-        const h5pId = 'h5p1'
-        const h5pSubId = 'h5pSub1'
-        const mimeType = 'audio/webm'
-        const base64UserPublicKey = 'user-public-key'
-        const base64EncryptedSymmetricKey = 'symmetric-key'
+      const roomId: string | undefined = undefined
+      const audioId = v4()
+      const endUserId = v4()
+      const h5pId = 'h5p1'
+      const h5pSubId = 'h5pSub1'
+      const mimeType = 'audio/webm'
+      const base64UserPublicKey = 'user-public-key'
+      const base64EncryptedSymmetricKey = 'symmetric-key'
+      const description = 'some description'
 
-        const sut = new AudioResolver(
-          metadataRepository,
-          keyPairProvider,
-          decryptionProvider,
-          presignedUrlProvider,
-        )
+      const sut = new AudioResolver(
+        metadataRepository,
+        keyPairProvider,
+        decryptionProvider,
+        presignedUrlProvider,
+      )
 
-        // Act
-        const fn = () =>
-          sut.setMetadata(
-            audioId,
-            base64UserPublicKey,
-            base64EncryptedSymmetricKey,
-            mimeType,
-            h5pId,
-            h5pSubId,
-            endUserId,
-            roomId,
-          )
+      // Act
+      const success = await sut.setMetadata(
+        audioId,
+        base64UserPublicKey,
+        base64EncryptedSymmetricKey,
+        mimeType,
+        h5pId,
+        h5pSubId,
+        description,
+        endUserId,
+        roomId,
+      )
 
-        // Assert
-        await expect(fn()).to.be.rejectedWith(UnauthorizedErrorMessage)
-      })
+      // Assert
+      expect(success).to.be.true
+      metadataRepository.received(1).save(Arg.any())
     })
   })
 })

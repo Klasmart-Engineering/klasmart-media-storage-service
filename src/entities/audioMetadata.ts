@@ -13,8 +13,8 @@ export class AudioMetadata {
   @Field(() => String, {
     description: 'The ID of the Live room where this audio was recorded.',
   })
-  @Column({ type: 'varchar' })
-  public readonly roomId!: string
+  @Column({ type: 'varchar', nullable: true })
+  public readonly roomId!: string | null
 
   @Field(() => ID, {
     description: 'The ID of the user that recorded this audio.',
@@ -36,10 +36,16 @@ export class AudioMetadata {
   @Column({ type: 'varchar', nullable: true })
   public readonly h5pSubId!: string | null
 
-  @Field({
-    description: 'The date/time when this audio was recorded.', //TODO: Timezone???
+  @Field(() => String, {
+    description: 'The description of the audio recording activity.',
   })
-  @Column()
+  @Column({ type: 'varchar' })
+  public readonly description!: string
+
+  @Field({
+    description: 'The date/time when this audio was recorded.',
+  })
+  @Column({ type: 'timestamptz' })
   public readonly creationDate!: Date
 
   @Column()

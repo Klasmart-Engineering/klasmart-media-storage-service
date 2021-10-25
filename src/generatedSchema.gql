@@ -8,6 +8,9 @@ type AudioMetadata {
   """The date/time when this audio was recorded."""
   creationDate: DateTime!
 
+  """The description of the audio recording activity."""
+  description: String!
+
   """The ID of the H5P activity where this audio was recorded."""
   h5pId: String!
 
@@ -35,7 +38,7 @@ type Mutation {
   This should be called *after* getRequiredUploadInfo and *after* successfully
   uploading the audio file.
   """
-  setMetadata(audioId: String!, base64EncryptedSymmetricKey: String!, base64UserPublicKey: String!, h5pId: String!, h5pSubId: String, mimeType: String!): Boolean!
+  setMetadata(audioId: String!, base64EncryptedSymmetricKey: String!, base64UserPublicKey: String!, description: String!, h5pId: String!, h5pSubId: String, mimeType: String!): Boolean!
 }
 
 type Query {

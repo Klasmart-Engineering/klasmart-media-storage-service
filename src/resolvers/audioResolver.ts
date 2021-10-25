@@ -19,6 +19,8 @@ import { RequiredUploadInfo } from '../graphqlResultTypes/requiredUploadInfo'
 
 @Resolver(AudioMetadata)
 export class AudioResolver {
+  public static readonly NoRoomIdKeyName = 'no-room-id'
+
   constructor(
     private readonly metadataRepository: Repository<AudioMetadata>,
     private readonly keyPairProvider: KeyPairProvider,
@@ -63,7 +65,7 @@ export class AudioResolver {
   ): Promise<RequiredUploadInfo> {
     // TODO: Should we allow audio to be uploaded if it wasn't done in Live?
     if (!roomId) {
-      throw new UnauthorizedError()
+      roomId = AudioResolver.NoRoomIdKeyName
     }
     const serverPublicKey = await this.keyPairProvider.getPublicKey(roomId)
     const base64ServerPublicKey =
@@ -91,11 +93,12 @@ export class AudioResolver {
     @Arg('mimeType') mimeType: string,
     @Arg('h5pId') h5pId: string,
     @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
+    @Arg('description') description: string,
     @UserID() endUserId?: string,
     @RoomID() roomId?: string,
   ): Promise<boolean> {
     // TODO: Should we allow audio to be uploaded if it wasn't done in Live?
-    if (!endUserId || !roomId) {
+    if (!endUserId) {
       throw new UnauthorizedError()
     }
     const entity = this.metadataRepository.create({
@@ -108,6 +111,7 @@ export class AudioResolver {
       mimeType,
       h5pId,
       h5pSubId,
+      description,
     })
     await this.metadataRepository.save(entity)
 

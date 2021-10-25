@@ -59,6 +59,7 @@ describe('audioResolver.setMetadata', () => {
         const mimeType = 'audio/webm'
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
+        const description = 'some description'
         const endUserId = v4()
 
         // Act
@@ -70,6 +71,7 @@ describe('audioResolver.setMetadata', () => {
           mimeType,
           h5pId,
           h5pSubId,
+          description,
           {
             authentication: generateAuthenticationToken(endUserId),
             'live-authorization': generateLiveAuthorizationToken(
@@ -112,7 +114,8 @@ mutation setMetadata(
     $base64EncryptedSymmetricKey: String!,
     $mimeType: String!,
     $h5pId: String!,
-    $h5pSubId: String) {
+    $h5pSubId: String,
+    $description: String!) {
   setMetadata(
     audioId: $audioId,
     base64UserPublicKey: $base64UserPublicKey,
@@ -120,6 +123,7 @@ mutation setMetadata(
     mimeType: $mimeType,
     h5pId: $h5pId,
     h5pSubId: $h5pSubId
+    description: $description
   )
 }
 `
@@ -131,6 +135,7 @@ async function setMetadataQuery(
   mimeType: string,
   h5pId: string,
   h5pSubId: string | null,
+  description: string,
   headers?: Headers,
   logErrors = true,
 ) {
@@ -146,6 +151,7 @@ async function setMetadataQuery(
         mimeType,
         h5pId,
         h5pSubId,
+        description,
       },
       headers,
     })
