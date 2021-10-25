@@ -27,7 +27,7 @@ export default async function createAudioServer(): Promise<{
   )
 
   const corsOptions: CorsOptions = {
-    allowedHeaders: ['Authorization', 'Content-Type'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'live-authorization'],
     credentials: true,
     origin: (origin, callback) => {
       try {
