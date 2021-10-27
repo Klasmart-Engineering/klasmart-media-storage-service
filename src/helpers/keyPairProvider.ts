@@ -27,8 +27,16 @@ export class KeyPairProvider {
       const keyPair = this.keyPairFactory()
       publicKey = keyPair.publicKey
       privateKey = keyPair.privateKey
-      await this.publicKeyStorage.saveKey(objectKey, publicKey)
-      await this.privateKeyStorage.saveKey(objectKey, privateKey)
+      try {
+        await this.publicKeyStorage.saveKey(objectKey, publicKey)
+      } catch (e) {
+        throw new Error(`Saving public key to S3 failed: ${e}`)
+      }
+      try {
+        await this.privateKeyStorage.saveKey(objectKey, privateKey)
+      } catch (e) {
+        throw new Error(`Saving private key to S3 failed: ${e}`)
+      }
     }
 
     return { publicKey, privateKey }

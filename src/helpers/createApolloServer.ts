@@ -24,26 +24,37 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
         // Authentication (userId)
         const encodedAuthenticationToken =
           extractHeader(req.headers.authentication) || req.cookies.access
+        if (encodedAuthenticationToken == null) {
+          return { ip }
+        }
         const authenticationToken = await checkAuthenticationToken(
           encodedAuthenticationToken,
         )
         const userId = authenticationToken.id
 
         let roomId: string | undefined
-        try {
-          // Live Authorization (roomId from live)
-          const encodedLiveAuthorizationToken = extractHeader(
-            req.headers['live-authorization'],
-          )
-          const authorizationToken = await checkLiveAuthorizationToken(
+        // Live Authorization (roomId from live)
+        const encodedLiveAuthorizationToken = extractHeader(
+          req.headers['live-authorization'],
+        )
+        if (encodedLiveAuthorizationToken != null) {
+          console.log(
+            'encodedLiveAuthorizationToken:',
             encodedLiveAuthorizationToken,
           )
-          roomId =
-            authorizationToken.userid === userId
-              ? authorizationToken.roomid
-              : undefined
-        } catch (e) {
-          // Don't log anything. Token validation errors just clutter the logs.
+          try {
+            const authorizationToken = await checkLiveAuthorizationToken(
+              encodedLiveAuthorizationToken,
+            )
+            console.log('authorizationToken.userid:', authorizationToken.userid)
+            console.log('authorizationToken.roomid:', authorizationToken.roomid)
+            roomId =
+              authorizationToken.userid === userId
+                ? authorizationToken.roomid
+                : undefined
+          } catch (e) {
+            // Don't log anything. Token validation errors just clutter the logs.
+          }
         }
 
         return {
