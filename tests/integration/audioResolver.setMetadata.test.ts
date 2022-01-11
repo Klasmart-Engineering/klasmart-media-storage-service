@@ -10,10 +10,10 @@ import { Headers } from 'node-mocks-http'
 import { box } from 'tweetnacl'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
 import AWS from 'aws-sdk'
-import { Config } from '../../src/helpers/config'
+import { Config } from '../../src/initialization/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
-import createAudioServer from '../../src/helpers/createAudioServer'
-import { connectToMetadataDatabase } from '../../src/helpers/connectToMetadataDatabase'
+import createAudioServer from '../../src/initialization/createAudioServer'
+import { connectToMetadataDatabase } from '../../src/initialization/connectToMetadataDatabase'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,

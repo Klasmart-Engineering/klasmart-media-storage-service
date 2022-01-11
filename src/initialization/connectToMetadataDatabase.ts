@@ -1,6 +1,6 @@
 import path from 'path'
 import { Connection, ConnectionOptions, createConnection } from 'typeorm'
-import { ConsoleLogger, ILogger } from './logger'
+import { ConsoleLogger, ILogger } from '../helpers/logger'
 
 export function getMetadataDatabaseConnectionOptions(
   url: string,

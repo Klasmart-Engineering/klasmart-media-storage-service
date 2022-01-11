@@ -8,9 +8,9 @@ import {
 import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
 import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
-import { Config } from '../../src/helpers/config'
-import { connectToMetadataDatabase } from '../../src/helpers/connectToMetadataDatabase'
-import createAudioServer from '../../src/helpers/createAudioServer'
+import { Config } from '../../src/initialization/config'
+import { connectToMetadataDatabase } from '../../src/initialization/connectToMetadataDatabase'
+import createAudioServer from '../../src/initialization/createAudioServer'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,

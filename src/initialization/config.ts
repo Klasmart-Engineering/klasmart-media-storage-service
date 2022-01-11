@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk'
-import { throwExpression } from './throwExpression'
+import { throwExpression } from '../helpers/throwExpression'
 
 export class Config {
   public static getS3Client(): AWS.S3 {

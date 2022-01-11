@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk'
-import { Config } from '../../src/helpers/config'
+import { Config } from '../../src/initialization/config'
 
 const removeNulls = <S>(value: S | undefined): value is S => value != null
 

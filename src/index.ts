@@ -1,8 +1,8 @@
 import 'newrelic'
 import 'reflect-metadata'
-import { Config } from './helpers/config'
-import { connectToMetadataDatabase } from './helpers/connectToMetadataDatabase'
-import createAudioServer from './helpers/createAudioServer'
+import { Config } from './initialization/config'
+import { connectToMetadataDatabase } from './initialization/connectToMetadataDatabase'
+import createAudioServer from './initialization/createAudioServer'
 
 async function main() {
   const { app, server } = await createAudioServer()
