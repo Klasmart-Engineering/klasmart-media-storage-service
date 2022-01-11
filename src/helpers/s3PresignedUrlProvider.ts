@@ -1,12 +1,10 @@
 import AWS from 'aws-sdk'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
-import { ConsoleLogger, ILogger } from './logger'
 
 export class S3PresignedUrlProvider implements IPresignedUrlProvider {
   public constructor(
     private readonly bucketName: string,
     private readonly s3Client: AWS.S3,
-    private readonly logger: ILogger = new ConsoleLogger('S3UploadUrlProvider'),
   ) {}
 
   public getUploadUrl(audioId: string, mimeType: string): Promise<string> {

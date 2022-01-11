@@ -6,6 +6,9 @@ import {
   checkAuthenticationToken,
   checkLiveAuthorizationToken,
 } from 'kidsloop-token-validation'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+const log = withLogger('createApolloServer')
 
 export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
@@ -38,7 +41,7 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
           req.headers['live-authorization'],
         )
         if (encodedLiveAuthorizationToken != null) {
-          console.log(
+          log.debug(
             'encodedLiveAuthorizationToken:',
             encodedLiveAuthorizationToken,
           )
@@ -46,8 +49,8 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
             const authorizationToken = await checkLiveAuthorizationToken(
               encodedLiveAuthorizationToken,
             )
-            console.log('authorizationToken.userid:', authorizationToken.userid)
-            console.log('authorizationToken.roomid:', authorizationToken.roomid)
+            log.debug('authorizationToken.userid:', authorizationToken.userid)
+            log.debug('authorizationToken.roomid:', authorizationToken.roomid)
             roomId =
               authorizationToken.userid === userId
                 ? authorizationToken.roomid

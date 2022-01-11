@@ -1,5 +1,9 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+const log = withLogger('Bootstrapper')
+
 export class Bootstrapper {
   public run(): void {
-    console.log('running bootstrapper...')
+    log.info('running bootstrapper...')
   }
 }

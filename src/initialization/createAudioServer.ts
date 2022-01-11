@@ -6,6 +6,9 @@ import { createApolloServer } from './createApolloServer'
 import { Express } from 'express'
 import { ApolloServer } from 'apollo-server-express'
 import { CorsOptions } from 'cors'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+const log = withLogger('createAudioServer')
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
@@ -38,7 +41,8 @@ export default async function createAudioServer(): Promise<{
         const match = origin.match(domainRegex)
         callback(null, Boolean(match))
       } catch (e: any) {
-        console.error(e)
+        const message = e instanceof Error ? e.stack : e
+        log.error(message)
         callback(e)
       }
     },

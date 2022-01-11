@@ -8,7 +8,6 @@ import {
 } from 'type-graphql'
 import { Repository } from 'typeorm'
 import { AudioMetadata } from '../entities/audioMetadata'
-import { ConsoleLogger, ILogger } from '../helpers/logger'
 import { KeyPairProvider } from '../helpers/keyPairProvider'
 import { RoomID, UserID } from '../auth/context'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
@@ -26,7 +25,6 @@ export class AudioResolver {
     private readonly keyPairProvider: KeyPairProvider,
     private readonly decryptionProvider: IDecryptionProvider,
     private readonly presignedUrlProvider: IPresignedUrlProvider,
-    private readonly logger: ILogger = new ConsoleLogger('AudioResolver'),
   ) {}
 
   @Authorized()

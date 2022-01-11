@@ -1,13 +1,14 @@
 import AWS from 'aws-sdk'
 import { PutObjectRequest } from 'aws-sdk/clients/s3'
 import IKeyStorage from '../interfaces/keyStorage'
-import { ConsoleLogger, ILogger } from './logger'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+const log = withLogger('S3KeyStorage')
 
 export class S3KeyStorage implements IKeyStorage {
   public constructor(
     private readonly bucketName: string,
     private readonly s3Client: AWS.S3,
-    private readonly logger: ILogger = new ConsoleLogger('S3KeyStorage'),
   ) {}
 
   public async getKey(objectKey: string): Promise<Uint8Array | undefined> {

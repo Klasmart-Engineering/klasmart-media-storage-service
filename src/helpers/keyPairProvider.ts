@@ -1,13 +1,11 @@
 import IKeyStorage from '../interfaces/keyStorage'
 import { KeyPair } from './keyPair'
-import { ConsoleLogger, ILogger } from './logger'
 
 export class KeyPairProvider {
   public constructor(
     private readonly publicKeyStorage: IKeyStorage,
     private readonly privateKeyStorage: IKeyStorage,
     private readonly keyPairFactory: () => KeyPair,
-    private readonly logger: ILogger = new ConsoleLogger('KeyPairProvider'),
   ) {}
 
   public async getPublicKey(objectKey: string): Promise<Uint8Array> {
