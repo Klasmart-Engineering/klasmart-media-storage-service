@@ -9,6 +9,7 @@ import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
 import IDecryptionProvider from '../../src/interfaces/decryptionProvider'
 import { v4 } from 'uuid'
 import { getSampleEncryptedData } from '../utils/getSampleEncryptionData'
+import { ErrorMessage } from '../../src/helpers/errorMessages'
 
 const UnauthorizedErrorMessage =
   'Access denied! You need to be authorized to perform this action!'
@@ -272,6 +273,132 @@ describe('AudioResolver', () => {
 
         // Assert
         await expect(fn()).to.be.rejectedWith(UnauthorizedErrorMessage)
+      })
+    })
+
+    context('metadata roomId is null', () => {
+      it('throws "no associated room id" error', async () => {
+        // Arrange
+        const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
+        const keyPairProvider = Substitute.for<KeyPairProvider>()
+        const decryptionProvider = Substitute.for<IDecryptionProvider>()
+        const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+
+        const roomId = AudioResolver.NoRoomIdKeyName
+        const dbRoomId = null
+        const endUserId = v4()
+        const audioId = v4()
+        const presignedUrl = 'my-download-url'
+        const {
+          base64EncryptedSymmetricKey,
+          base64SymmetricKey,
+          base64UserPublicKey,
+          serverPrivateKey,
+          symmetricKey,
+          userPublicKey,
+        } = getSampleEncryptedData()
+        const metadata = new AudioMetadataBuilder()
+          .withId(audioId)
+          .withUserId(endUserId)
+          .withRoomId(dbRoomId)
+          .withBase64UserPublicKey(base64UserPublicKey)
+          .withBase64EncryptedSymmetricKey(base64EncryptedSymmetricKey)
+          .build()
+
+        presignedUrlProvider.getDownloadUrl(audioId).resolves(presignedUrl)
+        keyPairProvider.getPrivateKey(roomId).resolves(serverPrivateKey)
+        decryptionProvider
+          .decrypt(
+            // This special comparison is necessary. Without it, Buffer != Uint8Array.
+            Arg.is((x) => Buffer.compare(x, userPublicKey) === 0),
+            serverPrivateKey,
+            base64EncryptedSymmetricKey,
+          )
+          .returns(symmetricKey)
+        metadataRepository
+          .findOne({ id: audioId, userId: endUserId })
+          .resolves(metadata)
+
+        const sut = new AudioResolver(
+          metadataRepository,
+          keyPairProvider,
+          decryptionProvider,
+          presignedUrlProvider,
+        )
+
+        // Act
+        const fn = () => sut.getRequiredDownloadInfo(audioId, endUserId)
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(
+          ErrorMessage.noRoomIdAssociatedWithAudio,
+        )
+      })
+    })
+
+    context('metadata exists for user, but not the end user', () => {
+      it('throws "audio metadata not found" error', async () => {
+        // Arrange
+        const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
+        const keyPairProvider = Substitute.for<KeyPairProvider>()
+        const decryptionProvider = Substitute.for<IDecryptionProvider>()
+        const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+
+        const roomId = 'room1'
+        const endUserId = v4()
+        const idOfUserThatRecordedAudio = v4()
+        const audioId = v4()
+        const presignedUrl = 'my-download-url'
+        const {
+          base64EncryptedSymmetricKey,
+          base64SymmetricKey,
+          base64UserPublicKey,
+          serverPrivateKey,
+          symmetricKey,
+          userPublicKey,
+        } = getSampleEncryptedData()
+        const metadata = new AudioMetadataBuilder()
+          .withId(audioId)
+          .withUserId(idOfUserThatRecordedAudio)
+          .withRoomId(roomId)
+          .withBase64UserPublicKey(base64UserPublicKey)
+          .withBase64EncryptedSymmetricKey(base64EncryptedSymmetricKey)
+          .build()
+
+        presignedUrlProvider.getDownloadUrl(audioId).resolves(presignedUrl)
+        keyPairProvider.getPrivateKey(roomId).resolves(serverPrivateKey)
+        decryptionProvider
+          .decrypt(
+            // This special comparison is necessary. Without it, Buffer != Uint8Array.
+            Arg.is((x) => Buffer.compare(x, userPublicKey) === 0),
+            serverPrivateKey,
+            base64EncryptedSymmetricKey,
+          )
+          .returns(symmetricKey)
+
+        // ******* main difference ******* //
+        metadataRepository
+          .findOne({ id: audioId, userId: endUserId })
+          .resolves(undefined)
+        metadataRepository
+          .findOne({ id: audioId, userId: idOfUserThatRecordedAudio })
+          .resolves(metadata)
+        // ******* main difference ******* //
+
+        const sut = new AudioResolver(
+          metadataRepository,
+          keyPairProvider,
+          decryptionProvider,
+          presignedUrlProvider,
+        )
+
+        // Act
+        const fn = () => sut.getRequiredDownloadInfo(audioId, endUserId)
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(
+          ErrorMessage.audioMetadataNotFound(audioId, endUserId),
+        )
       })
     })
   })

@@ -15,6 +15,7 @@ import { v4 } from 'uuid'
 import { RequiredDownloadInfo } from '../graphqlResultTypes/requiredDownloadInfo'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
 import { RequiredUploadInfo } from '../graphqlResultTypes/requiredUploadInfo'
+import { ErrorMessage } from '../helpers/errorMessages'
 
 @Resolver(AudioMetadata)
 export class AudioResolver {
@@ -136,13 +137,11 @@ export class AudioResolver {
     })
 
     if (!audioMetadata) {
-      throw new Error(
-        `Audio metadata not found for audioId(${audioId}), userId(${endUserId}).`,
-      )
+      throw new Error(ErrorMessage.audioMetadataNotFound(audioId, endUserId))
     }
     const roomId = audioMetadata.roomId
     if (!roomId) {
-      throw new Error('No room ID is associated with the audio file.')
+      throw new Error(ErrorMessage.noRoomIdAssociatedWithAudio)
     }
 
     const userPublicKey = Buffer.from(
