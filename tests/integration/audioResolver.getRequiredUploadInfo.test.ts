@@ -17,6 +17,7 @@ import {
 import { box } from 'tweetnacl'
 import { v4 } from 'uuid'
 import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadInfo'
+import { clearS3Buckets } from '../utils/s3BucketUtil'
 
 describe('audioResolver.getRequiredUploadInfo', () => {
   let connection: Connection
@@ -38,6 +39,7 @@ describe('audioResolver.getRequiredUploadInfo', () => {
 
   beforeEach(async () => {
     await connection?.synchronize(true)
+    await clearS3Buckets(s3Client)
   })
 
   context('server key pair does not exist in storage', () => {

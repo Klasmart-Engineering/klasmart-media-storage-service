@@ -1,4 +1,5 @@
 import IKeyStorage from '../interfaces/keyStorage'
+import { ErrorMessage } from './errorMessages'
 import { KeyPair } from './keyPair'
 
 export class KeyPairProvider {
@@ -28,12 +29,12 @@ export class KeyPairProvider {
       try {
         await this.publicKeyStorage.saveKey(objectKey, publicKey)
       } catch (e) {
-        throw new Error(`Saving public key to S3 failed: ${e}`)
+        throw new Error(ErrorMessage.publicKeySaveFailed(e))
       }
       try {
         await this.privateKeyStorage.saveKey(objectKey, privateKey)
       } catch (e) {
-        throw new Error(`Saving private key to S3 failed: ${e}`)
+        throw new Error(ErrorMessage.privateKeySaveFailed(e))
       }
     }
 

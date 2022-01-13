@@ -20,7 +20,7 @@ export class S3KeyStorage implements IKeyStorage {
       const result = await this.s3Client.getObject(getParams).promise()
       return result.Body as Uint8Array
     } catch (e) {
-      //this.logger.error(e)
+      // Object doesn't exist. Just let it return undefined.
     }
   }
 

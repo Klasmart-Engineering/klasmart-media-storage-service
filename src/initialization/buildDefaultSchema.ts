@@ -30,6 +30,5 @@ class CustomIocContainer {
       }
       return this.audioResolver
     }
-    return new objectType()
   }
 }

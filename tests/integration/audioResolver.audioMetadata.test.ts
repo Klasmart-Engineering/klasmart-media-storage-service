@@ -1,5 +1,5 @@
 import '../utils/globalIntegrationTestHooks'
-import { expect } from 'chai'
+import expect from '../utils/chaiAsPromisedSetup'
 import { Connection } from 'typeorm'
 import {
   ApolloServerTestClient,
@@ -17,6 +17,7 @@ import {
 } from '../utils/generateToken'
 import { v4 } from 'uuid'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
+import { ErrorMessage } from '../../src/helpers/errorMessages'
 
 describe('audioResolver', () => {
   let connection: Connection
@@ -149,6 +150,89 @@ describe('audioResolver', () => {
         ])
       })
     })
+
+    context(
+      '1 database entry which matches provided arguments; authentication token is undefined',
+      () => {
+        it('returns empty list', async () => {
+          // Arrange
+          const roomId = 'room1'
+          const userId = v4()
+          const endUserId = userId
+          const h5pId = 'h5p1'
+          const h5pSubId = 'h5pSub1'
+          const matchingAudioMetadata = await new AudioMetadataBuilder()
+            .withRoomId(roomId)
+            .withUserId(userId)
+            .withH5pId(h5pId)
+            .withH5pSubId(h5pSubId)
+            .buildAndPersist()
+
+          // Act
+          const fn = () =>
+            audioMetadataQuery(testClient, userId, roomId, h5pId, h5pSubId, {
+              authentication: undefined,
+              'live-authorization': generateLiveAuthorizationToken(
+                endUserId,
+                roomId,
+              ),
+            })
+
+          // Assert
+          await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
+        })
+      },
+    )
+
+    context(
+      '1 database entry which matches provided arguments; live authorization header is an array rather than a string',
+      () => {
+        it('returns list containing 1 item', async () => {
+          // Arrange
+          const roomId = 'room1'
+          const userId = v4()
+          const endUserId = userId
+          const h5pId = 'h5p1'
+          const h5pSubId = 'h5pSub1'
+          const matchingAudioMetadata = await new AudioMetadataBuilder()
+            .withRoomId(roomId)
+            .withUserId(userId)
+            .withH5pId(h5pId)
+            .withH5pSubId(h5pSubId)
+            .buildAndPersist()
+
+          // Act
+          const result = await audioMetadataQuery(
+            testClient,
+            userId,
+            roomId,
+            h5pId,
+            h5pSubId,
+            {
+              authentication: generateAuthenticationToken(endUserId),
+              'live-authorization': [
+                generateLiveAuthorizationToken(endUserId, roomId),
+                'some other value',
+              ],
+            },
+          )
+
+          // Assert
+          expect(result).to.not.be.null
+          expect(result).to.not.be.undefined
+          expect(result).to.deep.equal([
+            {
+              id: matchingAudioMetadata.id,
+              userId,
+              roomId,
+              h5pId,
+              h5pSubId,
+              creationDate: matchingAudioMetadata.creationDate.toISOString(),
+            },
+          ])
+        })
+      },
+    )
   })
 })
 
