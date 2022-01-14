@@ -66,8 +66,7 @@ describe('audioResolver', () => {
         )
 
         // Assert
-        expect(result).to.not.be.null
-        expect(result).to.not.be.undefined
+        expect(result).to.deep.equal([])
       })
     })
 
@@ -98,8 +97,7 @@ describe('audioResolver', () => {
         )
 
         // Assert
-        expect(result).to.not.be.null
-        expect(result).to.not.be.undefined
+        expect(result).to.deep.equal([])
       })
     })
 
@@ -136,8 +134,6 @@ describe('audioResolver', () => {
         )
 
         // Assert
-        expect(result).to.not.be.null
-        expect(result).to.not.be.undefined
         expect(result).to.deep.equal([
           {
             id: matchingAudioMetadata.id,
@@ -154,7 +150,7 @@ describe('audioResolver', () => {
     context(
       '1 database entry which matches provided arguments; authentication token is undefined',
       () => {
-        it('returns empty list', async () => {
+        it('throws authentication error', async () => {
           // Arrange
           const roomId = 'room1'
           const userId = v4()
@@ -180,6 +176,51 @@ describe('audioResolver', () => {
 
           // Assert
           await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
+        })
+      },
+    )
+
+    context(
+      '1 database entry which matches provided arguments; live authorization token is undefined',
+      () => {
+        it('returns list containing 1 item', async () => {
+          // Arrange
+          const roomId = 'room1'
+          const userId = v4()
+          const endUserId = userId
+          const h5pId = 'h5p1'
+          const h5pSubId = 'h5pSub1'
+          const matchingAudioMetadata = await new AudioMetadataBuilder()
+            .withRoomId(roomId)
+            .withUserId(userId)
+            .withH5pId(h5pId)
+            .withH5pSubId(h5pSubId)
+            .buildAndPersist()
+
+          // Act
+          const result = await audioMetadataQuery(
+            testClient,
+            userId,
+            roomId,
+            h5pId,
+            h5pSubId,
+            {
+              authentication: generateAuthenticationToken(endUserId),
+              'live-authorization': undefined,
+            },
+          )
+
+          // Assert
+          expect(result).to.deep.equal([
+            {
+              id: matchingAudioMetadata.id,
+              userId,
+              roomId,
+              h5pId,
+              h5pSubId,
+              creationDate: matchingAudioMetadata.creationDate.toISOString(),
+            },
+          ])
         })
       },
     )
@@ -218,8 +259,6 @@ describe('audioResolver', () => {
           )
 
           // Assert
-          expect(result).to.not.be.null
-          expect(result).to.not.be.undefined
           expect(result).to.deep.equal([
             {
               id: matchingAudioMetadata.id,

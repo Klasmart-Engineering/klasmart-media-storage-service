@@ -13,6 +13,10 @@ export class Config {
     })
   }
 
+  public static getCorsDomain(): string {
+    return process.env.DOMAIN ?? throwExpression('DOMAIN must be defined')
+  }
+
   public static getMetadataDatabaseUrl(): string {
     return (
       process.env.METADATA_DATABASE_URL ??

@@ -4,6 +4,10 @@ import { withLogger } from 'kidsloop-nodejs-logger'
 
 const log = withLogger('connectToMetadataDatabase')
 
+export type ConnectionFactory = (
+  options: ConnectionOptions,
+) => Promise<Connection>
+
 export function getMetadataDatabaseConnectionOptions(
   url: string,
 ): ConnectionOptions {
@@ -21,9 +25,10 @@ export function getMetadataDatabaseConnectionOptions(
 export async function connectToMetadataDatabase(
   url: string,
   createIfDoesntExist = true,
+  connectionFactory: ConnectionFactory = createConnection,
 ): Promise<Connection> {
   try {
-    const connection = await createConnection(
+    const connection = await connectionFactory(
       getMetadataDatabaseConnectionOptions(url),
     )
     log.info('🐘 Connected to postgres: Metadata database')
@@ -31,13 +36,13 @@ export async function connectToMetadataDatabase(
   } catch (e: any) {
     if (createIfDoesntExist && e.code === INVALID_CATALOG_NAME) {
       log.info(`${e.message}. Attempting to create now...`)
-      const success = await tryCreateMetadataDatabase(url)
+      const success = await tryCreateMetadataDatabase(url, connectionFactory)
       if (!success) {
         // Another instance already created (or is in the process of creating)
         // the missing database. Let's wait a bit to give it time to finish.
         await delay(1000)
       }
-      return connectToMetadataDatabase(url, false)
+      return connectToMetadataDatabase(url, false, connectionFactory)
     }
     log.error(
       `❌ Failed to connect or initialize postgres: Metadata database: ${e.message}`,
@@ -50,12 +55,18 @@ function delay(ms: number): Promise<boolean> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export async function tryCreateMetadataDatabase(url: string): Promise<boolean> {
+async function tryCreateMetadataDatabase(
+  url: string,
+  connectionFactory: (options: ConnectionOptions) => Promise<Connection>,
+): Promise<boolean> {
   const urlObject = new URL(url)
   // Use substring to omit the leading slash from the name e.g. /audio_db
   const databaseName = urlObject.pathname.substring(1)
   try {
-    const connection = await createBootstrapPostgresConnection(urlObject)
+    const connection = await createBootstrapPostgresConnection(
+      urlObject,
+      connectionFactory,
+    )
     await connection.query(`CREATE DATABASE ${databaseName};`)
     log.info(`database '${databaseName}' created successfully`)
     await connection.close()
@@ -84,10 +95,11 @@ export async function tryCreateMetadataDatabase(url: string): Promise<boolean> {
 
 const createBootstrapPostgresConnection = (
   urlObject: URL,
+  connectionFactory: (options: ConnectionOptions) => Promise<Connection>,
 ): Promise<Connection> => {
   urlObject.pathname = '/postgres'
   const url = urlObject.toString()
-  return createConnection({
+  return connectionFactory({
     type: 'postgres',
     url,
   })
@@ -98,15 +110,15 @@ const createBootstrapPostgresConnection = (
 /**
  * Occurs when attempting to connect to a database that doesn't exist.
  */
-const INVALID_CATALOG_NAME = '3D000'
+export const INVALID_CATALOG_NAME = '3D000'
 
 /**
  * Occurs when attempting to create a database that already exists.
  */
-const DUPLICATE_DATABASE = '42P04'
+export const DUPLICATE_DATABASE = '42P04'
 
 /**
  * Occurs when attempting to create or connect to a database while it's
  * in the middle of being created by another process.
  */
-const UNIQUE_VIOLATION = '23505'
+export const UNIQUE_VIOLATION = '23505'
