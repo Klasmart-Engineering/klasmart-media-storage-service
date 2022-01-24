@@ -6,17 +6,11 @@ definitions:
         POSTGRES_DB: test_audio_db
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: kidsloop
-  caches:
-    nodemodules: ./node_modules
+
   steps:
-    - step: &commitlint-check
-        name: 'Conventional Commits check'
-        image: node:lts
-        script:
-          - /bin/bash commitlint-pipeline-check.sh
     - step: &npm-install-and-test
-        name: 'Install npm dependencies and run tests'
-        image: node:lts
+        name: '⚡ npm install and test'
+        image: node:16
         services:
           - postgres
           - docker
@@ -31,81 +25,81 @@ definitions:
             minio/minio server /data --console-address ":9001"
           - export HUSKY=0
           - npm i
-          - CI=true npm run test:codecov
-        caches:
-          - nodemodules
+          - npm run test:codecov
         artifacts:
           - node_modules/**
-    - step: &slack-notification
-        name: Slack Notification
+        caches:
+          - node
+          - docker
+
+    - step: &commitlint
+        name: '📝 conventional commits check'
+        image: node:16
         script:
-          - pipe: atlassian/slack-notify:1.0.1
+          - /bin/bash commitlint-pipeline-check.sh
+
+    - step: &npm-build
+        name: '⚡ npm build'
+        image: node:16-alpine
+        script:
+          - npm run build
+        artifacts:
+          - dist/**
+
+    - step: &version-bump
+        name: '🏷️ version bump'
+        trigger: 'manual'
+        deployment: release
+        image: node:16
+        artifacts:
+          - version.txt
+        services:
+          - docker
+        script:
+          - npm run release
+          - npm run build
+          - docker build -t $DOCKER_REPO_NAME .
+          - export VERSION_TAG=$(git describe --tags --abbrev=0)
+          - echo $VERSION_TAG > ./version.txt
+          - pipe: atlassian/aws-ecr-push-image:1.5.0
+            variables:
+              AWS_DEFAULT_REGION: eu-west-2
+              IMAGE_NAME: $DOCKER_REPO_NAME
+              TAGS: '$VERSION_TAG alpha'
+          # This step will fail if 'main' branch write permissions isn't set to 'everyone'.
+          - git push origin main
+          - git push origin $VERSION_TAG
+
+    - step: &deploy-to-alpha
+        name: '🔔 deploy to alpha'
+        script:
+          - pipe: atlassian/aws-ecs-deploy:1.6.1
+            variables:
+              # These AWS values are workspace variables for alpha-dev.
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_ALPHA_OLD
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_ALPHA_OLD
+              AWS_DEFAULT_REGION: 'ap-northeast-2'
+              CLUSTER_NAME: 'kidsloop-alpha'
+              SERVICE_NAME: 'kl-alpha-h5p-audio'
+              FORCE_NEW_DEPLOYMENT: 'true'
+              WAIT: 'true'
+          - export VERSION_TAG=$(cat ./version.txt)
+          - pipe: docker://cabauman/slack-notify-commits:0.6.0
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
-              MESSAGE: 'A new build of Audio Service ($BITBUCKET_COMMIT) has been push with the "$BITBUCKET_BRANCH" tag'
-
-  script: &build-and-push-to-aws
-    - pip3 install -U awscli
-
-    - export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_KEY" AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY"
-    - export BRANCH_TAG=$(echo "$BITBUCKET_BRANCH" | sed -E 's/([^0-9a-zA-Z]+)/-/g' | awk '{print tolower($0)}')
-    - export REPO=$DOCKER_REPO_URL/audio-storage # DOCKER_REPO_URL is workspace wide variable
-    - export COMMIT_TAG=$(echo $BITBUCKET_COMMIT | cut -c1-7)
-    - printf '"Git tag":"%s", "Git commit":"%s" "ECR repo":"%s"' $BRANCH_TAG $COMMIT_TAG $REPO
-    - export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $(aws sts assume-role --role-arn arn:aws:iam::942095822719:role/cross_account_role_ecr_push --role-session-name MySessionName --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" --output text))
-    - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $DOCKER_REPO_URL
-
-    - docker build -t audio-storage .
-
-    - docker tag audio-storage:latest $REPO:$BRANCH_TAG
-    - docker tag audio-storage:latest $REPO:$BRANCH_TAG-latest
-    - docker tag audio-storage:latest $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
-    - docker tag audio-storage:latest $REPO:$BRANCH_TAG-$COMMIT_TAG
-
-    - docker push $REPO:$BRANCH_TAG
-    - docker push $REPO:$BRANCH_TAG-latest
-    - docker push $REPO:$BRANCH_TAG-$BITBUCKET_BUILD_NUMBER
-    - docker push $REPO:$BRANCH_TAG-$COMMIT_TAG
+              MESSAGE: '🚀 A new build of Audio service ($VERSION_TAG) has been deployed to *alpha*.'
+              BITBUCKET_USER: $BITBUCKET_PIPELINE_READER_USER
+              BITBUCKET_APP_PASSWORD: $BITBUCKET_PIPELINE_READER_APP_PASSWORD
 
 pipelines:
   pull-requests:
-    '**': # This runs as default for any branch not elsewhere defined.:
+    '**':
       - step: *npm-install-and-test
-      - step: *commitlint-check
+      - step: *commitlint
+      - step: *npm-build
 
   branches:
     main:
       - step: *npm-install-and-test
-    alpha:
-      - step: *npm-install-and-test
-      - step:
-          name: 'Run npm build'
-          image: node:lts
-          script:
-            - npm run build
-          artifacts:
-            - dist/**
-      - step:
-          name: 'Docker build and push to AWS'
-          deployment: alpha
-          image: python:3.9-alpine
-          services:
-            - docker
-          script: *build-and-push-to-aws
-    production:
-      - step: *npm-install-and-test
-      - step:
-          name: 'Run npm build'
-          image: node:lts
-          script:
-            - npm run build
-          artifacts:
-            - dist/**
-      - step:
-          name: 'Docker build and push to AWS'
-          deployment: production
-          image: python:3.9-alpine
-          services:
-            - docker
-          script: *build-and-push-to-aws
-      - step: *slack-notification
+      - step: *version-bump
+      - step: *deploy-to-alpha
