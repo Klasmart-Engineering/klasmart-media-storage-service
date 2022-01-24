@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import '../utils/globalIntegrationTestHooks'
 import { Connection } from 'typeorm'
 import expect from '../utils/chaiAsPromisedSetup'
 import {
@@ -13,12 +12,6 @@ import {
 import Substitute from '@fluffy-spoon/substitute'
 
 describe('audioResolver', () => {
-  let connection: Connection
-
-  afterEach(async () => {
-    await connection?.close()
-  })
-
   context('database does not exist', () => {
     context(
       'createIfDoesntExist=false, error.code=INVALID_CATALOG_NAME',
