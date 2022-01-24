@@ -46,6 +46,15 @@ definitions:
         artifacts:
           - dist/**
 
+    - step: &docker-build-and-run
+        name: '🐳 docker build and run'
+        services:
+          - docker
+          - postgres
+        script:
+          - docker build -t audio-storage .
+          - docker run --add-host host.docker.internal:$BITBUCKET_DOCKER_HOST_INTERNAL -d --name=check-startup --env-file ./.env.ci && sleep 10 && docker top check-startup
+
     - step: &version-bump
         name: '🏷️ version bump'
         trigger: 'manual'
@@ -97,6 +106,7 @@ pipelines:
       - step: *npm-install-and-test
       - step: *commitlint
       - step: *npm-build
+      - step: *docker-build-and-run
 
   branches:
     main:
