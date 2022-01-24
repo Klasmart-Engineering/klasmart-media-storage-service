@@ -52,8 +52,8 @@ definitions:
           - docker
           - postgres
         script:
-          - docker build -t audio-storage .
-          - docker run --add-host host.docker.internal:$BITBUCKET_DOCKER_HOST_INTERNAL -d --name=check-startup --env-file ./.env.ci && sleep 10 && docker top check-startup
+          - docker build -t $DOCKER_REPO_NAME .
+          - docker run --add-host host.docker.internal:$BITBUCKET_DOCKER_HOST_INTERNAL -d --name=check-startup --env-file ./.env.ci $DOCKER_REPO_NAME && sleep 10 && docker top check-startup
 
     - step: &version-bump
         name: '🏷️ version bump'
@@ -67,6 +67,7 @@ definitions:
         script:
           - npm run release
           - npm run build
+          - npm prune --production
           - docker build -t $DOCKER_REPO_NAME .
           - export VERSION_TAG=$(git describe --tags --abbrev=0)
           - echo $VERSION_TAG > ./version.txt
@@ -92,8 +93,9 @@ definitions:
               SERVICE_NAME: 'kl-alpha-h5p-audio'
               FORCE_NEW_DEPLOYMENT: 'true'
               WAIT: 'true'
+        after-script:
           - export VERSION_TAG=$(cat ./version.txt)
-          - pipe: docker://cabauman/slack-notify-commits:0.6.0
+          - pipe: docker://cabauman/slack-notify-commits:0.6.1
             variables:
               WEBHOOK_URL: $SLACK_WEBHOOK
               MESSAGE: '🚀 A new build of Audio service ($VERSION_TAG) has been deployed to *alpha*.'
