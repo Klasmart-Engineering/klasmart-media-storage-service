@@ -10,7 +10,7 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:ci": "npm run test:unit && npm run test:integration-ci",
     "test:coverage": "nyc --reporter=lcov --report-dir ./test-results/coverage.lcov npm run test",
-    "test:codecov": "nyc --reporter=cobertura --report-dir ./test-results/coverage.xml npm run test:ci && codecov",
+    "test:codecov": "nyc --reporter=cobertura --report-dir ./test-results/coverage.xml npm run test:ci && npx codecov",
     "test:unit": "cross-env NEW_RELIC_HOME=tests LOG_STYLE=SILENT mocha --require ts-node/register tests/unit/**/*.test.ts",
     "test:integration": "cross-env DOTENV_CONFIG_PATH=./.env.test mocha --require ts-node/register -r dotenv/config tests/integration/**/*.test.ts --timeout 8000",
     "test:integration-ci": "cross-env DOTENV_CONFIG_PATH=./.env.test.ci mocha --require ts-node/register -r dotenv/config tests/integration/**/*.test.ts --timeout 8000",
