@@ -10,7 +10,11 @@
 
 ## Remarks
 
-Branching model: `feature/fix/etc` -> `main` -> `alpha` -> `production`
+**Branching model**
+
+- `feature/fix/etc` -> `main`
+- The main branch pipeline has a manual _version bump_ step.
+- That step will build/push the docker image to ECR, and deploy to alpha.
 
 📢 Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING.md) 📢
 
@@ -22,7 +26,7 @@ Branching model: `feature/fix/etc` -> `main` -> `alpha` -> `production`
 
 #### Installation
 
-- Node v14.x.x
+- Node v16.x.x
 - Npm v6.x.x
 - Docker (for Postgres and MinIO)
 
@@ -138,20 +142,6 @@ We use the [Bitbucket Deployments](https://bitbucket.org/blog/introducing-bitbuc
 
 - The [Bitbucket view](https://bitbucket.org/calmisland/kidsloop-audio-service/addon/pipelines/deployments) can be accessed from the sidebar via the Deployments tab.
 - The [Jira view](https://calmisland.atlassian.net/jira/software/c/projects/DAS/deployments?startDate=-3m&endDate=now) can be accessed from the sidebar of Jira via the Deployments tab.
-
-The Bitbucket pipeline builds and pushes a new docker image to the _Kidsloop Infra_ account every time code is merged into the `alpha` or `production` branch. Making the actual deployment requires another step, which differs between alpha and production.
-
-### Alpha
-
-1. Head over to the [ECS service](https://ap-northeast-2.console.aws.amazon.com/ecs/home?region=ap-northeast-2#/clusters/kidsloop-alpha/services/kl-alpha-h5p-audio/details) in the _Kidsloop Dev_ account.
-2. Click "Update" in the top right corner.
-3. Check the "Force new deployment" checkbox.
-4. Click "Skip to review"
-5. Click "Update service.
-
-### Production
-
-Make a PR in the [kidsloop-infra](https://bitbucket.org/calmisland/kidsloop-infra/src/main/) repository, using [this merged PR](https://bitbucket.org/calmisland/kidsloop-infra/pull-requests/148) as a template.
 
 ### Alpha info
 
