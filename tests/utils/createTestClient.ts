@@ -8,9 +8,12 @@
  */
 
 import express from 'express'
-import { convertNodeHttpToRequest, runHttpQuery } from 'apollo-server-core'
+import {
+  convertNodeHttpToRequest,
+  GraphQLResponse,
+  runHttpQuery,
+} from 'apollo-server-core'
 import { ApolloServer } from 'apollo-server-express'
-import { GraphQLResponse } from 'apollo-server-types'
 import { print, DocumentNode } from 'graphql'
 import { Express } from 'express'
 import httpMocks, {
