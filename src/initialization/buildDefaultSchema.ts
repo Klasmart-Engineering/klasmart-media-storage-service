@@ -19,7 +19,7 @@ export default function buildDefaultSchema(): Promise<GraphQLSchema> {
   })
 }
 
-class CustomIocContainer {
+export class CustomIocContainer {
   private audioResolver?: AudioResolver
   public constructor(private readonly compositionRoot: CompositionRoot) {}
 
