@@ -1,7 +1,10 @@
 import { ApolloServer, ExpressContext } from 'apollo-server-express'
 import { GraphQLSchema } from 'graphql'
 import { Context } from '../auth/context'
-import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
+import {
+  ApolloServerPluginLandingPageGraphQLPlayground,
+  ApolloServerPluginLandingPageDisabled,
+} from 'apollo-server-core'
 import {
   checkAuthenticationToken,
   checkLiveAuthorizationToken,
@@ -14,11 +17,13 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
   return new ApolloServer({
     schema,
     plugins: [
-      ApolloServerPluginLandingPageGraphQLPlayground({
-        settings: {
-          'request.credentials': 'include',
-        },
-      }),
+      process.env.NODE_ENV === 'production'
+        ? ApolloServerPluginLandingPageDisabled()
+        : ApolloServerPluginLandingPageGraphQLPlayground({
+            settings: {
+              'request.credentials': 'include',
+            },
+          }),
     ],
     introspection: true,
     context: async ({ req }: ExpressContext): Promise<Context | undefined> => {
