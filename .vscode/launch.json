@@ -18,6 +18,26 @@
     {
       "type": "pwa-node",
       "request": "launch",
+      "name": "debugGraphQL.ts",
+      "program": "${workspaceFolder}/scripts/debugGraphQL.ts",
+      "sourceMaps": true,
+      "smartStep": true,
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "debugRest.ts",
+      "program": "${workspaceFolder}/scripts/debugRest.ts",
+      "sourceMaps": true,
+      "smartStep": true,
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
       "name": "Mocha Current File",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [

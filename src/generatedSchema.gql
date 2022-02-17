@@ -53,7 +53,7 @@ type Query {
   that was used to encrypt the audio file when it was uploaded.
   The symmetric key can be used to decrypt the audio file after downloading.
   """
-  getRequiredDownloadInfo(audioId: String!): RequiredDownloadInfo!
+  getRequiredDownloadInfo(audioId: String!, roomId: String!): RequiredDownloadInfo!
 
   """
   Returns a generated audio ID, a base64 encoded server public key

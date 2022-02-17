@@ -1,6 +1,5 @@
 import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { Connection } from 'typeorm'
 import {
   ApolloServerTestClient,
   createTestClient,
@@ -8,8 +7,6 @@ import {
 import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
 import { Config } from '../../src/initialization/config'
-import { connectToMetadataDatabase } from '../../src/initialization/connectToMetadataDatabase'
-import createAudioServer from '../../src/initialization/createAudioServer'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
@@ -18,28 +15,28 @@ import { box } from 'tweetnacl'
 import { v4 } from 'uuid'
 import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadInfo'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
+import { TestCompositionRoot } from './testCompositionRoot'
+import { bootstrapAudioService } from '../../src/initialization/bootstrapper'
 
 describe('audioResolver.getRequiredUploadInfo', () => {
-  let connection: Connection
   let testClient: ApolloServerTestClient
+  let compositionRoot: TestCompositionRoot
   let s3Client: AWS.S3
 
   before(async () => {
-    connection = await connectToMetadataDatabase(
-      Config.getMetadataDatabaseUrl(),
-    )
-    const { app, server } = await createAudioServer()
-    testClient = createTestClient(server, app)
+    compositionRoot = new TestCompositionRoot()
+    const audioService = await bootstrapAudioService(compositionRoot)
+    testClient = createTestClient(audioService.server)
     s3Client = Config.getS3Client()
   })
 
   after(async () => {
-    await connection?.close()
+    await compositionRoot.cleanUp()
   })
 
   beforeEach(async () => {
-    await connection?.synchronize(true)
     await clearS3Buckets(s3Client)
+    await compositionRoot.clearCachedResolvers()
   })
 
   context('server key pair does not exist in storage', () => {
@@ -107,6 +104,7 @@ describe('audioResolver.getRequiredUploadInfo', () => {
         'live-authorization': generateLiveAuthorizationToken(endUserId, roomId),
       })
 
+      // TODO: Separate all these assertions into separate tests.
       // Assert
       expect(result).to.not.be.null
       expect(result).to.not.be.undefined

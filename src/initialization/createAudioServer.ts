@@ -1,23 +1,24 @@
 import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import express from 'express'
-import buildDefaultSchema from './buildDefaultSchema'
 import { createApolloServer } from './createApolloServer'
 import { Express } from 'express'
 import { ApolloServer } from 'apollo-server-express'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { getCorsOptions } from './getCorsOptions'
 import { Config } from './config'
+import { GraphQLSchema } from 'graphql'
 
 export const log = withLogger('createAudioServer')
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
-export default async function createAudioServer(): Promise<{
+export default async function createAudioServer(
+  schema: GraphQLSchema,
+): Promise<{
   app: Express
   server: ApolloServer
 }> {
-  const schema = await buildDefaultSchema()
   const server = createApolloServer(schema)
   await server.start()
 

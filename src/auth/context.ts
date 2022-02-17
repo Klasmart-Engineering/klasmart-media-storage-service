@@ -15,3 +15,9 @@ export function UserID(): ParameterDecorator {
 export function RoomID(): ParameterDecorator {
   return createParamDecorator<Context>(({ context }) => context.roomId)
 }
+
+export function AuthenticationToken(): ParameterDecorator {
+  return createParamDecorator<Context>(
+    ({ context }) => context.authenticationToken,
+  )
+}

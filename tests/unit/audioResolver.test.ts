@@ -10,6 +10,7 @@ import IDecryptionProvider from '../../src/interfaces/decryptionProvider'
 import { v4 } from 'uuid'
 import { getSampleEncryptedData } from '../utils/getSampleEncryptionData'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
+import AuthorizationProvider from '../../src/helpers/authorizationProvider'
 
 const UnauthorizedErrorMessage =
   'Access denied! You need to be authorized to perform this action!'
@@ -23,6 +24,7 @@ describe('AudioResolver', () => {
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
         const roomId = 'room1'
         const userId = v4()
@@ -45,6 +47,7 @@ describe('AudioResolver', () => {
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
@@ -63,7 +66,7 @@ describe('AudioResolver', () => {
     })
 
     context(
-      '1 matching metadata entry exists, but endUserId is different than userId',
+      '1 matching metadata entry exists, but authorizationProvider returns false',
       () => {
         it('throws UnauthorizedError', async () => {
           // Arrange
@@ -71,10 +74,15 @@ describe('AudioResolver', () => {
           const keyPairProvider = Substitute.for<KeyPairProvider>()
           const decryptionProvider = Substitute.for<IDecryptionProvider>()
           const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+          const authorizationProvider = Substitute.for<AuthorizationProvider>()
+
+          // ******* main difference ******* //
+          authorizationProvider.isAuthorized(Arg.all()).resolves(false)
+          // ******* main difference ******* //
 
           const roomId = 'room1'
           const userId = v4()
-          const endUserId = v4()
+          const endUserId = undefined
           const h5pId = 'h5p1'
           const h5pSubId = 'h5pSub1'
           const matchingMetadata = new AudioMetadataBuilder()
@@ -93,6 +101,7 @@ describe('AudioResolver', () => {
             keyPairProvider,
             decryptionProvider,
             presignedUrlProvider,
+            authorizationProvider,
           )
 
           // Act
@@ -114,6 +123,7 @@ describe('AudioResolver', () => {
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
         const mimeType = 'audio/webm'
         const roomId = 'room1'
@@ -132,6 +142,7 @@ describe('AudioResolver', () => {
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
@@ -153,9 +164,12 @@ describe('AudioResolver', () => {
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
         const mimeType = 'audio/webm'
+        // ******* main difference ******* //
         const roomId: string | undefined = undefined
+        // ******* main difference ******* //
         const presignedUrl = 'my-upload-url'
         const serverPublicKey = Uint8Array.from([1, 2, 3])
         const base64ServerPublicKey =
@@ -173,6 +187,7 @@ describe('AudioResolver', () => {
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
@@ -196,8 +211,10 @@ describe('AudioResolver', () => {
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
         const roomId = 'room1'
+        const authenticationToken = 'auth-token'
         const endUserId = v4()
         const audioId = v4()
         const presignedUrl = 'my-download-url'
@@ -227,15 +244,15 @@ describe('AudioResolver', () => {
             base64EncryptedSymmetricKey,
           )
           .returns(symmetricKey)
-        metadataRepository
-          .findOne({ id: audioId, userId: endUserId })
-          .resolves(metadata)
+        metadataRepository.findOne({ id: audioId }).resolves(metadata)
+        authorizationProvider.isAuthorized(Arg.all()).resolves(true)
 
         const sut = new AudioResolver(
           metadataRepository,
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
@@ -243,7 +260,12 @@ describe('AudioResolver', () => {
           presignedUrl,
           base64SymmetricKey,
         }
-        const actual = await sut.getRequiredDownloadInfo(audioId, endUserId)
+        const actual = await sut.getRequiredDownloadInfo(
+          audioId,
+          roomId,
+          endUserId,
+          authenticationToken,
+        )
 
         // Assert
         expect(actual).to.deep.equal(expected)
@@ -257,19 +279,32 @@ describe('AudioResolver', () => {
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
+        const roomId = 'my-room'
+        const authenticationToken = 'auth-token'
         const audioId = v4()
+        // ******* main difference ******* //
         const endUserId: string | undefined = undefined
+        // ******* main difference ******* //
+        authorizationProvider.isAuthorized(Arg.all()).resolves(true)
 
         const sut = new AudioResolver(
           metadataRepository,
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
-        const fn = () => sut.getRequiredDownloadInfo(audioId, endUserId)
+        const fn = () =>
+          sut.getRequiredDownloadInfo(
+            audioId,
+            roomId,
+            endUserId,
+            authenticationToken,
+          )
 
         // Assert
         await expect(fn()).to.be.rejectedWith(UnauthorizedErrorMessage)
@@ -283,9 +318,14 @@ describe('AudioResolver', () => {
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
-        const roomId = AudioResolver.NoRoomIdKeyName
+        const authenticationToken = 'auth-token'
+        const keyPairObjectKey = AudioResolver.NoRoomIdKeyName
+        const roomIdBeingQueried = 'my-room'
+        // ******* main difference ******* //
         const dbRoomId = null
+        // ******* main difference ******* //
         const endUserId = v4()
         const audioId = v4()
         const presignedUrl = 'my-download-url'
@@ -306,7 +346,9 @@ describe('AudioResolver', () => {
           .build()
 
         presignedUrlProvider.getDownloadUrl(audioId).resolves(presignedUrl)
-        keyPairProvider.getPrivateKey(roomId).resolves(serverPrivateKey)
+        keyPairProvider
+          .getPrivateKey(keyPairObjectKey)
+          .resolves(serverPrivateKey)
         decryptionProvider
           .decrypt(
             // This special comparison is necessary. Without it, Buffer != Uint8Array.
@@ -315,85 +357,66 @@ describe('AudioResolver', () => {
             base64EncryptedSymmetricKey,
           )
           .returns(symmetricKey)
-        metadataRepository
-          .findOne({ id: audioId, userId: endUserId })
-          .resolves(metadata)
+        metadataRepository.findOne({ id: audioId }).resolves(metadata)
+        authorizationProvider.isAuthorized(Arg.all()).resolves(true)
 
         const sut = new AudioResolver(
           metadataRepository,
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
-        const fn = () => sut.getRequiredDownloadInfo(audioId, endUserId)
+        const fn = () =>
+          sut.getRequiredDownloadInfo(
+            audioId,
+            roomIdBeingQueried,
+            endUserId,
+            authenticationToken,
+          )
 
         // Assert
-        await expect(fn()).to.be.rejectedWith(
-          ErrorMessage.noRoomIdAssociatedWithAudio,
-        )
+        await expect(fn()).to.be.rejectedWith(ErrorMessage.mismatchingRoomIds)
       })
     })
 
-    context('metadata exists for user, but not the end user', () => {
+    context('metadata does not exist matching audioId', () => {
       it('throws "audio metadata not found" error', async () => {
         // Arrange
         const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
-        const roomId = 'room1'
+        const roomId = 'my-room'
+        const authenticationToken = 'auth-token'
         const endUserId = v4()
-        const idOfUserThatRecordedAudio = v4()
         const audioId = v4()
-        const presignedUrl = 'my-download-url'
-        const {
-          base64EncryptedSymmetricKey,
-          base64SymmetricKey,
-          base64UserPublicKey,
-          serverPrivateKey,
-          symmetricKey,
-          userPublicKey,
-        } = getSampleEncryptedData()
-        const metadata = new AudioMetadataBuilder()
-          .withId(audioId)
-          .withUserId(idOfUserThatRecordedAudio)
-          .withRoomId(roomId)
-          .withBase64UserPublicKey(base64UserPublicKey)
-          .withBase64EncryptedSymmetricKey(base64EncryptedSymmetricKey)
-          .build()
-
-        presignedUrlProvider.getDownloadUrl(audioId).resolves(presignedUrl)
-        keyPairProvider.getPrivateKey(roomId).resolves(serverPrivateKey)
-        decryptionProvider
-          .decrypt(
-            // This special comparison is necessary. Without it, Buffer != Uint8Array.
-            Arg.is((x) => Buffer.compare(x, userPublicKey) === 0),
-            serverPrivateKey,
-            base64EncryptedSymmetricKey,
-          )
-          .returns(symmetricKey)
 
         // ******* main difference ******* //
-        metadataRepository
-          .findOne({ id: audioId, userId: endUserId })
-          .resolves(undefined)
-        metadataRepository
-          .findOne({ id: audioId, userId: idOfUserThatRecordedAudio })
-          .resolves(metadata)
+        metadataRepository.findOne({ id: audioId }).resolves(undefined)
         // ******* main difference ******* //
+        authorizationProvider.isAuthorized(Arg.all()).resolves(true)
 
         const sut = new AudioResolver(
           metadataRepository,
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
-        const fn = () => sut.getRequiredDownloadInfo(audioId, endUserId)
+        const fn = () =>
+          sut.getRequiredDownloadInfo(
+            audioId,
+            roomId,
+            endUserId,
+            authenticationToken,
+          )
 
         // Assert
         await expect(fn()).to.be.rejectedWith(
@@ -411,6 +434,7 @@ describe('AudioResolver', () => {
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
         const roomId = 'room1'
         const audioId = v4()
@@ -426,6 +450,7 @@ describe('AudioResolver', () => {
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
@@ -453,10 +478,13 @@ describe('AudioResolver', () => {
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const decryptionProvider = Substitute.for<IDecryptionProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
         const roomId = 'roomId'
         const audioId = v4()
+        // ******* main difference ******* //
         const endUserId: string | undefined = undefined
+        // ******* main difference ******* //
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
         const mimeType = 'audio/webm'
@@ -469,6 +497,7 @@ describe('AudioResolver', () => {
           keyPairProvider,
           decryptionProvider,
           presignedUrlProvider,
+          authorizationProvider,
         )
 
         // Act
@@ -490,46 +519,52 @@ describe('AudioResolver', () => {
       })
     })
 
-    it('calls repository.save, and returns true', async () => {
-      // Arrange
-      const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
-      const keyPairProvider = Substitute.for<KeyPairProvider>()
-      const decryptionProvider = Substitute.for<IDecryptionProvider>()
-      const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+    context('roomId is undefined', () => {
+      it('calls repository.save, and returns true', async () => {
+        // Arrange
+        const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
+        const keyPairProvider = Substitute.for<KeyPairProvider>()
+        const decryptionProvider = Substitute.for<IDecryptionProvider>()
+        const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
-      const roomId: string | undefined = undefined
-      const audioId = v4()
-      const endUserId = v4()
-      const h5pId = 'h5p1'
-      const h5pSubId = 'h5pSub1'
-      const mimeType = 'audio/webm'
-      const base64UserPublicKey = 'user-public-key'
-      const base64EncryptedSymmetricKey = 'symmetric-key'
-      const description = 'some description'
+        // ******* main difference ******* //
+        const roomId: string | undefined = undefined
+        // ******* main difference ******* //
+        const audioId = v4()
+        const endUserId = v4()
+        const h5pId = 'h5p1'
+        const h5pSubId = 'h5pSub1'
+        const mimeType = 'audio/webm'
+        const base64UserPublicKey = 'user-public-key'
+        const base64EncryptedSymmetricKey = 'symmetric-key'
+        const description = 'some description'
 
-      const sut = new AudioResolver(
-        metadataRepository,
-        keyPairProvider,
-        decryptionProvider,
-        presignedUrlProvider,
-      )
+        const sut = new AudioResolver(
+          metadataRepository,
+          keyPairProvider,
+          decryptionProvider,
+          presignedUrlProvider,
+          authorizationProvider,
+        )
 
-      // Act
-      const success = await sut.setMetadata(
-        audioId,
-        base64UserPublicKey,
-        base64EncryptedSymmetricKey,
-        mimeType,
-        h5pId,
-        h5pSubId,
-        description,
-        endUserId,
-        roomId,
-      )
+        // Act
+        const success = await sut.setMetadata(
+          audioId,
+          base64UserPublicKey,
+          base64EncryptedSymmetricKey,
+          mimeType,
+          h5pId,
+          h5pSubId,
+          description,
+          endUserId,
+          roomId,
+        )
 
-      // Assert
-      expect(success).to.be.true
-      metadataRepository.received(1).save(Arg.any())
+        // Assert
+        expect(success).to.be.true
+        metadataRepository.received(1).save(Arg.any())
+      })
     })
   })
 })

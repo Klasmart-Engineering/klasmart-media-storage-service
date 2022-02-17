@@ -44,4 +44,25 @@ export class Config {
       throwExpression('AUDIO_FILE_BUCKET must be defined')
     )
   }
+
+  static getCmsApiUrl(): string {
+    return (
+      process.env.CMS_API_URL ?? throwExpression('CMS_API_URL must be defined')
+    )
+  }
+
+  static getUserServiceEndpoint(): string {
+    return (
+      process.env.USER_SERVICE_ENDPOINT ??
+      throwExpression('USER_SERVICE_ENDPOINT must be defined')
+    )
+  }
+
+  static getRedisHost(): string | undefined {
+    return process.env.REDIS_HOST
+  }
+
+  static getRedisPort(): number | undefined {
+    return process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : undefined
+  }
 }

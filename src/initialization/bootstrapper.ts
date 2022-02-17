@@ -1,9 +1,11 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import buildDefaultSchema from './buildDefaultSchema'
+import { CompositionRoot } from './compositionRoot'
+import createAudioServer from './createAudioServer'
 
-const log = withLogger('Bootstrapper')
-
-export class Bootstrapper {
-  public run(): void {
-    log.info('running bootstrapper...')
-  }
+export async function bootstrapAudioService(compositionRoot?: CompositionRoot) {
+  compositionRoot ??= new CompositionRoot()
+  await compositionRoot.buildObjectGraph()
+  const schema = await buildDefaultSchema(compositionRoot)
+  const { app, server } = await createAudioServer(schema)
+  return { app, server }
 }

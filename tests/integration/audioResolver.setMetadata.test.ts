@@ -1,6 +1,5 @@
 import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { Connection } from 'typeorm'
 import {
   ApolloServerTestClient,
   createTestClient,
@@ -12,35 +11,34 @@ import { AudioMetadata } from '../../src/entities/audioMetadata'
 import AWS from 'aws-sdk'
 import { Config } from '../../src/initialization/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
-import createAudioServer from '../../src/initialization/createAudioServer'
-import { connectToMetadataDatabase } from '../../src/initialization/connectToMetadataDatabase'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
 } from '../utils/generateToken'
 import { v4 } from 'uuid'
+import { TestCompositionRoot } from './testCompositionRoot'
+import { bootstrapAudioService } from '../../src/initialization/bootstrapper'
+import { getRepository } from 'typeorm'
 
 describe('audioResolver.setMetadata', () => {
-  let connection: Connection
   let testClient: ApolloServerTestClient
+  let compositionRoot: TestCompositionRoot
   let s3Client: AWS.S3
 
   before(async () => {
-    connection = await connectToMetadataDatabase(
-      Config.getMetadataDatabaseUrl(),
-    )
-    const { app, server } = await createAudioServer()
-    testClient = createTestClient(server, app)
+    compositionRoot = new TestCompositionRoot()
+    const audioService = await bootstrapAudioService(compositionRoot)
+    testClient = createTestClient(audioService.server)
     s3Client = Config.getS3Client()
   })
 
   after(async () => {
-    await connection?.close()
+    await compositionRoot.cleanUp()
   })
 
   beforeEach(async () => {
-    await connection?.synchronize(true)
     await clearS3Buckets(s3Client)
+    await compositionRoot.clearCachedResolvers()
   })
 
   context(
@@ -87,9 +85,9 @@ describe('audioResolver.setMetadata', () => {
         expect(success).to.be.true
 
         // Ensure metadata is saved in the database.
-        const count = await connection.getRepository(AudioMetadata).count()
+        const count = await getRepository(AudioMetadata).count()
         expect(count).to.equal(1)
-        const entry = await connection.getRepository(AudioMetadata).findOne({
+        const entry = await getRepository(AudioMetadata).findOne({
           where: {
             id: audioId,
             roomId,

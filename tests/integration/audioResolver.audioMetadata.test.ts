@@ -1,6 +1,5 @@
 import '../utils/globalIntegrationTestHooks'
 import expect from '../utils/chaiAsPromisedSetup'
-import { Connection } from 'typeorm'
 import {
   ApolloServerTestClient,
   createTestClient,
@@ -8,9 +7,6 @@ import {
 import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
 import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
-import { Config } from '../../src/initialization/config'
-import { connectToMetadataDatabase } from '../../src/initialization/connectToMetadataDatabase'
-import createAudioServer from '../../src/initialization/createAudioServer'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
@@ -18,25 +14,27 @@ import {
 import { v4 } from 'uuid'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
+import Substitute from '@fluffy-spoon/substitute'
+import AuthorizationProvider from '../../src/helpers/authorizationProvider'
+import { TestCompositionRoot } from './testCompositionRoot'
+import { bootstrapAudioService } from '../../src/initialization/bootstrapper'
 
 describe('audioResolver', () => {
-  let connection: Connection
   let testClient: ApolloServerTestClient
+  let compositionRoot: TestCompositionRoot
 
   before(async () => {
-    connection = await connectToMetadataDatabase(
-      Config.getMetadataDatabaseUrl(),
-    )
-    const { app, server } = await createAudioServer()
-    testClient = createTestClient(server, app)
+    compositionRoot = new TestCompositionRoot()
+    const audioService = await bootstrapAudioService(compositionRoot)
+    testClient = createTestClient(audioService.server)
   })
 
   after(async () => {
-    await connection?.close()
+    await compositionRoot.cleanUp()
   })
 
   beforeEach(async () => {
-    await connection?.synchronize(true)
+    await compositionRoot.clearCachedResolvers()
   })
 
   describe('audioMetadata', () => {
@@ -48,6 +46,13 @@ describe('audioResolver', () => {
         const endUserId = userId
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
+        const authenticationToken = generateAuthenticationToken(endUserId)
+
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
+        compositionRoot.authorizationProvider = authorizationProvider
+        authorizationProvider
+          .isAuthorized(endUserId, roomId, authenticationToken)
+          .resolves(true)
 
         // Act
         const result = await audioMetadataQuery(
@@ -57,11 +62,7 @@ describe('audioResolver', () => {
           h5pId,
           h5pSubId,
           {
-            authentication: generateAuthenticationToken(endUserId),
-            'live-authorization': generateLiveAuthorizationToken(
-              endUserId,
-              roomId,
-            ),
+            authentication: authenticationToken,
           },
         )
 
@@ -79,6 +80,13 @@ describe('audioResolver', () => {
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
         await new AudioMetadataBuilder().buildAndPersist()
+        const authenticationToken = generateAuthenticationToken(endUserId)
+
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
+        compositionRoot.authorizationProvider = authorizationProvider
+        authorizationProvider
+          .isAuthorized(endUserId, roomId, authenticationToken)
+          .resolves(true)
 
         // Act
         const result = await audioMetadataQuery(
@@ -88,11 +96,7 @@ describe('audioResolver', () => {
           h5pId,
           h5pSubId,
           {
-            authentication: generateAuthenticationToken(endUserId),
-            'live-authorization': generateLiveAuthorizationToken(
-              endUserId,
-              roomId,
-            ),
+            authentication: authenticationToken,
           },
         )
 
@@ -116,6 +120,13 @@ describe('audioResolver', () => {
           .withH5pId(h5pId)
           .withH5pSubId(h5pSubId)
           .buildAndPersist()
+        const authenticationToken = generateAuthenticationToken(endUserId)
+
+        const authorizationProvider = Substitute.for<AuthorizationProvider>()
+        compositionRoot.authorizationProvider = authorizationProvider
+        authorizationProvider
+          .isAuthorized(endUserId, roomId, authenticationToken)
+          .resolves(true)
 
         // Act
         const result = await audioMetadataQuery(
@@ -125,11 +136,7 @@ describe('audioResolver', () => {
           h5pId,
           h5pSubId,
           {
-            authentication: generateAuthenticationToken(endUserId),
-            'live-authorization': generateLiveAuthorizationToken(
-              endUserId,
-              roomId,
-            ),
+            authentication: authenticationToken,
           },
         )
 
@@ -154,7 +161,8 @@ describe('audioResolver', () => {
           // Arrange
           const roomId = 'room1'
           const userId = v4()
-          const endUserId = userId
+          const authenticationToken = undefined
+          const endUserId = undefined
           const h5pId = 'h5p1'
           const h5pSubId = 'h5pSub1'
           const matchingAudioMetadata = await new AudioMetadataBuilder()
@@ -163,112 +171,21 @@ describe('audioResolver', () => {
             .withH5pId(h5pId)
             .withH5pSubId(h5pSubId)
             .buildAndPersist()
+
+          const authorizationProvider = Substitute.for<AuthorizationProvider>()
+          compositionRoot.authorizationProvider = authorizationProvider
+          authorizationProvider
+            .isAuthorized(endUserId, roomId, authenticationToken)
+            .resolves(true)
 
           // Act
           const fn = () =>
             audioMetadataQuery(testClient, userId, roomId, h5pId, h5pSubId, {
-              authentication: undefined,
-              'live-authorization': generateLiveAuthorizationToken(
-                endUserId,
-                roomId,
-              ),
+              authentication: authenticationToken,
             })
 
           // Assert
           await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
-        })
-      },
-    )
-
-    context(
-      '1 database entry which matches provided arguments; live authorization token is undefined',
-      () => {
-        it('returns list containing 1 item', async () => {
-          // Arrange
-          const roomId = 'room1'
-          const userId = v4()
-          const endUserId = userId
-          const h5pId = 'h5p1'
-          const h5pSubId = 'h5pSub1'
-          const matchingAudioMetadata = await new AudioMetadataBuilder()
-            .withRoomId(roomId)
-            .withUserId(userId)
-            .withH5pId(h5pId)
-            .withH5pSubId(h5pSubId)
-            .buildAndPersist()
-
-          // Act
-          const result = await audioMetadataQuery(
-            testClient,
-            userId,
-            roomId,
-            h5pId,
-            h5pSubId,
-            {
-              authentication: generateAuthenticationToken(endUserId),
-              'live-authorization': undefined,
-            },
-          )
-
-          // Assert
-          expect(result).to.deep.equal([
-            {
-              id: matchingAudioMetadata.id,
-              userId,
-              roomId,
-              h5pId,
-              h5pSubId,
-              creationDate: matchingAudioMetadata.creationDate.toISOString(),
-            },
-          ])
-        })
-      },
-    )
-
-    context(
-      '1 database entry which matches provided arguments; live authorization header is an array rather than a string',
-      () => {
-        it('returns list containing 1 item', async () => {
-          // Arrange
-          const roomId = 'room1'
-          const userId = v4()
-          const endUserId = userId
-          const h5pId = 'h5p1'
-          const h5pSubId = 'h5pSub1'
-          const matchingAudioMetadata = await new AudioMetadataBuilder()
-            .withRoomId(roomId)
-            .withUserId(userId)
-            .withH5pId(h5pId)
-            .withH5pSubId(h5pSubId)
-            .buildAndPersist()
-
-          // Act
-          const result = await audioMetadataQuery(
-            testClient,
-            userId,
-            roomId,
-            h5pId,
-            h5pSubId,
-            {
-              authentication: generateAuthenticationToken(endUserId),
-              'live-authorization': [
-                generateLiveAuthorizationToken(endUserId, roomId),
-                'some other value',
-              ],
-            },
-          )
-
-          // Assert
-          expect(result).to.deep.equal([
-            {
-              id: matchingAudioMetadata.id,
-              userId,
-              roomId,
-              h5pId,
-              h5pSubId,
-              creationDate: matchingAudioMetadata.creationDate.toISOString(),
-            },
-          ])
         })
       },
     )

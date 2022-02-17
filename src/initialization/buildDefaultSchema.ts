@@ -5,14 +5,16 @@ import { authChecker } from '../auth/authChecker'
 import { AudioResolver } from '../resolvers/audioResolver'
 import { CompositionRoot } from './compositionRoot'
 
-export default function buildDefaultSchema(): Promise<GraphQLSchema> {
+export default function buildDefaultSchema(
+  compositionRoot = new CompositionRoot(),
+): Promise<GraphQLSchema> {
   return buildSchema({
     resolvers: [
       path.join(__dirname, '../resolvers/**/*.ts'),
       path.join(__dirname, '../resolvers/**/*.js'),
     ],
     authChecker,
-    container: new CustomIocContainer(new CompositionRoot()),
+    container: new CustomIocContainer(compositionRoot),
     emitSchemaFile: {
       path: path.join(__dirname, '../generatedSchema.gql'),
     },
@@ -20,15 +22,11 @@ export default function buildDefaultSchema(): Promise<GraphQLSchema> {
 }
 
 export class CustomIocContainer {
-  private audioResolver?: AudioResolver
   public constructor(private readonly compositionRoot: CompositionRoot) {}
 
-  get(objectType: ClassType): unknown {
+  async get(objectType: ClassType): Promise<unknown> {
     if (objectType === AudioResolver) {
-      if (!this.audioResolver) {
-        this.audioResolver = this.compositionRoot.constructAudioResolver()
-      }
-      return this.audioResolver
+      return await this.compositionRoot.getAudioResolver()
     }
   }
 }

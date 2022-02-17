@@ -127,11 +127,7 @@ export interface ApolloServerTestClient {
  */
 export const createTestClient = (
   server: ApolloServer,
-  app?: Express,
 ): ApolloServerTestClient => {
-  app = app ?? express()
-  server.applyMiddleware({ app })
-
   const test = async ({
     query,
     mutation,

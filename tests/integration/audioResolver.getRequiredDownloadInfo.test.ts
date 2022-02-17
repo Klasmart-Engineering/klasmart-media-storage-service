@@ -1,6 +1,5 @@
 import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { Connection } from 'typeorm'
 import {
   ApolloServerTestClient,
   createTestClient,
@@ -10,40 +9,36 @@ import { Headers } from 'node-mocks-http'
 import AWS from 'aws-sdk'
 import { Config } from '../../src/initialization/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
-import { connectToMetadataDatabase } from '../../src/initialization/connectToMetadataDatabase'
-import createAudioServer from '../../src/initialization/createAudioServer'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
 import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
 import { box } from 'tweetnacl'
 import { encrypt } from '../../src/helpers/tweetnaclUtil'
 import { v4 } from 'uuid'
 import { RequiredDownloadInfo } from '../../src/graphqlResultTypes/requiredDownloadInfo'
-import {
-  generateAuthenticationToken,
-  generateLiveAuthorizationToken,
-} from '../utils/generateToken'
+import { generateAuthenticationToken } from '../utils/generateToken'
+import { TestCompositionRoot } from './testCompositionRoot'
+import { bootstrapAudioService } from '../../src/initialization/bootstrapper'
+import { getRepository } from 'typeorm'
 
 describe('audioResolver.getRequiredDownloadInfo', () => {
-  let connection: Connection
   let testClient: ApolloServerTestClient
+  let compositionRoot: TestCompositionRoot
   let s3Client: AWS.S3
 
   before(async () => {
-    connection = await connectToMetadataDatabase(
-      Config.getMetadataDatabaseUrl(),
-    )
-    const { app, server } = await createAudioServer()
-    testClient = createTestClient(server, app)
+    compositionRoot = new TestCompositionRoot()
+    const audioService = await bootstrapAudioService(compositionRoot)
+    testClient = createTestClient(audioService.server)
     s3Client = Config.getS3Client()
   })
 
   after(async () => {
-    await connection?.close()
+    await compositionRoot.cleanUp()
   })
 
   beforeEach(async () => {
-    await connection?.synchronize(true)
     await clearS3Buckets(s3Client)
+    await compositionRoot.clearCachedResolvers()
   })
 
   context(
@@ -88,16 +83,17 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
           .withBase64UserPublicKey(base64UserPublicKey)
           .withBase64EncryptedSymmetricKey(base64EncryptedSymmetricKey)
           .buildAndPersist()
-        await connection.getRepository(AudioMetadata).save(metadata)
+        await getRepository(AudioMetadata).save(metadata)
 
         // Act
-        const result = await getRequiredDownloadInfoQuery(testClient, audioId, {
-          authentication: generateAuthenticationToken(endUserId),
-          'live-authorization': generateLiveAuthorizationToken(
-            endUserId,
-            roomId,
-          ),
-        })
+        const result = await getRequiredDownloadInfoQuery(
+          testClient,
+          audioId,
+          roomId,
+          {
+            authentication: generateAuthenticationToken(endUserId),
+          },
+        )
 
         // Assert
         expect(result).to.not.be.null
@@ -114,9 +110,10 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
 })
 
 const GET_REQUIRED_DOWNLOAD_INFO = `
-query getRequiredDownloadInfo($audioId: String!) {
+query getRequiredDownloadInfo($audioId: String!, $roomId: String!) {
   getRequiredDownloadInfo(
     audioId: $audioId,
+    roomId: $roomId,
   ) {
     base64SymmetricKey
     presignedUrl
@@ -126,6 +123,7 @@ query getRequiredDownloadInfo($audioId: String!) {
 async function getRequiredDownloadInfoQuery(
   testClient: ApolloServerTestClient,
   audioId: string,
+  roomId: string,
   headers?: Headers,
   logErrors = true,
 ) {
@@ -136,6 +134,7 @@ async function getRequiredDownloadInfoQuery(
       query: GET_REQUIRED_DOWNLOAD_INFO,
       variables: {
         audioId,
+        roomId,
       },
       headers,
     })

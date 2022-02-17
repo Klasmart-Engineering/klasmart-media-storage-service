@@ -9,13 +9,18 @@ import {
 import { Repository } from 'typeorm'
 import { AudioMetadata } from '../entities/audioMetadata'
 import { KeyPairProvider } from '../helpers/keyPairProvider'
-import { RoomID, UserID } from '../auth/context'
+import { AuthenticationToken, RoomID, UserID } from '../auth/context'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import { v4 } from 'uuid'
 import { RequiredDownloadInfo } from '../graphqlResultTypes/requiredDownloadInfo'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
 import { RequiredUploadInfo } from '../graphqlResultTypes/requiredUploadInfo'
 import { ErrorMessage } from '../helpers/errorMessages'
+import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+// TODO: log/logger naming consistency.
+const logger = withLogger('AudioResolver')
 
 @Resolver(AudioMetadata)
 export class AudioResolver {
@@ -26,8 +31,10 @@ export class AudioResolver {
     private readonly keyPairProvider: KeyPairProvider,
     private readonly decryptionProvider: IDecryptionProvider,
     private readonly presignedUrlProvider: IPresignedUrlProvider,
+    private readonly authorizationProvider: IAuthorizationProvider,
   ) {}
 
+  // TODO: Remove Authorized decorators for performance
   @Authorized()
   @Query(() => [AudioMetadata], {
     description:
@@ -40,7 +47,7 @@ export class AudioResolver {
     @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
     @UserID() endUserId?: string,
   ): Promise<AudioMetadata[]> {
-    if (endUserId !== userId) {
+    if (!endUserId) {
       throw new UnauthorizedError()
     }
     const results = await this.metadataRepository.find({
@@ -62,10 +69,10 @@ export class AudioResolver {
     @Arg('mimeType') mimeType: string,
     @RoomID() roomId?: string,
   ): Promise<RequiredUploadInfo> {
-    // TODO: Should we allow audio to be uploaded if it wasn't done in Live?
     if (!roomId) {
       roomId = AudioResolver.NoRoomIdKeyName
     }
+    // Key pair file name is roomId.
     const serverPublicKey = await this.keyPairProvider.getPublicKey(roomId)
     const base64ServerPublicKey =
       Buffer.from(serverPublicKey).toString('base64')
@@ -96,7 +103,6 @@ export class AudioResolver {
     @UserID() endUserId?: string,
     @RoomID() roomId?: string,
   ): Promise<boolean> {
-    // TODO: Should we allow audio to be uploaded if it wasn't done in Live?
     if (!endUserId) {
       throw new UnauthorizedError()
     }
@@ -112,6 +118,7 @@ export class AudioResolver {
       h5pSubId,
       description,
     })
+    // TODO: Optimize.
     await this.metadataRepository.save(entity)
 
     return true
@@ -126,22 +133,33 @@ export class AudioResolver {
   })
   public async getRequiredDownloadInfo(
     @Arg('audioId') audioId: string,
+    @Arg('roomId') roomId: string,
     @UserID() endUserId?: string,
+    @AuthenticationToken() authenticationToken?: string,
   ): Promise<RequiredDownloadInfo> {
-    if (!endUserId) {
+    const isAuthorized = await this.authorizationProvider.isAuthorized(
+      endUserId,
+      roomId,
+      authenticationToken,
+    )
+    if (isAuthorized === false || !endUserId) {
       throw new UnauthorizedError()
     }
     const audioMetadata = await this.metadataRepository.findOne({
       id: audioId,
-      userId: endUserId, // Authorization, only allow access to their own audio.
     })
 
     if (!audioMetadata) {
       throw new Error(ErrorMessage.audioMetadataNotFound(audioId, endUserId))
     }
-    const roomId = audioMetadata.roomId
-    if (!roomId) {
-      throw new Error(ErrorMessage.noRoomIdAssociatedWithAudio)
+    const storedRoomId = audioMetadata.roomId
+    if (roomId !== storedRoomId) {
+      logger.error(
+        `[getRequiredDownloadInfo] audio metadata was found for the provided audio ID, ` +
+          `but the metadata room ID doesn't match the provided room ID.\n` +
+          `endUserId: ${endUserId}, audioId: ${audioId}, metadata.roomId: ${storedRoomId}, roomId: ${roomId}`,
+      )
+      throw new Error(ErrorMessage.mismatchingRoomIds)
     }
 
     const userPublicKey = Buffer.from(

@@ -12,10 +12,10 @@ describe('CustomIocContainer.get', () => {
       const sut = new CustomIocContainer(compositionRoot)
 
       const audioResolver = Substitute.for<AudioResolver>()
-      compositionRoot.constructAudioResolver().returns(audioResolver)
+      compositionRoot.getAudioResolver().resolves(audioResolver)
 
       // Act
-      const actual = sut.get(AudioResolver)
+      const actual = await sut.get(AudioResolver)
 
       // Assert
       expect(actual).to.equal(audioResolver)
@@ -29,10 +29,10 @@ describe('CustomIocContainer.get', () => {
       const sut = new CustomIocContainer(compositionRoot)
 
       const audioResolver = Substitute.for<AudioResolver>()
-      compositionRoot.constructAudioResolver().returns(audioResolver)
+      compositionRoot.getAudioResolver().resolves(audioResolver)
 
       // Act
-      const actual = sut.get(CompositionRoot)
+      const actual = await sut.get(CompositionRoot)
 
       // Assert
       expect(actual).to.be.undefined

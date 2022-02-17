@@ -53,7 +53,12 @@ definitions:
           - postgres
         script:
           - docker build -t $DOCKER_REPO_NAME .
-          - docker run --add-host host.docker.internal:$BITBUCKET_DOCKER_HOST_INTERNAL -d --name=check-startup --env-file ./.env.ci $DOCKER_REPO_NAME && sleep 10 && docker top check-startup
+          - >
+            docker run --add-host host.docker.internal:$BITBUCKET_DOCKER_HOST_INTERNAL \
+              -d \
+              --name=check-startup \
+              --env-file ./.env.ci \
+              $DOCKER_REPO_NAME && sleep 8 && docker logs check-startup && docker top check-startup
 
     - step: &version-bump
         name: '🏷️ version bump'
