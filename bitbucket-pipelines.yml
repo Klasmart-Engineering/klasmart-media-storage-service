@@ -79,6 +79,8 @@ definitions:
           - pipe: atlassian/aws-ecr-push-image:1.5.0
             variables:
               AWS_DEFAULT_REGION: eu-west-2
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY
               IMAGE_NAME: $DOCKER_REPO_NAME
               TAGS: '$VERSION_TAG alpha'
           # This step will fail if 'main' branch write permissions isn't set to 'everyone'.
