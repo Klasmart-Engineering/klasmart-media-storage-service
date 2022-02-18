@@ -3,7 +3,7 @@ import { withLogger } from 'kidsloop-nodejs-logger'
 
 const logger = withLogger('PermissionApi')
 
-const PERMISSION_ID = 'can_listen_to_audio'
+const PERMISSION_ID = 'view_completed_assessments_414'
 
 export class PermissionApi {
   constructor(private readonly client: GraphQLClient) {}
