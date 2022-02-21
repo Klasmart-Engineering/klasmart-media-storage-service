@@ -37,12 +37,12 @@ export class PermissionApi {
               `have permission to access it. endUserId: ${endUserId}; classId: ${classId};`,
           )
         } else {
-          errorText = JSON.stringify(error.response)
+          errorText = JSON.stringify(error.response.errors)
         }
       } else if (error instanceof Error) {
-        errorText = JSON.stringify(error)
+        errorText = error.message
       } else {
-        errorText = error
+        errorText = JSON.stringify(error)
       }
       if (errorText) {
         logger.error(
@@ -73,11 +73,11 @@ export class PermissionApi {
     } catch (error) {
       let errorText: unknown
       if (error instanceof ClientError) {
-        errorText = JSON.stringify(error.response)
+        errorText = JSON.stringify(error.response.errors)
       } else if (error instanceof Error) {
-        errorText = JSON.stringify(error)
+        errorText = error.message
       } else {
-        errorText = error
+        errorText = JSON.stringify(error)
       }
       logger.error(
         `[hasSchoolOrOrganizationPermission] school permission check:\n${errorText}`,
