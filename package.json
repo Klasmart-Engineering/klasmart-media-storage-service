@@ -1,6 +1,6 @@
 {
   "name": "kidsloop-audio-service",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A service for uploading and downloading audio files.",
   "main": "index.js",
   "scripts": {

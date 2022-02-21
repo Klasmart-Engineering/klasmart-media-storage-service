@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.2..v0.1.1) (2022-02-21)
+
+
+### Features
+
+* turn off introspection in production ([f15803e](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/f15803eb4ec83a2b3e6d8f74776df5f3554f03e6))
+
+
+### Bug Fixes
+
+* wrong graphql return type (permission api) ([406307b](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/406307bd48d825fc37f62731d478a7f337627f0d))
+
+
+### Performance
+
+* enable TypeGraphQL "simpleResolvers" ([0af29c3](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/0af29c3967ebee24c6c649828a02c579065e4651))
+
 ### [0.1.1](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.1..v0.1.0) (2022-02-18)
 
 
