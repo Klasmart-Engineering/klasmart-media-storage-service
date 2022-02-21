@@ -14,6 +14,7 @@ describe('permissionApi', () => {
     context('organization permission check returns true', () => {
       it('returns true', async () => {
         // Arrange
+        const endUserId = 'my-user'
         const roomId = 'my-room'
         const classId = 'my-class'
         const authenticationToken = 'auth-token'
@@ -21,7 +22,7 @@ describe('permissionApi', () => {
         const sut = new PermissionApi(graphQLClient)
 
         const orgPermissionResponse: OrgPermissionResponse = {
-          myUser: { hasPermissionsInOrganization: { allowed: true } },
+          myUser: { hasPermissionsInOrganization: [{ allowed: true }] },
         }
         graphQLClient.request(Arg.all()).resolves(orgPermissionResponse)
 
@@ -29,6 +30,7 @@ describe('permissionApi', () => {
         const actual = await sut.hasSchoolOrOrganizationPermission(
           roomId,
           classId,
+          endUserId,
           authenticationToken,
         )
 
@@ -42,6 +44,7 @@ describe('permissionApi', () => {
       () => {
         it('returns true', async () => {
           // Arrange
+          const endUserId = 'my-user'
           const roomId = 'my-room'
           const classId = 'my-class'
           const schoolId = 'my-school'
@@ -50,7 +53,7 @@ describe('permissionApi', () => {
           const sut = new PermissionApi(graphQLClient)
 
           const orgPermissionResponse: OrgPermissionResponse = {
-            myUser: { hasPermissionsInOrganization: { allowed: false } },
+            myUser: { hasPermissionsInOrganization: [{ allowed: false }] },
             classNode: {
               schoolsConnection: { edges: [{ node: { id: schoolId } }] },
             },
@@ -60,7 +63,7 @@ describe('permissionApi', () => {
             .resolves(orgPermissionResponse)
 
           const schoolPermissionResponse: SchoolPermissionResponse = {
-            myUser: { hasPermissionsInSchool: { allowed: true } },
+            myUser: { hasPermissionsInSchool: [{ allowed: true }] },
           }
           graphQLClient
             .request(GET_HAS_SCHOOL_PERMISSION, Arg.any(), Arg.any())
@@ -70,6 +73,7 @@ describe('permissionApi', () => {
           const actual = await sut.hasSchoolOrOrganizationPermission(
             roomId,
             classId,
+            endUserId,
             authenticationToken,
           )
 
@@ -84,6 +88,7 @@ describe('permissionApi', () => {
       () => {
         it('returns false', async () => {
           // Arrange
+          const endUserId = 'my-user'
           const roomId = 'my-room'
           const classId = 'my-class'
           const schoolId = 'my-school'
@@ -92,7 +97,7 @@ describe('permissionApi', () => {
           const sut = new PermissionApi(graphQLClient)
 
           const orgPermissionResponse: OrgPermissionResponse = {
-            myUser: { hasPermissionsInOrganization: { allowed: false } },
+            myUser: { hasPermissionsInOrganization: [{ allowed: false }] },
             classNode: {
               schoolsConnection: { edges: [{ node: { id: schoolId } }] },
             },
@@ -102,7 +107,7 @@ describe('permissionApi', () => {
             .resolves(orgPermissionResponse)
 
           const schoolPermissionResponse: SchoolPermissionResponse = {
-            myUser: { hasPermissionsInSchool: { allowed: false } },
+            myUser: { hasPermissionsInSchool: [{ allowed: false }] },
           }
           graphQLClient
             .request(GET_HAS_SCHOOL_PERMISSION, Arg.any(), Arg.any())
@@ -112,6 +117,7 @@ describe('permissionApi', () => {
           const actual = await sut.hasSchoolOrOrganizationPermission(
             roomId,
             classId,
+            endUserId,
             authenticationToken,
           )
 
@@ -127,6 +133,7 @@ describe('permissionApi', () => {
       () => {
         it('returns false', async () => {
           // Arrange
+          const endUserId = 'my-user'
           const roomId = 'my-room'
           const classId = 'my-class'
           const authenticationToken = 'auth-token'
@@ -134,7 +141,7 @@ describe('permissionApi', () => {
           const sut = new PermissionApi(graphQLClient)
 
           const orgPermissionResponse: OrgPermissionResponse = {
-            myUser: { hasPermissionsInOrganization: { allowed: false } },
+            myUser: { hasPermissionsInOrganization: [{ allowed: false }] },
             classNode: {
               // ******* main difference ******* //
               schoolsConnection: { edges: [] },
@@ -149,6 +156,7 @@ describe('permissionApi', () => {
           const actual = await sut.hasSchoolOrOrganizationPermission(
             roomId,
             classId,
+            endUserId,
             authenticationToken,
           )
 

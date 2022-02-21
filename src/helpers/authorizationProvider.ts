@@ -49,6 +49,7 @@ export default class AuthorizationProvider implements IAuthorizationProvider {
       await this.permissionApi.hasSchoolOrOrganizationPermission(
         roomInfo.organizationId,
         roomInfo.classId,
+        endUserId,
         authenticationToken,
       )
     if (hasSchoolOrOrganizationPermission) {

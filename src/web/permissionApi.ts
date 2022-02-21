@@ -11,6 +11,7 @@ export class PermissionApi {
   public async hasSchoolOrOrganizationPermission(
     organizationId: string,
     classId: string,
+    endUserId: string,
     authenticationToken: string,
   ): Promise<boolean> {
     const requestHeaders = {
@@ -25,25 +26,34 @@ export class PermissionApi {
         requestHeaders,
       )
     } catch (error) {
+      let errorText: unknown
       if (error instanceof ClientError) {
-        logger.error(
-          `[hasSchoolOrOrganizationPermission] organization permission check:\n` +
-            JSON.stringify(error.response, null, 2),
-        )
+        // classNode throws a "doesn't exist" error if the end user doesn't have permission
+        // to access a given class. In that case, the orgPermissionResponse can still succeed.
         orgPermissionResponse = error.response.data as OrgPermissionResponse
+        if (orgPermissionResponse?.myUser) {
+          logger.debug(
+            `[hasSchoolOrOrganizationPermission] class either doesn't exist or user doesn't ` +
+              `have permission to access it. endUserId: ${endUserId}; classId: ${classId};`,
+          )
+        } else {
+          errorText = JSON.stringify(error.response)
+        }
       } else if (error instanceof Error) {
-        logger.error(
-          `[hasSchoolOrOrganizationPermission] organization permission check:\n` +
-            JSON.stringify(error, null, 2),
-        )
+        errorText = JSON.stringify(error)
       } else {
+        errorText = error
+      }
+      if (errorText) {
         logger.error(
-          `[hasSchoolOrOrganizationPermission] organization permission check:\n${error}`,
+          `[hasSchoolOrOrganizationPermission] organization permission check:\n${errorText}`,
         )
       }
     }
 
-    if (orgPermissionResponse?.myUser?.hasPermissionsInOrganization?.allowed) {
+    if (
+      orgPermissionResponse?.myUser?.hasPermissionsInOrganization?.[0].allowed
+    ) {
       return true
     }
 
@@ -61,25 +71,22 @@ export class PermissionApi {
           requestHeaders,
         )
     } catch (error) {
+      let errorText: unknown
       if (error instanceof ClientError) {
-        logger.error(
-          `[hasSchoolOrOrganizationPermission] school permission check:\n` +
-            JSON.stringify(error.response, null, 2),
-        )
+        errorText = JSON.stringify(error.response)
       } else if (error instanceof Error) {
-        logger.error(
-          `[hasSchoolOrOrganizationPermission] school permission check:\n` +
-            JSON.stringify(error, null, 2),
-        )
+        errorText = JSON.stringify(error)
       } else {
-        logger.error(
-          `[hasSchoolOrOrganizationPermission] school permission check:\n${error}`,
-        )
+        errorText = error
       }
+      logger.error(
+        `[hasSchoolOrOrganizationPermission] school permission check:\n${errorText}`,
+      )
     }
 
     return (
-      schoolPermissionResponse?.myUser?.hasPermissionsInSchool?.allowed ?? false
+      schoolPermissionResponse?.myUser?.hasPermissionsInSchool?.[0]?.allowed ??
+      false
     )
   }
 }
@@ -147,13 +154,13 @@ export const GET_HAS_SCHOOL_PERMISSION = gql`
 
 export interface SchoolPermissionResponse {
   myUser: {
-    hasPermissionsInSchool?: { allowed?: boolean }
+    hasPermissionsInSchool?: { allowed?: boolean }[]
   }
 }
 
 export interface OrgPermissionResponse {
   myUser?: {
-    hasPermissionsInOrganization?: { allowed?: boolean }
+    hasPermissionsInOrganization?: { allowed?: boolean }[]
   }
   classNode?: SchoolFromClassResult
 }
