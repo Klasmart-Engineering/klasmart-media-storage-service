@@ -25,7 +25,6 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
             },
           }),
     ],
-    introspection: true,
     context: async ({ req }: ExpressContext): Promise<Context | undefined> => {
       try {
         const ip = (req.headers['x-forwarded-for'] || req.ip) as string
