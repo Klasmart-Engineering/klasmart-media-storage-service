@@ -34,7 +34,6 @@ export class AudioResolver {
     private readonly authorizationProvider: IAuthorizationProvider,
   ) {}
 
-  // TODO: Remove Authorized decorators for performance
   @Authorized()
   @Query(() => [AudioMetadata], {
     description:

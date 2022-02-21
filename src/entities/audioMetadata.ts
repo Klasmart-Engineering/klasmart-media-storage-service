@@ -2,6 +2,7 @@ import { Field, ID, ObjectType } from 'type-graphql'
 import { Column, Entity, PrimaryColumn } from 'typeorm'
 
 @ObjectType({
+  simpleResolvers: true,
   description: 'The metadata associated with an uploaded audio file.',
 })
 @Entity()

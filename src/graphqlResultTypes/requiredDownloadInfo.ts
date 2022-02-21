@@ -1,6 +1,9 @@
 import { Field, ObjectType } from 'type-graphql'
 
-@ObjectType({ description: 'The info required to download an audio file.' })
+@ObjectType({
+  simpleResolvers: true,
+  description: 'The info required to download an audio file.',
+})
 export class RequiredDownloadInfo {
   @Field({
     description:
