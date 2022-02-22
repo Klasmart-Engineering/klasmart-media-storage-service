@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.3..v0.1.2) (2022-02-22)
+
+
+### Performance
+
+* **db:** use simple insert query instead of save ([dcbffe0](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/dcbffe014e0082236d2f72cf2f25c57389785ed9))
+
+
+### Refactor
+
+* improve permission api error logging ([8eb03c0](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/8eb03c08cf65709c53b173f61720bebe30e06f6f))
+* logger naming consistency ([1fe6e2a](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/1fe6e2afd17cdf25aeafb19896bed8eaaf215c52))
+* organize providers into folder ([dd710e1](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/dd710e1dcef460a448a8d66299831f0fc40ed821))
+
 ### [0.1.2](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.2..v0.1.1) (2022-02-21)
 
 
