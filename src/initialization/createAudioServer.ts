@@ -9,7 +9,7 @@ import { getCorsOptions } from './getCorsOptions'
 import { Config } from './config'
 import { GraphQLSchema } from 'graphql'
 
-export const log = withLogger('createAudioServer')
+const logger = withLogger('createAudioServer')
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 

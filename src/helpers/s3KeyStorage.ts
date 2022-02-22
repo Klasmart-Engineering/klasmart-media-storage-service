@@ -3,7 +3,7 @@ import { PutObjectRequest } from 'aws-sdk/clients/s3'
 import IKeyStorage from '../interfaces/keyStorage'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
-const log = withLogger('S3KeyStorage')
+const logger = withLogger('S3KeyStorage')
 
 export class S3KeyStorage implements IKeyStorage {
   public constructor(

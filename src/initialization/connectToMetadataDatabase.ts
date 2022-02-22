@@ -2,7 +2,7 @@ import path from 'path'
 import { Connection, ConnectionOptions, createConnection } from 'typeorm'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
-const log = withLogger('connectToMetadataDatabase')
+const logger = withLogger('connectToMetadataDatabase')
 
 export type ConnectionFactory = (
   options: ConnectionOptions,
@@ -31,11 +31,11 @@ export async function connectToMetadataDatabase(
     const connection = await connectionFactory(
       getMetadataDatabaseConnectionOptions(url),
     )
-    log.info('🐘 Connected to postgres: Metadata database')
+    logger.info('🐘 Connected to postgres: Metadata database')
     return connection
   } catch (e: any) {
     if (createIfDoesntExist && e.code === INVALID_CATALOG_NAME) {
-      log.info(`${e.message}. Attempting to create now...`)
+      logger.info(`${e.message}. Attempting to create now...`)
       const success = await tryCreateMetadataDatabase(url, connectionFactory)
       if (!success) {
         // Another instance already created (or is in the process of creating)
@@ -44,7 +44,7 @@ export async function connectToMetadataDatabase(
       }
       return connectToMetadataDatabase(url, false, connectionFactory)
     }
-    log.error(
+    logger.error(
       `❌ Failed to connect or initialize postgres: Metadata database: ${e.message}`,
     )
     throw e
@@ -68,7 +68,7 @@ async function tryCreateMetadataDatabase(
       connectionFactory,
     )
     await connection.query(`CREATE DATABASE ${databaseName};`)
-    log.info(`database '${databaseName}' created successfully`)
+    logger.info(`database '${databaseName}' created successfully`)
     await connection.close()
     return true
   } catch (e: any) {
@@ -76,7 +76,7 @@ async function tryCreateMetadataDatabase(
     // this service is deployed in a new environment because all instances will try
     // to create the missing database at the same time, but only one will succeed.
     if (e.code === UNIQUE_VIOLATION || e.code === DUPLICATE_DATABASE) {
-      log.info(
+      logger.info(
         `Failed to create '${databaseName}' database (expected error): ${e.message}`,
       )
     } else if (e.code === INVALID_CATALOG_NAME) {

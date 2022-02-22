@@ -19,7 +19,6 @@ import { ErrorMessage } from '../helpers/errorMessages'
 import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
-// TODO: log/logger naming consistency.
 const logger = withLogger('AudioResolver')
 
 @Resolver(AudioMetadata)
