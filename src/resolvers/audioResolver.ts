@@ -116,8 +116,7 @@ export class AudioResolver {
       h5pSubId,
       description,
     })
-    // TODO: Optimize.
-    await this.metadataRepository.save(entity)
+    await this.metadataRepository.insert(entity)
 
     return true
   }

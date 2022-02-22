@@ -428,7 +428,7 @@ describe('AudioResolver', () => {
 
   describe('setMetadata', () => {
     context('valid arguments provided', () => {
-      it('calls repository.save, and returns true', async () => {
+      it('calls repository.insert, and returns true', async () => {
         // Arrange
         const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
         const keyPairProvider = Substitute.for<KeyPairProvider>()
@@ -467,7 +467,7 @@ describe('AudioResolver', () => {
 
         // Assert
         expect(success).to.be.true
-        metadataRepository.received(1).save(Arg.any())
+        metadataRepository.received(1).insert(Arg.any())
       })
     })
 
@@ -520,7 +520,7 @@ describe('AudioResolver', () => {
     })
 
     context('roomId is undefined', () => {
-      it('calls repository.save, and returns true', async () => {
+      it('calls repository.insert, and returns true', async () => {
         // Arrange
         const metadataRepository = Substitute.for<Repository<AudioMetadata>>()
         const keyPairProvider = Substitute.for<KeyPairProvider>()
@@ -563,7 +563,7 @@ describe('AudioResolver', () => {
 
         // Assert
         expect(success).to.be.true
-        metadataRepository.received(1).save(Arg.any())
+        metadataRepository.received(1).insert(Arg.any())
       })
     })
   })
