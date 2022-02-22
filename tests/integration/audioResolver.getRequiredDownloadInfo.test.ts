@@ -36,15 +36,16 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
     await compositionRoot.cleanUp()
   })
 
-  beforeEach(async () => {
-    await clearS3Buckets(s3Client)
-    await compositionRoot.clearCachedResolvers()
-  })
-
   context(
     '1 audio file in storage, 1 key pair in storage, 1 metadata entry in the database',
     () => {
-      it('returns expected presignedUrl and base64SymmetricKey', async () => {
+      let result: RequiredDownloadInfo
+
+      before(async () => {
+        // Clean slate
+        await clearS3Buckets(s3Client)
+        await compositionRoot.clearCachedResolvers()
+
         // Arrange
         const endUserId = v4()
         const roomId = 'room1'
@@ -86,7 +87,7 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
         await getRepository(AudioMetadata).save(metadata)
 
         // Act
-        const result = await getRequiredDownloadInfoQuery(
+        result = await getRequiredDownloadInfoQuery(
           testClient,
           audioId,
           roomId,
@@ -94,15 +95,19 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
             authentication: generateAuthenticationToken(endUserId),
           },
         )
+      })
 
-        // Assert
-        expect(result).to.not.be.null
-        expect(result).to.not.be.undefined
-        expect(result.presignedUrl).to.not.be.null
-        expect(result.presignedUrl).to.not.be.undefined
+      it('result is not nullish', () => {
+        expect(result == null).to.be.false
+      })
+
+      it('result.presignedUrl is not nullish or empty', () => {
+        expect(result.presignedUrl == null).to.be.false
         expect(result.presignedUrl).to.not.be.empty
-        expect(result.base64SymmetricKey).to.not.be.null
-        expect(result.base64SymmetricKey).to.not.be.undefined
+      })
+
+      it('result.base64SymmetricKey is not nullish or empty', async () => {
+        expect(result.base64SymmetricKey == null).to.be.false
         expect(result.base64SymmetricKey).to.not.be.empty
       })
     },

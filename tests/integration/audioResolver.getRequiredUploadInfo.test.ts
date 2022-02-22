@@ -34,41 +34,54 @@ describe('audioResolver.getRequiredUploadInfo', () => {
     await compositionRoot.cleanUp()
   })
 
-  beforeEach(async () => {
-    await clearS3Buckets(s3Client)
-    await compositionRoot.clearCachedResolvers()
-  })
-
   context('server key pair does not exist in storage', () => {
-    it('returns expected upload info', async () => {
+    let result: RequiredUploadInfo
+    const roomId = 'room1'
+
+    before(async () => {
+      // Clean slate
+      await clearS3Buckets(s3Client)
+      await compositionRoot.clearCachedResolvers()
+
       // Arrange
       const endUserId = v4()
       const roomId = 'room1'
       const mimeType = 'audio/webm'
 
       // Act
-      const result = await getRequiredUploadInfoQuery(testClient, mimeType, {
+      result = await getRequiredUploadInfoQuery(testClient, mimeType, {
         authentication: generateAuthenticationToken(endUserId),
         'live-authorization': generateLiveAuthorizationToken(endUserId, roomId),
       })
+    })
 
-      // Assert
-      expect(result).to.not.be.null
-      expect(result).to.not.be.undefined
-      expect(result).to.not.be.empty
+    it('result is not nullish', () => {
+      expect(result == null).to.be.false
+    })
 
-      // Ensure keys are saved in their respective buckets.
+    it('result.audioId is not nullish', () => {
+      expect(result.audioId == null).to.be.false
+    })
+
+    it('result.presignedUrl is not nullish', () => {
+      expect(result.presignedUrl == null).to.be.false
+    })
+
+    it('server public key is saved in S3 bucket', async () => {
       const publicKeyBucket = await s3Client
         .listObjectsV2({ Bucket: Config.getPublicKeyBucket() })
         .promise()
-      expect(publicKeyBucket.Contents).to.not.be.undefined
+      expect(publicKeyBucket.Contents == null).to.be.false
       expect(publicKeyBucket.Contents).to.have.lengthOf(1)
       expect(publicKeyBucket.Contents?.[0].Size).to.equal(32)
       expect(publicKeyBucket.Contents?.[0].Key).to.equal(roomId)
+    })
+
+    it('server private key is saved in S3 bucket', async () => {
       const privateKeyBucket = await s3Client
         .listObjectsV2({ Bucket: Config.getPrivateKeyBucket() })
         .promise()
-      expect(privateKeyBucket.Contents).to.not.be.undefined
+      expect(privateKeyBucket.Contents == null).to.be.false
       expect(privateKeyBucket.Contents).to.have.lengthOf(1)
       expect(privateKeyBucket.Contents?.[0].Size).to.equal(32)
       expect(privateKeyBucket.Contents?.[0].Key).to.equal(roomId)
@@ -76,12 +89,18 @@ describe('audioResolver.getRequiredUploadInfo', () => {
   })
 
   context('server key pair exists in storage', () => {
-    it('returns expected upload info', async () => {
+    let result: RequiredUploadInfo
+    const roomId = 'room1'
+    const serverKeyPair = box.keyPair()
+
+    before(async () => {
+      // Clean slate
+      await clearS3Buckets(s3Client)
+      await compositionRoot.clearCachedResolvers()
+
       // Arrange
       const endUserId = v4()
-      const roomId = 'room1'
       const mimeType = 'audio/webm'
-      const serverKeyPair = box.keyPair()
 
       await s3Client
         .putObject({
@@ -99,35 +118,45 @@ describe('audioResolver.getRequiredUploadInfo', () => {
         .promise()
 
       // Act
-      const result = await getRequiredUploadInfoQuery(testClient, mimeType, {
+      result = await getRequiredUploadInfoQuery(testClient, mimeType, {
         authentication: generateAuthenticationToken(endUserId),
         'live-authorization': generateLiveAuthorizationToken(endUserId, roomId),
       })
+    })
 
-      // TODO: Separate all these assertions into separate tests.
-      // Assert
-      expect(result).to.not.be.null
-      expect(result).to.not.be.undefined
-      expect(result.audioId).to.not.be.null
-      expect(result.audioId).to.not.be.undefined
-      expect(result.presignedUrl).to.not.be.null
-      expect(result.presignedUrl).to.not.be.undefined
+    it('result is not nullish', () => {
+      expect(result == null).to.be.false
+    })
+
+    it('result.audioId is not nullish', () => {
+      expect(result.audioId == null).to.be.false
+    })
+
+    it('result.presignedUrl is not nullish', () => {
+      expect(result.presignedUrl == null).to.be.false
+    })
+
+    it('result.base64ServerPublicKey matches the server public key', () => {
       expect(result.base64ServerPublicKey).to.equal(
         Buffer.from(serverKeyPair.publicKey).toString('base64'),
       )
+    })
 
-      // Ensure same keys are still saved in their respective buckets.
+    it('server public key is still saved in S3 bucket', async () => {
       const publicKeyBucket = await s3Client
         .listObjectsV2({ Bucket: Config.getPublicKeyBucket() })
         .promise()
       const publicKeyInBucket = await s3Client
         .getObject({ Bucket: Config.getPublicKeyBucket(), Key: roomId })
         .promise()
-      expect(publicKeyBucket.Contents).to.not.be.undefined
+      expect(publicKeyBucket.Contents == null).to.be.false
       expect(publicKeyBucket.Contents).to.have.lengthOf(1)
       expect(publicKeyInBucket.Body).to.deep.equal(
         Buffer.from(serverKeyPair.publicKey),
       )
+    })
+
+    it('server private key is still saved in S3 bucket', async () => {
       const privateKeyBucket = await s3Client
         .listObjectsV2({ Bucket: Config.getPrivateKeyBucket() })
         .promise()

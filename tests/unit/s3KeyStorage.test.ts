@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 
-describe('S3KeyStorage', () => {
+// TODO: Add tests.
+describe.skip('S3KeyStorage', () => {
   context('...', () => {
     it('...', async () => {
       // Arrange

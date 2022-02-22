@@ -7,10 +7,7 @@ import {
 import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
 import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
-import {
-  generateAuthenticationToken,
-  generateLiveAuthorizationToken,
-} from '../utils/generateToken'
+import { generateAuthenticationToken } from '../utils/generateToken'
 import { v4 } from 'uuid'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
