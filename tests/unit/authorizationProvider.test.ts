@@ -1,6 +1,6 @@
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
-import AuthorizationProvider from '../../src/helpers/authorizationProvider'
+import AuthorizationProvider from '../../src/providers/authorizationProvider'
 import { PermissionApi } from '../../src/web/permissionApi'
 import { Schedule, ScheduleApi } from '../../src/web/scheduleApi'
 

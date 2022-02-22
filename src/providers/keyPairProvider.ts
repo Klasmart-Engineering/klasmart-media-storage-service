@@ -1,6 +1,6 @@
 import IKeyStorage from '../interfaces/keyStorage'
-import { ErrorMessage } from './errorMessages'
-import { KeyPair } from './keyPair'
+import { ErrorMessage } from '../helpers/errorMessages'
+import { KeyPair } from '../helpers/keyPair'
 
 export class KeyPairProvider {
   public constructor(

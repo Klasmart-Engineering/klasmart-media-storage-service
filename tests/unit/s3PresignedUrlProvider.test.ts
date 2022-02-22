@@ -2,7 +2,7 @@ import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { v4 } from 'uuid'
 import AWS from 'aws-sdk'
-import { S3PresignedUrlProvider } from '../../src/helpers/s3PresignedUrlProvider'
+import { S3PresignedUrlProvider } from '../../src/providers/s3PresignedUrlProvider'
 
 describe('S3PresignedUrlProvider', () => {
   describe('getUploadUrl', () => {

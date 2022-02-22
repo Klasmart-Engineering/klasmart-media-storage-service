@@ -1,7 +1,7 @@
 import expect from '../utils/chaiAsPromisedSetup'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import IKeyStorage from '../../src/interfaces/keyStorage'
-import { KeyPairProvider } from '../../src/helpers/keyPairProvider'
+import { KeyPairProvider } from '../../src/providers/keyPairProvider'
 import { KeyPair } from '../../src/helpers/keyPair'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 

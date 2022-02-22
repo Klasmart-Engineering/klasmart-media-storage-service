@@ -1,7 +1,7 @@
 import expect from '../utils/chaiAsPromisedSetup'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { AudioResolver } from '../../src/resolvers/audioResolver'
-import { KeyPairProvider } from '../../src/helpers/keyPairProvider'
+import { KeyPairProvider } from '../../src/providers/keyPairProvider'
 import { Repository } from 'typeorm'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
 import IPresignedUrlProvider from '../../src/interfaces/presignedUrlProvider'
@@ -10,7 +10,7 @@ import IDecryptionProvider from '../../src/interfaces/decryptionProvider'
 import { v4 } from 'uuid'
 import { getSampleEncryptedData } from '../utils/getSampleEncryptionData'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
-import AuthorizationProvider from '../../src/helpers/authorizationProvider'
+import AuthorizationProvider from '../../src/providers/authorizationProvider'
 
 const UnauthorizedErrorMessage =
   'Access denied! You need to be authorized to perform this action!'

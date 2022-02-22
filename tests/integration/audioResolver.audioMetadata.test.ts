@@ -12,7 +12,7 @@ import { v4 } from 'uuid'
 import { AudioMetadata } from '../../src/entities/audioMetadata'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import Substitute from '@fluffy-spoon/substitute'
-import AuthorizationProvider from '../../src/helpers/authorizationProvider'
+import AuthorizationProvider from '../../src/providers/authorizationProvider'
 import { TestCompositionRoot } from './testCompositionRoot'
 import { bootstrapAudioService } from '../../src/initialization/bootstrapper'
 

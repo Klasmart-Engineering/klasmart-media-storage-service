@@ -1,6 +1,6 @@
 import { box } from 'tweetnacl'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
-import { decrypt } from './tweetnaclUtil'
+import { decrypt } from '../helpers/tweetnaclUtil'
 
 export default class TweetnaclDecryption implements IDecryptionProvider {
   public decrypt(
