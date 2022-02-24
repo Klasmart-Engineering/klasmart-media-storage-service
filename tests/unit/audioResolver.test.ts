@@ -126,6 +126,7 @@ describe('AudioResolver', () => {
         const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
         const mimeType = 'audio/webm'
+        const endUserId = 'user1'
         const roomId = 'room1'
         const presignedUrl = 'my-upload-url'
         const serverPublicKey = Uint8Array.from([1, 2, 3])
@@ -150,7 +151,11 @@ describe('AudioResolver', () => {
           presignedUrl,
           base64ServerPublicKey,
         }
-        const actual = await sut.getRequiredUploadInfo(mimeType, roomId)
+        const actual = await sut.getRequiredUploadInfo(
+          mimeType,
+          roomId,
+          endUserId,
+        )
 
         // Assert
         expect(actual).to.deep.include(expected)
@@ -167,6 +172,7 @@ describe('AudioResolver', () => {
         const authorizationProvider = Substitute.for<AuthorizationProvider>()
 
         const mimeType = 'audio/webm'
+        const endUserId = 'user1'
         // ******* main difference ******* //
         const roomId: string | undefined = undefined
         // ******* main difference ******* //
@@ -195,7 +201,11 @@ describe('AudioResolver', () => {
           presignedUrl,
           base64ServerPublicKey,
         }
-        const actual = await sut.getRequiredUploadInfo(mimeType, roomId)
+        const actual = await sut.getRequiredUploadInfo(
+          mimeType,
+          roomId,
+          endUserId,
+        )
 
         // Assert
         expect(actual).to.deep.include(expected)

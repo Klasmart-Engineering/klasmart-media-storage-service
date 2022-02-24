@@ -28,7 +28,6 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
     context: async ({ req }: ExpressContext): Promise<Context | undefined> => {
       try {
         const ip = (req.headers['x-forwarded-for'] || req.ip) as string
-        // Authentication (userId)
         const encodedAuthenticationToken =
           extractHeader(req.headers.authentication) || req.cookies.access
         if (encodedAuthenticationToken == null) {
@@ -40,31 +39,23 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
         const userId = authenticationToken.id
 
         let roomId: string | undefined
-        // Live Authorization (roomId from live)
         const encodedLiveAuthorizationToken = extractHeader(
           req.headers['live-authorization'],
         )
         if (encodedLiveAuthorizationToken != null) {
-          logger.debug(
-            'encodedLiveAuthorizationToken:',
-            encodedLiveAuthorizationToken,
-          )
           try {
             const authorizationToken = await checkLiveAuthorizationToken(
               encodedLiveAuthorizationToken,
-            )
-            logger.debug(
-              'authorizationToken.userid:',
-              authorizationToken.userid,
-            )
-            logger.debug(
-              'authorizationToken.roomid:',
-              authorizationToken.roomid,
             )
             roomId =
               authorizationToken.userid === userId
                 ? authorizationToken.roomid
                 : undefined
+            if (roomId === undefined) {
+              logger.error(
+                `[context] authenticationToken.userId (${userId}) is different than authorizationToken.userId (${authorizationToken.userid}).`,
+              )
+            }
           } catch (e) {
             // Don't log anything. Token validation errors just clutter the logs.
           }

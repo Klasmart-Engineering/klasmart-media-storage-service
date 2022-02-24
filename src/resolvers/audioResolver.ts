@@ -1,11 +1,4 @@
-import {
-  Arg,
-  Authorized,
-  Mutation,
-  Query,
-  Resolver,
-  UnauthorizedError,
-} from 'type-graphql'
+import { Arg, Mutation, Query, Resolver, UnauthorizedError } from 'type-graphql'
 import { Repository } from 'typeorm'
 import { AudioMetadata } from '../entities/audioMetadata'
 import { KeyPairProvider } from '../providers/keyPairProvider'
@@ -33,7 +26,6 @@ export class AudioResolver {
     private readonly authorizationProvider: IAuthorizationProvider,
   ) {}
 
-  @Authorized()
   @Query(() => [AudioMetadata], {
     description:
       'Returns a list of audio metadata matching the provided arguments.',
@@ -45,6 +37,9 @@ export class AudioResolver {
     @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
     @UserID() endUserId?: string,
   ): Promise<AudioMetadata[]> {
+    logger.debug(
+      `[audioMetadata] endUserId: ${endUserId}; userId: ${userId}; roomId: ${roomId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}`,
+    )
     if (!endUserId) {
       throw new UnauthorizedError()
     }
@@ -57,7 +52,6 @@ export class AudioResolver {
     return results
   }
 
-  @Authorized()
   @Query(() => RequiredUploadInfo, {
     description:
       'Returns a generated audio ID, a base64 encoded server public key\n' +
@@ -66,7 +60,14 @@ export class AudioResolver {
   public async getRequiredUploadInfo(
     @Arg('mimeType') mimeType: string,
     @RoomID() roomId?: string,
+    @UserID() endUserId?: string,
   ): Promise<RequiredUploadInfo> {
+    logger.debug(
+      `[getRequiredUploadInfo] endUserId: ${endUserId}; roomId: ${roomId}`,
+    )
+    if (!endUserId) {
+      throw new UnauthorizedError()
+    }
     if (!roomId) {
       roomId = AudioResolver.NoRoomIdKeyName
     }
@@ -83,7 +84,6 @@ export class AudioResolver {
     return { audioId, base64ServerPublicKey, presignedUrl }
   }
 
-  @Authorized()
   @Mutation(() => Boolean, {
     description:
       'Stores the audio metadata in persistent storage.\n' +
@@ -101,6 +101,9 @@ export class AudioResolver {
     @UserID() endUserId?: string,
     @RoomID() roomId?: string,
   ): Promise<boolean> {
+    logger.debug(
+      `[setMetadata] audioId: ${audioId}; endUserId: ${endUserId}; roomId: ${roomId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}`,
+    )
     if (!endUserId) {
       throw new UnauthorizedError()
     }
@@ -121,7 +124,6 @@ export class AudioResolver {
     return true
   }
 
-  @Authorized()
   @Query(() => RequiredDownloadInfo, {
     description:
       'Returns a presigned download URL and the base64 encoded symmetric key\n' +
@@ -134,6 +136,9 @@ export class AudioResolver {
     @UserID() endUserId?: string,
     @AuthenticationToken() authenticationToken?: string,
   ): Promise<RequiredDownloadInfo> {
+    logger.debug(
+      `[getRequiredDownloadInfo] audioId: ${audioId}; endUserId: ${endUserId}; roomId: ${roomId}`,
+    )
     const isAuthorized = await this.authorizationProvider.isAuthorized(
       endUserId,
       roomId,
