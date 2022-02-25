@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.6..v0.1.5) (2022-02-25)
+
+
+### Bug Fixes
+
+* empty audio list when h5pSubId is undefined ([ad5ec8c](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/ad5ec8cfdd60207c6144b4be51dbc6b05c0cad81))
+* schedule api unauthorized error ([fb8612a](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/fb8612a4ad42b36cde86d303e29b600ae066ade5))
+
 ### [0.1.5](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.5..v0.1.4) (2022-02-25)
 
 
