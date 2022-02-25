@@ -43,6 +43,7 @@ export class AudioResolver {
     if (!endUserId) {
       throw new UnauthorizedError()
     }
+    h5pSubId ??= null
     const results = await this.metadataRepository.find({
       userId,
       roomId,
