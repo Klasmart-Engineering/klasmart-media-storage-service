@@ -1,8 +1,7 @@
 import { createParamDecorator } from 'type-graphql'
-import { KidsloopAuthenticationToken } from 'kidsloop-token-validation'
 
 export interface Context {
-  authenticationToken?: KidsloopAuthenticationToken
+  authenticationToken?: string
   ip?: string | string[]
   userId?: string
   roomId?: string
@@ -18,6 +17,6 @@ export function RoomID(): ParameterDecorator {
 
 export function AuthenticationToken(): ParameterDecorator {
   return createParamDecorator<Context>(
-    ({ context }) => context.authenticationToken,
+    ({ context }): string | undefined => context.authenticationToken,
   )
 }

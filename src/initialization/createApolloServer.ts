@@ -62,7 +62,7 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
         }
 
         return {
-          authenticationToken,
+          authenticationToken: encodedAuthenticationToken,
           ip,
           userId,
           roomId,

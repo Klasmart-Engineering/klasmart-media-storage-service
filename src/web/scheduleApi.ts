@@ -17,7 +17,6 @@ export class ScheduleApi {
   ): Promise<Schedule | undefined> {
     const requestUrl = `${this.baseUrl}/schedules/${roomId}/relation_ids`
 
-    logger.debug(`[getRoomInfo] token: ${authenticationToken}`)
     let response: AxiosResponse<ScheduleDto> | undefined
     try {
       response = await this.axios.get<ScheduleDto>(requestUrl, {
