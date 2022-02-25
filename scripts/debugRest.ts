@@ -1,19 +1,21 @@
 import axios, { AxiosError } from 'axios'
+import { ScheduleApi } from '../src/web/scheduleApi'
 
 const authenticationToken =
-  'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwYjc0NzkwLTk1MjgtNDViZS1iNDRmLTllMzQxMTA1YzFlOSIsImVtYWlsIjoiY2FiYXVtYW5Aa2lkc2xvb3AubGl2ZSIsImV4cCI6MTY0NDk5MzEyNCwiaXNzIjoia2lkc2xvb3AifQ.WJ3YHwE1SKjBaEFa6Hyc3WcTULN7Sx2g4KoMV19GxjITxDiefwPBEVumgpbIvv3JoXQxKOtTltnio6MkzabWPg_SDfNQn-IuZSsfeSr7-Hy8Yan7swaAuY0WugNVN_EJdu2ljewSu3_57ZvJ7CDGLPmdOh5ZnL44xCTetWaaZmmtj1sTCRy2UasO05ofo5YZ8Np1Tgh5AbURV0AgR345jAso9wlavOoUDo9XZjY-WSvhBjP2V4AdSSLQ5eVHEcuTyZ9JTKQ9bCfG4pV5QLGZ9pyKyL3A2JBnUK3bZ-q7UO3JYmvmHD5crVtdepjcvA4z4HpAlQk1sfvDOYT_C1Y6wQ'
+  'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwYjc0NzkwLTk1MjgtNDViZS1iNDRmLTllMzQxMTA1YzFlOSIsImVtYWlsIjoiY2FiYXVtYW5Aa2lkc2xvb3AubGl2ZSIsImV4cCI6MTY0NTc1OTM1NSwiaXNzIjoia2lkc2xvb3AifQ.DTI0u8j68-CDxtm0u9aszxb-Y_fiAVU6ozVBAUteUoXCmVP9uhAIAb43nXLztluibdXKuQSh2JG5r6EmcHGr9pafnWRZ1hWEueGOCRMZL80oktkeDLFSt8wMg30kO2n1DgMGBO9DDxmJVrxo7X9cAdo2TN4OyOrqwECD_njaDDWyPWd2hThaAiXGNTfJOeamdtlL_1HezqYj2iPNOxFp8bVf59u59GPVPDa-wljYnl5j70HPkoZIOsIYYZax7Ou9Ztx_1uBBhjfTd23FioYr_PtqN3CDbqdWUbeWwk0JKXhK7ZNvv5ABP0hbTl1NakNk9JXM4uc034w-xDa_58lUxw'
 
-const scheduleId = '6099c6701f42c08c3e3d45f5'
+const scheduleId = '62181812fcb588c47666c0fe'
 
-const baseUrl = `https://cms.alpha.kidsloop.net/v1/internal/schedules/${scheduleId}/relation_ids`
+const baseUrl = `https://cms.alpha.kidsloop.net/v1/internal`
 
 async function debug() {
-  const response = await axios.get(baseUrl, {
-    headers: {
-      cookie: `access=${authenticationToken}`,
-    },
-  })
-  console.log(JSON.stringify(response.data, null, 2))
+  const api = new ScheduleApi(axios, baseUrl)
+  try {
+    const response = await api.getRoomInfo(scheduleId, authenticationToken)
+    console.log(JSON.stringify(response, null, 2))
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 debug().catch((error) => {
