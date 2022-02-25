@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.5..v0.1.4) (2022-02-25)
+
+
+### Bug Fixes
+
+* id no longer part of schedule api reponse ([8222bf5](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/8222bf547cafe9e0a454bca01bf09b95402797e9))
+
 ### [0.1.4](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.4..v0.1.3) (2022-02-24)
 
 
