@@ -17,6 +17,7 @@ export class ScheduleApi {
   ): Promise<Schedule | undefined> {
     const requestUrl = `${this.baseUrl}/schedules/${roomId}/relation_ids`
 
+    logger.debug(`[getRoomInfo] token: ${authenticationToken}`)
     let response: AxiosResponse<ScheduleDto> | undefined
     try {
       response = await this.axios.get<ScheduleDto>(requestUrl, {
@@ -42,7 +43,6 @@ export class ScheduleApi {
 
 function mapDtoToEntity(dto: ScheduleDto) {
   return new Schedule(
-    dto.id ?? throwExpression('schedule.id is undefined'),
     dto.org_id ?? throwExpression('schedule.org_id is undefined'),
     dto.class_roster_class_id ??
       throwExpression('schedule.class_roster_class_id is undefined'),
@@ -53,7 +53,6 @@ function mapDtoToEntity(dto: ScheduleDto) {
 
 export class Schedule {
   constructor(
-    public readonly id: string,
     public readonly organizationId: string,
     public readonly classId: string,
     public readonly teacherIds: ReadonlyArray<string>,

@@ -20,7 +20,6 @@ describe('authorizationProvider', () => {
         const sut = new AuthorizationProvider(scheduleApi, permissionApi)
 
         const schedule: Schedule = {
-          id: roomId,
           organizationId: organizationId,
           classId: classId,
           teacherIds: teacherIds,
@@ -58,7 +57,6 @@ describe('authorizationProvider', () => {
           const sut = new AuthorizationProvider(scheduleApi, permissionApi)
 
           const schedule: Schedule = {
-            id: roomId,
             organizationId: organizationId,
             classId: classId,
             teacherIds: teacherIds,
@@ -99,7 +97,6 @@ describe('authorizationProvider', () => {
           const sut = new AuthorizationProvider(scheduleApi, permissionApi)
 
           const schedule: Schedule = {
-            id: roomId,
             organizationId: organizationId,
             classId: classId,
             teacherIds: teacherIds,

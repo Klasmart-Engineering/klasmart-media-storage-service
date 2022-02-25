@@ -82,14 +82,12 @@ describe('scheduleApi', () => {
 })
 
 const scheduleDto: ScheduleDto = {
-  id: 'my-room',
   org_id: 'org1',
   class_roster_class_id: 'class1',
   class_roster_teacher_ids: ['teacher1', 'teacher2'],
   participant_teacher_ids: [],
 }
 const schedule: Schedule = {
-  id: 'my-room',
   organizationId: 'org1',
   classId: 'class1',
   teacherIds: ['teacher1', 'teacher2'],
