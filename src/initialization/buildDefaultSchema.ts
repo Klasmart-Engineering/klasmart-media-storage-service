@@ -1,7 +1,6 @@
 import path from 'path'
 import { GraphQLSchema } from 'graphql'
 import { buildSchema, ClassType } from 'type-graphql'
-import { authChecker } from '../auth/authChecker'
 import { AudioResolver } from '../resolvers/audioResolver'
 import { CompositionRoot } from './compositionRoot'
 
@@ -13,7 +12,6 @@ export default function buildDefaultSchema(
       path.join(__dirname, '../resolvers/**/*.ts'),
       path.join(__dirname, '../resolvers/**/*.js'),
     ],
-    authChecker,
     container: new CustomIocContainer(compositionRoot),
     emitSchemaFile: {
       path: path.join(__dirname, '../generatedSchema.gql'),
