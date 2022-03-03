@@ -124,6 +124,7 @@ export const GET_HAS_ORG_PERMISSION = gql`
         organizationId: $organizationId
         permissionIds: [$permissionId]
       ) {
+        permissionId
         allowed
       }
     }
@@ -146,6 +147,7 @@ export const GET_HAS_SCHOOL_PERMISSION = gql`
         schoolId: $schoolId
         permissionIds: [$permissionId]
       ) {
+        permissionId
         allowed
       }
     }
