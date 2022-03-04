@@ -10,8 +10,7 @@ export class Config {
       signatureVersion: 'v4',
       // Needed for private key storage. Otherwise,
       // "Requests specifying Server Side Encryption with AWS KMS managed keys must be made over a secure connection"
-      // But it throws an error when developing locally if it's true.
-      sslEnabled: process.env.NODE_ENV !== 'localdev',
+      sslEnabled: true,
       correctClockSkew: true,
     })
   }
