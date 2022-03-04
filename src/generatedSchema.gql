@@ -6,7 +6,7 @@
 """The metadata associated with an uploaded audio file."""
 type AudioMetadata {
   """The date/time when this audio was recorded."""
-  creationDate: DateTime!
+  createdAt: DateTime!
 
   """The description of the audio recording activity."""
   description: String!

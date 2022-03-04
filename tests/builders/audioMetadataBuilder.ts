@@ -11,7 +11,7 @@ export default class AudioMetadataBuilder {
   private h5pId: string = v4()
   private h5pSubId: string | null = v4()
   private description = 'default description'
-  private creationDate: Date = new Date()
+  private createdAt: Date = new Date()
   private base64UserPublicKey = v4()
   private base64EncryptedSymmetricKey = v4()
 
@@ -50,8 +50,8 @@ export default class AudioMetadataBuilder {
     return this
   }
 
-  public withCreationDate(value: Date): this {
-    this.creationDate = value
+  public withCreatedAt(value: Date): this {
+    this.createdAt = value
     return this
   }
 
@@ -75,7 +75,7 @@ export default class AudioMetadataBuilder {
     mutable.h5pId = this.h5pId
     mutable.h5pSubId = this.h5pSubId
     mutable.description = this.description
-    mutable.creationDate = this.creationDate
+    mutable.createdAt = this.createdAt
     mutable.base64UserPublicKey = this.base64UserPublicKey
     mutable.base64EncryptedSymmetricKey = this.base64EncryptedSymmetricKey
     return entity

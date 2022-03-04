@@ -145,7 +145,7 @@ describe('audioResolver', () => {
             roomId,
             h5pId,
             h5pSubId,
-            creationDate: matchingAudioMetadata.creationDate.toISOString(),
+            createdAt: matchingAudioMetadata.createdAt.toISOString(),
           },
         ])
       })
@@ -206,7 +206,7 @@ query audioMetadata(
     roomId
     h5pId
     h5pSubId
-    creationDate
+    createdAt
   }
 }
 `

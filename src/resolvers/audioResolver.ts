@@ -113,7 +113,7 @@ export class AudioResolver {
       userId: endUserId,
       base64UserPublicKey,
       base64EncryptedSymmetricKey,
-      creationDate: new Date(),
+      createdAt: new Date(),
       roomId,
       mimeType,
       h5pId,
