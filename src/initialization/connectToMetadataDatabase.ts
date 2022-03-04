@@ -14,11 +14,17 @@ export function getMetadataDatabaseConnectionOptions(
   return {
     type: 'postgres',
     url,
-    synchronize: true,
+    synchronize: false,
     entities: [
       path.join(__dirname, '../entities/*.ts'),
       path.join(__dirname, '../entities/*.js'),
     ],
+    migrations: [path.join(__dirname, '../migrations/*.{ts,js}')],
+    migrationsTableName: 'migrations',
+    migrationsRun: true,
+    cli: {
+      migrationsDir: 'src/migrations',
+    },
   }
 }
 

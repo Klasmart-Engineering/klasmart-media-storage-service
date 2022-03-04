@@ -136,12 +136,42 @@ _Tip: when debugging or focusing on a particular test or group of tests, append 
 
 ---
 
+## Migrations
+
+Use `typeorm` to generate and run migrations.
+
+Docs:
+
+- [typeorm - Migrations](https://github.com/typeorm/typeorm/blob/master/docs/migrations.md)
+- [typeorm - Using CLI](https://github.com/typeorm/typeorm/blob/master/docs/using-cli.md)
+
+Generate `ormConfig.json`
+
+```sh
+METADATA_DATABASE_URL=[database_url] npm run generate-orm-config
+```
+
+Generate migration
+
+```sh
+npm run typeorm migration:generate -- --config ormConfig.json -n [migration_name]
+```
+
+Manually run a migration
+
+```sh
+npm run typeorm migration:run -- --config ormConfig.json
+```
+
+Revert the last migration
+
+```sh
+npm run typeorm migration:revert -- --config ormConfig.json
+```
+
+---
+
 ## Deployment
-
-We use the [Bitbucket Deployments](https://bitbucket.org/blog/introducing-bitbucket-deployments) feature for a nice overview of deployment history. The quality of the Jira integration depends on ticket IDs being included in commit messages, so it's important to make an effort to do so.
-
-- The [Bitbucket view](https://bitbucket.org/calmisland/kidsloop-audio-service/addon/pipelines/deployments) can be accessed from the sidebar via the Deployments tab.
-- The [Jira view](https://calmisland.atlassian.net/jira/software/c/projects/DAS/deployments?startDate=-3m&endDate=now) can be accessed from the sidebar of Jira via the Deployments tab.
 
 ### Alpha info
 
