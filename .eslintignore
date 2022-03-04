@@ -1,5 +1,5 @@
-.nyc_output
-.husky
-.vscode
-node_modules
-test-results
+/.nyc_output
+/.husky
+/dist
+/node_modules
+/test-results

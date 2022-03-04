@@ -1,7 +1,8 @@
-.nyc_output
-.husky
-.vscode
-node_modules
-test-results
-tsconfig.json
-package-lock.json
+/.nyc_output
+/.husky
+/dist
+/node_modules
+/test-results
+/tsconfig.json
+/package-lock.json
+/src/migrations
