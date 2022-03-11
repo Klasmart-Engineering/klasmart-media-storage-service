@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.9](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.9..v0.1.8) (2022-03-11)
+
+
+### Features
+
+* add db init migration ([9f56fc9](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/9f56fc9a6259f3b1a6db63930af56740e5875fdb))
+* generalize service to work with different types of media ([da44e41](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/da44e4172d038eb8376fa86381d6cc673f8653da))
+
+
+### Refactor
+
+* remove unused TypeGraphQL auth checker ([6182be8](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/6182be8efdb27690ac4e6a436bd3f29a5b3ba1f0))
+* simplify s3 sslEnabled ([a500483](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/a5004835de550def1286622e38596850564402cf))
+* use snake case db column names ([975e56c](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/975e56ca9e9ff3711dcf845c1abb62c007abc6a4))
+
 ### [0.1.8](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.8..v0.1.7) (2022-03-03)
 
 
