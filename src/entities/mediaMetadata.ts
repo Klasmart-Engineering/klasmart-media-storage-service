@@ -3,28 +3,28 @@ import { Column, Entity, PrimaryColumn } from 'typeorm'
 
 @ObjectType({
   simpleResolvers: true,
-  description: 'The metadata associated with an uploaded audio file.',
+  description: 'The metadata associated with an uploaded media file.',
 })
 @Entity()
-export class AudioMetadata {
-  @Field(() => ID, { description: 'The UUID that identifies this audio file.' })
+export class MediaMetadata {
+  @Field(() => ID, { description: 'The UUID that identifies this media file.' })
   @PrimaryColumn('uuid')
   public readonly id!: string
 
   @Field(() => String, {
-    description: 'The ID of the Live room where this audio was recorded.',
+    description: 'The ID of the Live room where this media was captured.',
   })
   @Column({ type: 'varchar', name: 'room_id', nullable: true })
   public readonly roomId!: string | null
 
   @Field(() => ID, {
-    description: 'The ID of the user that recorded this audio.',
+    description: 'The ID of the user associated with this media.',
   })
   @Column({ type: 'uuid', name: 'user_id' })
   public readonly userId!: string
 
   @Field(() => String, {
-    description: 'The ID of the H5P activity where this audio was recorded.',
+    description: 'The ID of the H5P activity where this media was captured.',
   })
   @Column({ type: 'varchar', name: 'h5p_id' })
   public readonly h5pId!: string
@@ -32,25 +32,25 @@ export class AudioMetadata {
   @Field(() => String, {
     nullable: true,
     description:
-      'The ID of the H5P sub-activity where this audio was recorded.',
+      'The ID of the H5P sub-activity where this media was captured.',
   })
   @Column({ type: 'varchar', name: 'h5p_sub_id', nullable: true })
   public readonly h5pSubId!: string | null
 
   @Field(() => String, {
-    description: 'The description of the audio recording activity.',
+    description: 'The description of the media context.',
   })
   @Column({ type: 'varchar' })
   public readonly description!: string
 
   @Field({
-    description: 'The date/time when this audio was recorded.',
+    description: 'The date/time when this media was captured.',
   })
   @Column({ type: 'timestamptz', name: 'created_at' })
   public readonly createdAt!: Date
 
   @Field({
-    description: 'The mime type of the recorded audio.',
+    description: 'The mime type of the captured media.',
   })
   @Column({ type: 'varchar', name: 'mime_type' })
   public readonly mimeType!: string

@@ -7,20 +7,20 @@ export class S3PresignedUrlProvider implements IPresignedUrlProvider {
     private readonly s3Client: AWS.S3,
   ) {}
 
-  public getUploadUrl(audioId: string, mimeType: string): Promise<string> {
+  public getUploadUrl(mediaId: string, mimeType: string): Promise<string> {
     const bucketParams = {
       Bucket: this.bucketName,
-      Key: audioId,
+      Key: mediaId,
       ContentType: mimeType,
       Expires: 60,
     }
     return this.s3Client.getSignedUrlPromise('putObject', bucketParams)
   }
 
-  public getDownloadUrl(audioId: string): Promise<string> {
+  public getDownloadUrl(mediaId: string): Promise<string> {
     const bucketParams = {
       Bucket: this.bucketName,
-      Key: audioId,
+      Key: mediaId,
       Expires: 60,
     }
     return this.s3Client.getSignedUrlPromise('getObject', bucketParams)

@@ -22,9 +22,18 @@ export class TestCompositionRoot extends CompositionRoot {
     return this.permissionApi ?? super.getPermissionApi()
   }
 
-  public async clearCachedResolvers() {
-    this.audioResolver = undefined
+  public async reset() {
     await this.redis?.flushall()
     await this.typeorm?.synchronize(true)
+    // Resolvers
+    this.downloadResolver = undefined
+    this.metadataResolver = undefined
+    this.uploadResolver = undefined
+    // Resolver dependencies
+    this.keyPairProvider = undefined
+    this.presignedUrlProvider = undefined
+    // Don't set typeorm or redis to undefined.
+    // Those have open connections that will be closed
+    // when cleanUp() is called.
   }
 }

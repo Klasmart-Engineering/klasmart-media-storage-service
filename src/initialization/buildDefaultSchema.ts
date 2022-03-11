@@ -1,11 +1,13 @@
 import path from 'path'
 import { GraphQLSchema } from 'graphql'
 import { buildSchema, ClassType } from 'type-graphql'
-import { AudioResolver } from '../resolvers/audioResolver'
+import { DownloadResolver } from '../resolvers/downloadResolver'
 import { CompositionRoot } from './compositionRoot'
+import { UploadResolver } from '../resolvers/uploadResolver'
+import { MetadataResolver } from '../resolvers/metadataResolver'
 
 export default function buildDefaultSchema(
-  compositionRoot = new CompositionRoot(),
+  compositionRoot: CompositionRoot,
 ): Promise<GraphQLSchema> {
   return buildSchema({
     resolvers: [
@@ -23,8 +25,14 @@ export class CustomIocContainer {
   public constructor(private readonly compositionRoot: CompositionRoot) {}
 
   async get(objectType: ClassType): Promise<unknown> {
-    if (objectType === AudioResolver) {
-      return await this.compositionRoot.getAudioResolver()
+    if (objectType === DownloadResolver) {
+      return await this.compositionRoot.getDownloadResolver()
+    }
+    if (objectType === MetadataResolver) {
+      return await this.compositionRoot.getMetadataResolver()
+    }
+    if (objectType === UploadResolver) {
+      return await this.compositionRoot.getUploadResolver()
     }
   }
 }

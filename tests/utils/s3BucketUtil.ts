@@ -19,9 +19,9 @@ export async function createS3BucketsIfTheyDontExist(): Promise<void> {
       .createBucket({ Bucket: Config.getPrivateKeyBucket() })
       .promise()
   }
-  if (!buckets.includes(Config.getAudioFileBucket())) {
+  if (!buckets.includes(Config.getMediaFileBucket())) {
     await s3Client
-      .createBucket({ Bucket: Config.getAudioFileBucket() })
+      .createBucket({ Bucket: Config.getMediaFileBucket() })
       .promise()
   }
 }

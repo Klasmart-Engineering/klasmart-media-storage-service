@@ -1,7 +1,7 @@
 {
-  "name": "kidsloop-audio-service",
+  "name": "kidsloop-media-storage-service",
   "version": "0.1.8",
-  "description": "A service for uploading and downloading audio files.",
+  "description": "A service for uploading and downloading media files.",
   "main": "index.js",
   "scripts": {
     "start": "ts-node -r dotenv/config src/index.ts",
@@ -51,6 +51,7 @@
     "@types/jsonwebtoken": "^8.5.8",
     "@types/mocha": "^9.1.0",
     "@types/node": "^16.4.10",
+    "@types/node-fetch": "^2.6.1",
     "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
@@ -67,6 +68,7 @@
     "inquirer": "^8.1.2",
     "lint-staged": "^12.3.3",
     "mocha": "^9.2.0",
+    "node-fetch": "^2.6.6",
     "node-mocks-http": "^1.10.1",
     "nyc": "^15.1.0",
     "prettier": "^2.5.1",

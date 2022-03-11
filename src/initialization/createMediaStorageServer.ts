@@ -9,11 +9,11 @@ import { getCorsOptions } from './getCorsOptions'
 import { Config } from './config'
 import { GraphQLSchema } from 'graphql'
 
-const logger = withLogger('createAudioServer')
+const logger = withLogger('createMediaStorageServer')
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
-export default async function createAudioServer(
+export default async function createMediaStorageServer(
   schema: GraphQLSchema,
 ): Promise<{
   app: Express

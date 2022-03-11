@@ -2,11 +2,11 @@ import { Field, ObjectType } from 'type-graphql'
 
 @ObjectType({
   simpleResolvers: true,
-  description: 'The info required to upload an audio file.',
+  description: 'The info required to upload a media file.',
 })
 export class RequiredUploadInfo {
-  @Field({ description: 'A generated UUID to identify an audio file.' })
-  public audioId!: string
+  @Field({ description: 'A generated UUID to identify a media file.' })
+  public mediaId!: string
 
   @Field({ description: 'A base64 encoded server public key.' })
   public base64ServerPublicKey!: string

@@ -40,10 +40,10 @@ export class Config {
     )
   }
 
-  public static getAudioFileBucket(): string {
+  public static getMediaFileBucket(): string {
     return (
-      process.env.AUDIO_FILE_BUCKET ??
-      throwExpression('AUDIO_FILE_BUCKET must be defined')
+      process.env.MEDIA_FILE_BUCKET ??
+      throwExpression('MEDIA_FILE_BUCKET must be defined')
     )
   }
 

@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { getCorsOptions } from '../../src/initialization/getCorsOptions'
+import { getCorsOptions } from '../../../src/initialization/getCorsOptions'
 
 describe('getCorsOptions', () => {
   context('origin matches defined DOMAIN; multiple subdomains', () => {

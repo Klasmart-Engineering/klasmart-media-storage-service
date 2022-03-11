@@ -7,7 +7,7 @@ import {
   OrgPermissionResponse,
   PermissionApi,
   SchoolPermissionResponse,
-} from '../../src/web/permissionApi'
+} from '../../../src/web/permissionApi'
 
 describe('permissionApi', () => {
   describe('hasSchoolOrOrganizationPermission', () => {
@@ -267,6 +267,33 @@ describe('permissionApi', () => {
       },
     )
 
+    context('organization permission check throws GraphQL ClientError', () => {
+      it('returns true', async () => {
+        // Arrange
+        const endUserId = 'my-user'
+        const roomId = 'my-room'
+        const classId = '03ecb0dd-f765-4c76-9778-272f575c21f6'
+        const authenticationToken = 'auth-token'
+        const graphQLClient = Substitute.for<GraphQLClient>()
+        const sut = new PermissionApi(graphQLClient)
+
+        graphQLClient
+          .request(Arg.all())
+          .rejects(new ClientError(JSON.parse(ERROR_RESPONSE), Arg.any()))
+
+        // Act
+        const actual = await sut.hasSchoolOrOrganizationPermission(
+          roomId,
+          classId,
+          endUserId,
+          authenticationToken,
+        )
+
+        // Assert
+        expect(actual).to.equal(false)
+      })
+    })
+
     context('organization permission check throws an error', () => {
       it('returns false', async () => {
         // Arrange
@@ -480,6 +507,43 @@ const PARTIAL_ERROR_RESPONSE = `
         }
       ]
     },
+    "classNode": null
+  },
+  "status": 200,
+  "headers": {}
+}
+`
+
+const ERROR_RESPONSE = `
+{
+  "errors": [
+    {
+      "message": "ClassConnectionNode 03ecb0dd-f765-4c76-9778-272f575c21f6 doesn't exist.",
+      "locations": [
+        {
+          "line": 11,
+          "column": 5
+        }
+      ],
+      "path": [
+        "classNode"
+      ],
+      "extensions": {
+        "code": "INTERNAL_SERVER_ERROR",
+        "exception": {
+          "code": "ERR_NON_EXISTENT_ENTITY",
+          "variables": [
+            "id"
+          ],
+          "message": "ClassConnectionNode 03ecb0dd-f765-4c76-9778-272f575c21f6 doesn't exist.",
+          "entity": "ClassConnectionNode",
+          "entityName": "03ecb0dd-f765-4c76-9778-272f575c21f6"
+        }
+      }
+    }
+  ],
+  "data": {
+    "myUser": null,
     "classNode": null
   },
   "status": 200,

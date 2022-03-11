@@ -1,4 +1,5 @@
 import '../utils/globalIntegrationTestHooks'
+import fetch from 'node-fetch'
 import { expect } from 'chai'
 import {
   ApolloServerTestClient,
@@ -16,17 +17,17 @@ import { v4 } from 'uuid'
 import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadInfo'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
 import { TestCompositionRoot } from './testCompositionRoot'
-import { bootstrapAudioService } from '../../src/initialization/bootstrapper'
+import { bootstrapService } from '../../src/initialization/bootstrapper'
 
-describe('audioResolver.getRequiredUploadInfo', () => {
+describe('mediaResolver.getRequiredUploadInfo', () => {
   let testClient: ApolloServerTestClient
   let compositionRoot: TestCompositionRoot
   let s3Client: AWS.S3
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
-    const audioService = await bootstrapAudioService(compositionRoot)
-    testClient = createTestClient(audioService.server)
+    const mediaStorageService = await bootstrapService(compositionRoot)
+    testClient = createTestClient(mediaStorageService.server)
     s3Client = Config.getS3Client()
   })
 
@@ -41,7 +42,7 @@ describe('audioResolver.getRequiredUploadInfo', () => {
     before(async () => {
       // Clean slate
       await clearS3Buckets(s3Client)
-      await compositionRoot.clearCachedResolvers()
+      await compositionRoot.reset()
 
       // Arrange
       const endUserId = v4()
@@ -59,12 +60,22 @@ describe('audioResolver.getRequiredUploadInfo', () => {
       expect(result == null).to.be.false
     })
 
-    it('result.audioId is not nullish', () => {
-      expect(result.audioId == null).to.be.false
+    it('result.mediaId is not nullish or empty', () => {
+      expect(result.mediaId == null).to.be.false
+      expect(result.mediaId).to.not.be.empty
     })
 
-    it('result.presignedUrl is not nullish', () => {
+    it('result.presignedUrl is not nullish or empty', () => {
       expect(result.presignedUrl == null).to.be.false
+      expect(result.presignedUrl).to.not.be.empty
+    })
+
+    it('presignedUrl web request is successful', async () => {
+      const response = await fetch(result.presignedUrl, {
+        method: 'PUT',
+        body: '123',
+      })
+      expect(response.ok, response.statusText).to.be.true
     })
 
     it('server public key is saved in S3 bucket', async () => {
@@ -96,7 +107,7 @@ describe('audioResolver.getRequiredUploadInfo', () => {
     before(async () => {
       // Clean slate
       await clearS3Buckets(s3Client)
-      await compositionRoot.clearCachedResolvers()
+      await compositionRoot.reset()
 
       // Arrange
       const endUserId = v4()
@@ -128,12 +139,22 @@ describe('audioResolver.getRequiredUploadInfo', () => {
       expect(result == null).to.be.false
     })
 
-    it('result.audioId is not nullish', () => {
-      expect(result.audioId == null).to.be.false
+    it('result.mediaId is not nullish or empty', () => {
+      expect(result.mediaId == null).to.be.false
+      expect(result.mediaId).to.not.be.empty
     })
 
-    it('result.presignedUrl is not nullish', () => {
+    it('result.presignedUrl is not nullish or empty', () => {
       expect(result.presignedUrl == null).to.be.false
+      expect(result.presignedUrl).to.not.be.empty
+    })
+
+    it('presignedUrl web request is successful', async () => {
+      const response = await fetch(result.presignedUrl, {
+        method: 'PUT',
+        body: '123',
+      })
+      expect(response.ok, response.statusText).to.be.true
     })
 
     it('result.base64ServerPublicKey matches the server public key', () => {
@@ -178,7 +199,7 @@ describe('audioResolver.getRequiredUploadInfo', () => {
 export const GET_REQUIRED_UPLOAD_INFO = `
 query getRequiredUploadInfo($mimeType: String!) {
   getRequiredUploadInfo(mimeType: $mimeType) {
-    audioId
+    mediaId
     base64ServerPublicKey
     presignedUrl
   }

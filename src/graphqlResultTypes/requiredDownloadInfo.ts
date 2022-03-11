@@ -2,12 +2,12 @@ import { Field, ObjectType } from 'type-graphql'
 
 @ObjectType({
   simpleResolvers: true,
-  description: 'The info required to download an audio file.',
+  description: 'The info required to download a media file.',
 })
 export class RequiredDownloadInfo {
   @Field({
     description:
-      'A base64 encoded symmetric key. Used to decrypt the same audio file that it encrypted.',
+      'A base64 encoded symmetric key. Used to decrypt the same media file that it encrypted.',
   })
   public base64SymmetricKey!: string
 

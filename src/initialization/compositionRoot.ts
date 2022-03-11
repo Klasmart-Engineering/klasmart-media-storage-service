@@ -1,10 +1,10 @@
 import axios from 'axios'
 import RedisClient, { Redis } from 'ioredis'
 import { Connection } from 'typeorm'
-import { AudioMetadata } from '../entities/audioMetadata'
+import { MediaMetadata } from '../entities/mediaMetadata'
 import IKeyStorage from '../interfaces/keyStorage'
-import IUploadUrlProvider from '../interfaces/presignedUrlProvider'
-import { AudioResolver } from '../resolvers/audioResolver'
+import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
+import { DownloadResolver } from '../resolvers/downloadResolver'
 import { KeyPairProvider } from '../providers/keyPairProvider'
 import { S3KeyStorage } from '../helpers/s3KeyStorage'
 import { S3PresignedUrlProvider } from '../providers/s3PresignedUrlProvider'
@@ -21,6 +21,9 @@ import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
 import { connectToMetadataDatabase } from './connectToMetadataDatabase'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { GraphQLClient } from 'graphql-request'
+import { UploadResolver } from '../resolvers/uploadResolver'
+import { MetadataResolver } from '../resolvers/metadataResolver'
+import SymmetricKeyProvider from '../providers/symmetricKeyProvider'
 
 const logger = withLogger('CompositionRoot')
 
@@ -29,9 +32,15 @@ const logger = withLogger('CompositionRoot')
  * For tests, inherit this class to override disired methods e.g. mocks.
  */
 export class CompositionRoot {
+  // Resolvers
+  protected downloadResolver?: DownloadResolver
+  protected metadataResolver?: MetadataResolver
+  protected uploadResolver?: UploadResolver
+  // Resolver dependencies
   protected redis?: Redis
   protected typeorm?: Connection
-  protected audioResolver?: AudioResolver
+  protected keyPairProvider?: KeyPairProvider
+  protected presignedUrlProvider?: IPresignedUrlProvider
 
   /**
    * Call this method at service startup to instantiate the GraphQL resolvers.
@@ -39,33 +48,51 @@ export class CompositionRoot {
    * instantiated the first time they're accessed.
    */
   public async buildObjectGraph() {
-    this.audioResolver = await this.getAudioResolver()
+    this.downloadResolver = await this.getDownloadResolver()
+    this.metadataResolver = await this.getMetadataResolver()
+    this.uploadResolver = await this.getUploadResolver()
   }
 
-  public async getAudioResolver(): Promise<AudioResolver> {
-    this.audioResolver ??= new AudioResolver(
+  public async getDownloadResolver(): Promise<DownloadResolver> {
+    this.downloadResolver ??= new DownloadResolver(
       await this.getMetadataRepository(),
-      this.getKeyPairProvider(),
-      this.getDecryptionProvider(),
+      this.getSymmetricKeyProvider(),
       this.getPresignedUrlProvider(),
       this.getAuthorizationProvider(),
     )
-    return this.audioResolver
+    return this.downloadResolver
+  }
+
+  public async getMetadataResolver(): Promise<MetadataResolver> {
+    this.metadataResolver ??= new MetadataResolver(
+      await this.getMetadataRepository(),
+    )
+    return this.metadataResolver
+  }
+
+  public async getUploadResolver(): Promise<UploadResolver> {
+    this.uploadResolver ??= new UploadResolver(
+      this.getKeyPairProvider(),
+      this.getPresignedUrlProvider(),
+    )
+    return this.uploadResolver
   }
 
   protected getKeyPairProvider(): KeyPairProvider {
-    return new KeyPairProvider(
+    this.keyPairProvider ??= new KeyPairProvider(
       this.getPublicKeyStorage(),
       this.getPrivateKeyStorage(),
       this.getKeyPairFactory(),
     )
+    return this.keyPairProvider
   }
 
-  protected getPresignedUrlProvider(): IUploadUrlProvider {
-    return new S3PresignedUrlProvider(
-      Config.getAudioFileBucket(),
+  protected getPresignedUrlProvider(): IPresignedUrlProvider {
+    this.presignedUrlProvider ??= new S3PresignedUrlProvider(
+      Config.getMediaFileBucket(),
       Config.getS3Client(),
     )
+    return this.presignedUrlProvider
   }
 
   protected getAuthorizationProvider(): IAuthorizationProvider {
@@ -83,8 +110,9 @@ export class CompositionRoot {
     this.redis ??= new RedisClient({
       port: Config.getRedisPort(),
       host: Config.getRedisHost(),
-      keyPrefix: 'audio:',
+      keyPrefix: 'media:',
     })
+    //this.redis.ping()
     return this.redis
   }
 
@@ -94,6 +122,13 @@ export class CompositionRoot {
 
   protected getPermissionApi(): PermissionApi {
     return new PermissionApi(new GraphQLClient(Config.getUserServiceEndpoint()))
+  }
+
+  protected getSymmetricKeyProvider(): SymmetricKeyProvider {
+    return new SymmetricKeyProvider(
+      this.getKeyPairProvider(),
+      this.getDecryptionProvider(),
+    )
   }
 
   protected getDecryptionProvider(): IDecryptionProvider {
@@ -121,15 +156,12 @@ export class CompositionRoot {
         Config.getMetadataDatabaseUrl(),
       )
     }
-    return this.typeorm.getRepository(AudioMetadata)
+    return this.typeorm.getRepository(MediaMetadata)
   }
 
   public async cleanUp() {
     logger.debug('[cleanUp] disconnecting from redis and typeorm...')
     await this.redis?.quit()
     await this.typeorm?.close()
-    this.redis = undefined
-    this.typeorm = undefined
-    this.audioResolver = undefined
   }
 }

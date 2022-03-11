@@ -1,8 +1,8 @@
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { Redis } from 'ioredis'
-import RedisAuthorizationProvider from '../../src/providers/redisAuthorizationProvider'
-import { IAuthorizationProvider } from '../../src/interfaces/authorizationProvider'
+import RedisAuthorizationProvider from '../../../src/providers/redisAuthorizationProvider'
+import { IAuthorizationProvider } from '../../../src/interfaces/authorizationProvider'
 
 describe('redisAuthorizationProvider', () => {
   describe('isAuthorized', () => {

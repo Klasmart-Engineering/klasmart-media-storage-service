@@ -1,12 +1,12 @@
 import 'newrelic'
 import 'reflect-metadata'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { bootstrapAudioService } from './initialization/bootstrapper'
+import { bootstrapService } from './initialization/bootstrapper'
 
 const logger = withLogger('index')
 
 async function main() {
-  const { app, server } = await bootstrapAudioService()
+  const { app, server } = await bootstrapService()
 
   const port = process.env.PORT || 8080
   app.listen(port, () => {

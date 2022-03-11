@@ -6,24 +6,24 @@ import {
 } from '../utils/createTestClient'
 import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
-import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
+import MediaMetadataBuilder from '../builders/mediaMetadataBuilder'
 import { generateAuthenticationToken } from '../utils/generateToken'
 import { v4 } from 'uuid'
-import { AudioMetadata } from '../../src/entities/audioMetadata'
+import { MediaMetadata } from '../../src/entities/mediaMetadata'
 import { ErrorMessage } from '../../src/helpers/errorMessages'
 import Substitute from '@fluffy-spoon/substitute'
 import AuthorizationProvider from '../../src/providers/authorizationProvider'
 import { TestCompositionRoot } from './testCompositionRoot'
-import { bootstrapAudioService } from '../../src/initialization/bootstrapper'
+import { bootstrapService } from '../../src/initialization/bootstrapper'
 
-describe('audioResolver', () => {
+describe('mediaResolver', () => {
   let testClient: ApolloServerTestClient
   let compositionRoot: TestCompositionRoot
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
-    const audioService = await bootstrapAudioService(compositionRoot)
-    testClient = createTestClient(audioService.server)
+    const mediaStorageService = await bootstrapService(compositionRoot)
+    testClient = createTestClient(mediaStorageService.server)
   })
 
   after(async () => {
@@ -31,7 +31,7 @@ describe('audioResolver', () => {
   })
 
   beforeEach(async () => {
-    await compositionRoot.clearCachedResolvers()
+    await compositionRoot.reset()
   })
 
   describe('audioMetadata', () => {
@@ -76,7 +76,7 @@ describe('audioResolver', () => {
         const endUserId = userId
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
-        await new AudioMetadataBuilder().buildAndPersist()
+        await new MediaMetadataBuilder().buildAndPersist()
         const authenticationToken = generateAuthenticationToken(endUserId)
 
         const authorizationProvider = Substitute.for<AuthorizationProvider>()
@@ -110,8 +110,8 @@ describe('audioResolver', () => {
         const endUserId = userId
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
-        await new AudioMetadataBuilder().buildAndPersist()
-        const matchingAudioMetadata = await new AudioMetadataBuilder()
+        await new MediaMetadataBuilder().buildAndPersist()
+        const matchingAudioMetadata = await new MediaMetadataBuilder()
           .withRoomId(roomId)
           .withUserId(userId)
           .withH5pId(h5pId)
@@ -162,7 +162,7 @@ describe('audioResolver', () => {
           const endUserId = undefined
           const h5pId = 'h5p1'
           const h5pSubId = 'h5pSub1'
-          const matchingAudioMetadata = await new AudioMetadataBuilder()
+          const matchingAudioMetadata = await new MediaMetadataBuilder()
             .withRoomId(roomId)
             .withUserId(userId)
             .withH5pId(h5pId)
@@ -229,5 +229,5 @@ async function audioMetadataQuery(
     })
 
   const res = await gqlTry(operation, logErrors)
-  return res.data?.audioMetadata as AudioMetadata[]
+  return res.data?.audioMetadata as MediaMetadata[]
 }

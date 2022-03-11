@@ -1,5 +1,10 @@
 import path from 'path'
-import { Connection, ConnectionOptions, createConnection } from 'typeorm'
+import {
+  Connection,
+  ConnectionOptions,
+  createConnection,
+  LoggerOptions,
+} from 'typeorm'
 import { withLogger } from 'kidsloop-nodejs-logger'
 
 const logger = withLogger('connectToMetadataDatabase')
@@ -20,12 +25,24 @@ export function getMetadataDatabaseConnectionOptions(
       path.join(__dirname, '../entities/*.js'),
     ],
     migrations: [path.join(__dirname, '../migrations/*.{ts,js}')],
+    logging: getLogging(),
     migrationsTableName: 'migrations',
     migrationsRun: true,
     cli: {
       migrationsDir: 'src/migrations',
     },
   }
+}
+
+function getLogging(): LoggerOptions | undefined {
+  const dbLogging = process.env.DATABASE_LOGGING
+  if (!dbLogging) {
+    return undefined
+  }
+  if (dbLogging === 'all') {
+    return 'all'
+  }
+  return dbLogging.split(' ').filter((x) => x !== '') as LoggerOptions
 }
 
 export async function connectToMetadataDatabase(
@@ -66,7 +83,7 @@ async function tryCreateMetadataDatabase(
   connectionFactory: (options: ConnectionOptions) => Promise<Connection>,
 ): Promise<boolean> {
   const urlObject = new URL(url)
-  // Use substring to omit the leading slash from the name e.g. /audio_db
+  // Use substring to omit the leading slash from the name e.g. /media_db
   const databaseName = urlObject.pathname.substring(1)
   try {
     const connection = await createBootstrapPostgresConnection(

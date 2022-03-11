@@ -42,11 +42,11 @@ export class ScheduleApi {
 
 function mapDtoToEntity(dto: ScheduleDto) {
   return new Schedule(
-    dto.org_id ?? throwExpression('schedule.org_id is undefined'),
+    dto.org_id ?? throwExpression('schedule.org_id is nullish'),
     dto.class_roster_class_id ??
-      throwExpression('schedule.class_roster_class_id is undefined'),
+      throwExpression('schedule.class_roster_class_id is nullish'),
     dto.class_roster_teacher_ids ??
-      throwExpression('schedule.class_roster_teacher_ids is undefined'),
+      throwExpression('schedule.class_roster_teacher_ids is nullish'),
   )
 }
 

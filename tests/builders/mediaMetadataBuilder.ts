@@ -1,9 +1,9 @@
 import { getRepository } from 'typeorm'
-import { AudioMetadata } from '../../src/entities/audioMetadata'
+import { MediaMetadata } from '../../src/entities/mediaMetadata'
 import { Mutable } from '../utils/mutable'
 import { v4 } from 'uuid'
 
-export default class AudioMetadataBuilder {
+export default class MediaMetadataBuilder {
   private id: string = v4()
   private userId: string = v4()
   private roomId: string | null = v4()
@@ -65,9 +65,9 @@ export default class AudioMetadataBuilder {
     return this
   }
 
-  public build(): AudioMetadata {
-    const entity = new AudioMetadata()
-    const mutable: Mutable<AudioMetadata> = entity
+  public build(): MediaMetadata {
+    const entity = new MediaMetadata()
+    const mutable: Mutable<MediaMetadata> = entity
     mutable.id = this.id
     mutable.roomId = this.roomId
     mutable.mimeType = this.mimeType
@@ -81,8 +81,8 @@ export default class AudioMetadataBuilder {
     return entity
   }
 
-  public buildAndPersist(): Promise<AudioMetadata> {
+  public buildAndPersist(): Promise<MediaMetadata> {
     const entity = this.build()
-    return getRepository(AudioMetadata).save(entity)
+    return getRepository(MediaMetadata).save(entity)
   }
 }

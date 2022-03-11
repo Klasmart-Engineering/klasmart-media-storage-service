@@ -1,4 +1,5 @@
 import '../utils/globalIntegrationTestHooks'
+import fetch from 'node-fetch'
 import { expect } from 'chai'
 import {
   ApolloServerTestClient,
@@ -9,26 +10,26 @@ import { Headers } from 'node-mocks-http'
 import AWS from 'aws-sdk'
 import { Config } from '../../src/initialization/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
-import { AudioMetadata } from '../../src/entities/audioMetadata'
-import AudioMetadataBuilder from '../builders/audioMetadataBuilder'
+import { MediaMetadata } from '../../src/entities/mediaMetadata'
+import MediaMetadataBuilder from '../builders/mediaMetadataBuilder'
 import { box } from 'tweetnacl'
 import { encrypt } from '../../src/helpers/tweetnaclUtil'
 import { v4 } from 'uuid'
 import { RequiredDownloadInfo } from '../../src/graphqlResultTypes/requiredDownloadInfo'
 import { generateAuthenticationToken } from '../utils/generateToken'
 import { TestCompositionRoot } from './testCompositionRoot'
-import { bootstrapAudioService } from '../../src/initialization/bootstrapper'
+import { bootstrapService } from '../../src/initialization/bootstrapper'
 import { getRepository } from 'typeorm'
 
-describe('audioResolver.getRequiredDownloadInfo', () => {
+describe('mediaResolver.getRequiredDownloadInfo', () => {
   let testClient: ApolloServerTestClient
   let compositionRoot: TestCompositionRoot
   let s3Client: AWS.S3
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
-    const audioService = await bootstrapAudioService(compositionRoot)
-    testClient = createTestClient(audioService.server)
+    const mediaStorageService = await bootstrapService(compositionRoot)
+    testClient = createTestClient(mediaStorageService.server)
     s3Client = Config.getS3Client()
   })
 
@@ -44,12 +45,12 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
       before(async () => {
         // Clean slate
         await clearS3Buckets(s3Client)
-        await compositionRoot.clearCachedResolvers()
+        await compositionRoot.reset()
 
         // Arrange
         const endUserId = v4()
         const roomId = 'room1'
-        const audioId = v4()
+        const mediaId = v4()
 
         const serverKeyPair = box.keyPair()
         const userKeyPair = box.keyPair()
@@ -77,19 +78,26 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
             Body: Buffer.from(serverKeyPair.secretKey),
           })
           .promise()
-        const metadata = await new AudioMetadataBuilder()
-          .withId(audioId)
+        await s3Client
+          .putObject({
+            Bucket: Config.getMediaFileBucket(),
+            Key: `audio/${mediaId}`,
+            Body: Buffer.from([1, 2, 3]),
+          })
+          .promise()
+        const metadata = await new MediaMetadataBuilder()
+          .withId(mediaId)
           .withUserId(endUserId)
           .withRoomId(roomId)
           .withBase64UserPublicKey(base64UserPublicKey)
           .withBase64EncryptedSymmetricKey(base64EncryptedSymmetricKey)
           .buildAndPersist()
-        await getRepository(AudioMetadata).save(metadata)
+        await getRepository(MediaMetadata).save(metadata)
 
         // Act
         result = await getRequiredDownloadInfoQuery(
           testClient,
-          audioId,
+          mediaId,
           roomId,
           {
             authentication: generateAuthenticationToken(endUserId),
@@ -106,6 +114,11 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
         expect(result.presignedUrl).to.not.be.empty
       })
 
+      it('presignedUrl web request is successful', async () => {
+        const response = await fetch(result.presignedUrl, { method: 'GET' })
+        expect(response.ok, response.statusText).to.be.true
+      })
+
       it('result.base64SymmetricKey is not nullish or empty', async () => {
         expect(result.base64SymmetricKey == null).to.be.false
         expect(result.base64SymmetricKey).to.not.be.empty
@@ -115,9 +128,9 @@ describe('audioResolver.getRequiredDownloadInfo', () => {
 })
 
 const GET_REQUIRED_DOWNLOAD_INFO = `
-query getRequiredDownloadInfo($audioId: String!, $roomId: String!) {
+query getRequiredDownloadInfo($mediaId: String!, $roomId: String!) {
   getRequiredDownloadInfo(
-    audioId: $audioId,
+    mediaId: $mediaId,
     roomId: $roomId,
   ) {
     base64SymmetricKey
@@ -127,7 +140,7 @@ query getRequiredDownloadInfo($audioId: String!, $roomId: String!) {
 `
 async function getRequiredDownloadInfoQuery(
   testClient: ApolloServerTestClient,
-  audioId: string,
+  mediaId: string,
   roomId: string,
   headers?: Headers,
   logErrors = true,
@@ -138,7 +151,7 @@ async function getRequiredDownloadInfoQuery(
     query({
       query: GET_REQUIRED_DOWNLOAD_INFO,
       variables: {
-        audioId,
+        mediaId: mediaId,
         roomId,
       },
       headers,

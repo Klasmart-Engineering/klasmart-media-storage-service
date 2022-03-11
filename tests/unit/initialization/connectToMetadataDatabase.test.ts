@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Connection } from 'typeorm'
-import expect from '../utils/chaiAsPromisedSetup'
+import expect from '../../utils/chaiAsPromisedSetup'
 import {
   ConnectionFactory,
   connectToMetadataDatabase,
@@ -8,17 +8,17 @@ import {
   getMetadataDatabaseConnectionOptions,
   INVALID_CATALOG_NAME,
   UNIQUE_VIOLATION,
-} from '../../src/initialization/connectToMetadataDatabase'
+} from '../../../src/initialization/connectToMetadataDatabase'
 import Substitute from '@fluffy-spoon/substitute'
 
-describe('audioResolver', () => {
+describe('mediaResolver', () => {
   context('database does not exist', () => {
     context(
       'createIfDoesntExist=false, error.code=INVALID_CATALOG_NAME',
       () => {
         it('throws error', async () => {
           // Arrange
-          const url = 'postgres://postgres:kidsloop@localhost:5432/audio_db'
+          const url = 'postgres://postgres:kidsloop@localhost:5432/media_db'
           const createIfDoesntExist = false
           const connectionFactory: ConnectionFactory = (options) => {
             throw {
@@ -44,7 +44,7 @@ describe('audioResolver', () => {
     context('createIfDoesntExist=true, error.code=INVALID_CATALOG_NAME', () => {
       it('returns valid connection', async () => {
         // Arrange
-        const url = 'postgres://postgres:kidsloop@localhost:5432/audio_db'
+        const url = 'postgres://postgres:kidsloop@localhost:5432/media_db'
         const createIfDoesntExist = true
         let counter = 0
         const connectionFactory: ConnectionFactory = (options) => {
@@ -58,7 +58,7 @@ describe('audioResolver', () => {
             counter += 1
             // This represents the connection to the database named 'postgres'.
             const connection = Substitute.for<Connection>()
-            connection.query(`CREATE DATABASE audio_db;`).resolves({})
+            connection.query(`CREATE DATABASE media_db;`).resolves({})
             connection.close().resolves()
             return Promise.resolve(connection)
           }
@@ -88,7 +88,7 @@ describe('audioResolver', () => {
       () => {
         it('throws error', async () => {
           // Arrange
-          const url = 'postgres://postgres:kidsloop@localhost:5432/audio_db'
+          const url = 'postgres://postgres:kidsloop@localhost:5432/media_db'
           const createIfDoesntExist = true
           const connectionFactory: ConnectionFactory = (options) => {
             throw {
@@ -116,7 +116,7 @@ describe('audioResolver', () => {
       () => {
         it('throws error', async () => {
           // Arrange
-          const url = 'postgres://postgres:kidsloop@localhost:5432/audio_db'
+          const url = 'postgres://postgres:kidsloop@localhost:5432/media_db'
           const createIfDoesntExist = true
           let counter = 0
           const connectionFactory: ConnectionFactory = (options) => {
@@ -152,7 +152,7 @@ describe('audioResolver', () => {
       () => {
         it('returns valid connection', async () => {
           // Arrange
-          const url = 'postgres://postgres:kidsloop@localhost:5432/audio_db'
+          const url = 'postgres://postgres:kidsloop@localhost:5432/media_db'
           const createIfDoesntExist = true
           let counter = 0
           const connectionFactory: ConnectionFactory = (options) => {
@@ -166,7 +166,7 @@ describe('audioResolver', () => {
               counter += 1
               // This represents the connection to the database named 'postgres'.
               const connection = Substitute.for<Connection>()
-              connection.query(`CREATE DATABASE audio_db;`).rejects({
+              connection.query(`CREATE DATABASE media_db;`).rejects({
                 message: 'unique violation',
                 code: UNIQUE_VIOLATION,
               })
@@ -199,7 +199,7 @@ describe('audioResolver', () => {
       () => {
         it('returns valid connection', async () => {
           // Arrange
-          const url = 'postgres://postgres:kidsloop@localhost:5432/audio_db'
+          const url = 'postgres://postgres:kidsloop@localhost:5432/media_db'
           const createIfDoesntExist = true
           let counter = 0
           const connectionFactory: ConnectionFactory = (options) => {
@@ -213,7 +213,7 @@ describe('audioResolver', () => {
               counter += 1
               // This represents the connection to the database named 'postgres'.
               const connection = Substitute.for<Connection>()
-              connection.query(`CREATE DATABASE audio_db;`).rejects({
+              connection.query(`CREATE DATABASE media_db;`).rejects({
                 message: 'duplicate database',
                 code: DUPLICATE_DATABASE,
               })
