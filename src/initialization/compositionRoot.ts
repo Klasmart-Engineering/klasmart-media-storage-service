@@ -112,7 +112,6 @@ export class CompositionRoot {
       host: Config.getRedisHost(),
       keyPrefix: 'media:',
     })
-    //this.redis.ping()
     return this.redis
   }
 

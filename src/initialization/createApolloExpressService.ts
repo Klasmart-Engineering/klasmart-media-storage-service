@@ -2,23 +2,19 @@ import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import { createApolloServer } from './createApolloServer'
-import { Express } from 'express'
-import { ApolloServer } from 'apollo-server-express'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { getCorsOptions } from './getCorsOptions'
 import { Config } from './config'
 import { GraphQLSchema } from 'graphql'
+import IMediaStorageService from '../interfaces/mediaStorageService'
 
-const logger = withLogger('createMediaStorageServer')
+const logger = withLogger('createApolloExpressServer')
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
-export default async function createMediaStorageServer(
+export default async function createApolloExpressServer(
   schema: GraphQLSchema,
-): Promise<{
-  app: Express
-  server: ApolloServer
-}> {
+): Promise<IMediaStorageService> {
   const server = createApolloServer(schema)
   await server.start()
 
@@ -34,5 +30,15 @@ export default async function createMediaStorageServer(
     cors: getCorsOptions(domain),
     path: routePrefix,
   })
-  return { app, server }
+
+  return {
+    server: app,
+    path: server.graphqlPath,
+    listen: async (port: number, callback: () => void) => {
+      await new Promise((resolve, reject) =>
+        app.listen(port, () => resolve({})),
+      )
+      callback()
+    },
+  }
 }

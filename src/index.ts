@@ -1,18 +1,16 @@
 import 'newrelic'
 import 'reflect-metadata'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { bootstrapService } from './initialization/bootstrapper'
+import bootstrap from './initialization/bootstrap'
 
 const logger = withLogger('index')
 
 async function main() {
-  const { app, server } = await bootstrapService()
+  const service = await bootstrap()
 
   const port = process.env.PORT || 8080
-  app.listen(port, () => {
-    logger.info(
-      `🌎 Server ready at http://localhost:${port}${server.graphqlPath}`,
-    )
+  await service.listen(Number(port), () => {
+    logger.info(`🌎 Server ready at http://localhost:${port}${service.path}`)
   })
 }
 

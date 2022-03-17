@@ -5,11 +5,8 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
   ApolloServerPluginLandingPageDisabled,
 } from 'apollo-server-core'
-import {
-  checkAuthenticationToken,
-  checkLiveAuthorizationToken,
-} from 'kidsloop-token-validation'
 import { withLogger } from 'kidsloop-nodejs-logger'
+import getContext from './getContext'
 
 const logger = withLogger('createApolloServer')
 
@@ -25,61 +22,8 @@ export const createApolloServer = (schema: GraphQLSchema): ApolloServer => {
             },
           }),
     ],
-    context: async ({ req }: ExpressContext): Promise<Context | undefined> => {
-      try {
-        const ip = (req.headers['x-forwarded-for'] || req.ip) as string
-        const encodedAuthenticationToken =
-          extractHeader(req.headers.authentication) || req.cookies.access
-        if (encodedAuthenticationToken == null) {
-          return { ip }
-        }
-        const authenticationToken = await checkAuthenticationToken(
-          encodedAuthenticationToken,
-        )
-        const userId = authenticationToken.id
-
-        let roomId: string | undefined
-        const encodedLiveAuthorizationToken = extractHeader(
-          req.headers['live-authorization'],
-        )
-        if (encodedLiveAuthorizationToken != null) {
-          try {
-            const authorizationToken = await checkLiveAuthorizationToken(
-              encodedLiveAuthorizationToken,
-            )
-            roomId =
-              authorizationToken.userid === userId
-                ? authorizationToken.roomid
-                : undefined
-            if (roomId === undefined) {
-              logger.error(
-                `[context] authenticationToken.userId (${userId}) is different than authorizationToken.userId (${authorizationToken.userid}).`,
-              )
-            }
-          } catch (e) {
-            // Don't log anything. Token validation errors just clutter the logs.
-          }
-        }
-
-        return {
-          authenticationToken: encodedAuthenticationToken,
-          ip,
-          userId,
-          roomId,
-        }
-      } catch (e) {
-        // Don't log anything. Token validation errors just clutter the logs.
-      }
+    context: ({ req }: ExpressContext): Promise<Context | undefined> => {
+      return getContext(req.headers, req.ip)
     },
   })
-}
-
-function extractHeader(headers?: string | string[]): string | undefined {
-  if (typeof headers === 'string') {
-    return headers
-  }
-  if (headers instanceof Array && headers.length > 0) {
-    return headers[0]
-  }
-  return undefined
 }

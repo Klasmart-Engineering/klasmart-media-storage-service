@@ -1,12 +1,6 @@
 import '../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import {
-  ApolloServerTestClient,
-  createTestClient,
-} from '../utils/createTestClient'
-import { gqlTry } from '../utils/gqlTry'
-import { Headers } from 'node-mocks-http'
 import { Config } from '../../src/initialization/config'
 import {
   generateAuthenticationToken,
@@ -17,7 +11,6 @@ import { v4 } from 'uuid'
 import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadInfo'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
 import { TestCompositionRoot } from './testCompositionRoot'
-import { bootstrapService } from '../../src/initialization/bootstrapper'
 import {
   GetObjectCommand,
   ListObjectsCommand,
@@ -25,16 +18,18 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import s3BodyToBuffer from '../../src/helpers/s3BodyToBuffer'
+import bootstrap from '../../src/initialization/bootstrap'
+import supertest, { SuperTest } from 'supertest'
 
 describe('mediaResolver.getRequiredUploadInfo', () => {
-  let testClient: ApolloServerTestClient
+  let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
   let s3Client: S3Client
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
-    const mediaStorageService = await bootstrapService(compositionRoot)
-    testClient = createTestClient(mediaStorageService.server)
+    const service = await bootstrap(compositionRoot)
+    request = supertest(service.server)
     s3Client = Config.getS3Client()
   })
 
@@ -57,10 +52,23 @@ describe('mediaResolver.getRequiredUploadInfo', () => {
       const mimeType = 'audio/webm'
 
       // Act
-      result = await getRequiredUploadInfoQuery(testClient, mimeType, {
-        authentication: generateAuthenticationToken(endUserId),
-        'live-authorization': generateLiveAuthorizationToken(endUserId, roomId),
-      })
+      const response = await request
+        .post('/graphql')
+        .set({
+          ContentType: 'application/json',
+          cookie: `access=${generateAuthenticationToken(endUserId)}`,
+          'live-authorization': generateLiveAuthorizationToken(
+            endUserId,
+            roomId,
+          ),
+        })
+        .send({
+          query: GET_REQUIRED_UPLOAD_INFO,
+          variables: {
+            mimeType,
+          },
+        })
+      result = response.body.data?.getRequiredUploadInfo as RequiredUploadInfo
     })
 
     it('result is not nullish', () => {
@@ -136,10 +144,23 @@ describe('mediaResolver.getRequiredUploadInfo', () => {
       )
 
       // Act
-      result = await getRequiredUploadInfoQuery(testClient, mimeType, {
-        authentication: generateAuthenticationToken(endUserId),
-        'live-authorization': generateLiveAuthorizationToken(endUserId, roomId),
-      })
+      const response = await request
+        .post('/graphql')
+        .set({
+          ContentType: 'application/json',
+          cookie: `access=${generateAuthenticationToken(endUserId)}`,
+          'live-authorization': generateLiveAuthorizationToken(
+            endUserId,
+            roomId,
+          ),
+        })
+        .send({
+          query: GET_REQUIRED_UPLOAD_INFO,
+          variables: {
+            mimeType,
+          },
+        })
+      result = response.body.data?.getRequiredUploadInfo as RequiredUploadInfo
     })
 
     it('result is not nullish', () => {
@@ -219,23 +240,3 @@ query getRequiredUploadInfo($mimeType: String!) {
   }
 }
 `
-async function getRequiredUploadInfoQuery(
-  testClient: ApolloServerTestClient,
-  mimeType: string,
-  headers?: Headers,
-  logErrors = true,
-) {
-  const { query } = testClient
-
-  const operation = () =>
-    query({
-      query: GET_REQUIRED_UPLOAD_INFO,
-      variables: {
-        mimeType,
-      },
-      headers,
-    })
-
-  const res = await gqlTry(operation, logErrors)
-  return res.data?.getRequiredUploadInfo as RequiredUploadInfo
-}

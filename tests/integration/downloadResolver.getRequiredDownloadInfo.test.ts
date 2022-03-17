@@ -18,19 +18,19 @@ import { v4 } from 'uuid'
 import { RequiredDownloadInfo } from '../../src/graphqlResultTypes/requiredDownloadInfo'
 import { generateAuthenticationToken } from '../utils/generateToken'
 import { TestCompositionRoot } from './testCompositionRoot'
-import { bootstrapService } from '../../src/initialization/bootstrapper'
+import bootstrap from '../../src/initialization/bootstrap'
 import { getRepository } from 'typeorm'
-import axios from 'axios'
+import supertest, { SuperTest } from 'supertest'
 
 describe('mediaResolver.getRequiredDownloadInfo', () => {
-  let testClient: ApolloServerTestClient
+  let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
   let s3Client: S3Client
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
-    const mediaStorageService = await bootstrapService(compositionRoot)
-    testClient = createTestClient(mediaStorageService.server)
+    const service = await bootstrap(compositionRoot)
+    request = supertest(service.server)
     s3Client = Config.getS3Client()
   })
 
@@ -96,14 +96,21 @@ describe('mediaResolver.getRequiredDownloadInfo', () => {
         await getRepository(MediaMetadata).save(metadata)
 
         // Act
-        result = await getRequiredDownloadInfoQuery(
-          testClient,
-          mediaId,
-          roomId,
-          {
-            authentication: generateAuthenticationToken(endUserId),
-          },
-        )
+        const response = await request
+          .post('/graphql')
+          .set({
+            ContentType: 'application/json',
+            cookie: `access=${generateAuthenticationToken(endUserId)}`,
+          })
+          .send({
+            query: GET_REQUIRED_DOWNLOAD_INFO,
+            variables: {
+              mediaId,
+              roomId,
+            },
+          })
+        result = response.body.data
+          ?.getRequiredDownloadInfo as RequiredDownloadInfo
       })
 
       it('result is not nullish', () => {
@@ -139,25 +146,3 @@ query getRequiredDownloadInfo($mediaId: String!, $roomId: String!) {
   }
 }
 `
-async function getRequiredDownloadInfoQuery(
-  testClient: ApolloServerTestClient,
-  mediaId: string,
-  roomId: string,
-  headers?: Headers,
-  logErrors = true,
-) {
-  const { query } = testClient
-
-  const operation = () =>
-    query({
-      query: GET_REQUIRED_DOWNLOAD_INFO,
-      variables: {
-        mediaId: mediaId,
-        roomId,
-      },
-      headers,
-    })
-
-  const res = await gqlTry(operation, logErrors)
-  return res.data?.getRequiredDownloadInfo as RequiredDownloadInfo
-}

@@ -1,11 +1,5 @@
 import '../utils/globalIntegrationTestHooks'
 import expect from '../utils/chaiAsPromisedSetup'
-import {
-  ApolloServerTestClient,
-  createTestClient,
-} from '../utils/createTestClient'
-import { gqlTry } from '../utils/gqlTry'
-import { Headers } from 'node-mocks-http'
 import MediaMetadataBuilder from '../builders/mediaMetadataBuilder'
 import { generateAuthenticationToken } from '../utils/generateToken'
 import { v4 } from 'uuid'
@@ -14,16 +8,17 @@ import { ErrorMessage } from '../../src/helpers/errorMessages'
 import Substitute from '@fluffy-spoon/substitute'
 import AuthorizationProvider from '../../src/providers/authorizationProvider'
 import { TestCompositionRoot } from './testCompositionRoot'
-import { bootstrapService } from '../../src/initialization/bootstrapper'
+import supertest, { SuperTest } from 'supertest'
+import bootstrap from '../../src/initialization/bootstrap'
 
 describe('mediaResolver', () => {
-  let testClient: ApolloServerTestClient
+  let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
-    const mediaStorageService = await bootstrapService(compositionRoot)
-    testClient = createTestClient(mediaStorageService.server)
+    const service = await bootstrap(compositionRoot)
+    request = supertest(service.server)
   })
 
   after(async () => {
@@ -52,16 +47,22 @@ describe('mediaResolver', () => {
           .resolves(true)
 
         // Act
-        const result = await audioMetadataQuery(
-          testClient,
-          userId,
-          roomId,
-          h5pId,
-          h5pSubId,
-          {
-            authentication: authenticationToken,
-          },
-        )
+        const response = await request
+          .post('/graphql')
+          .set({
+            ContentType: 'application/json',
+            cookie: `access=${authenticationToken}`,
+          })
+          .send({
+            query: AUDIO_METADATA,
+            variables: {
+              userId,
+              roomId,
+              h5pId,
+              h5pSubId,
+            },
+          })
+        const result = response.body.data?.audioMetadata as MediaMetadata[]
 
         // Assert
         expect(result).to.deep.equal([])
@@ -86,16 +87,22 @@ describe('mediaResolver', () => {
           .resolves(true)
 
         // Act
-        const result = await audioMetadataQuery(
-          testClient,
-          userId,
-          roomId,
-          h5pId,
-          h5pSubId,
-          {
-            authentication: authenticationToken,
-          },
-        )
+        const response = await request
+          .post('/graphql')
+          .set({
+            ContentType: 'application/json',
+            cookie: `access=${authenticationToken}`,
+          })
+          .send({
+            query: AUDIO_METADATA,
+            variables: {
+              userId,
+              roomId,
+              h5pId,
+              h5pSubId,
+            },
+          })
+        const result = response.body.data?.audioMetadata as MediaMetadata[]
 
         // Assert
         expect(result).to.deep.equal([])
@@ -126,16 +133,22 @@ describe('mediaResolver', () => {
           .resolves(true)
 
         // Act
-        const result = await audioMetadataQuery(
-          testClient,
-          userId,
-          roomId,
-          h5pId,
-          h5pSubId,
-          {
-            authentication: authenticationToken,
-          },
-        )
+        const response = await request
+          .post('/graphql')
+          .set({
+            ContentType: 'application/json',
+            cookie: `access=${authenticationToken}`,
+          })
+          .send({
+            query: AUDIO_METADATA,
+            variables: {
+              userId,
+              roomId,
+              h5pId,
+              h5pSubId,
+            },
+          })
+        const result = response.body.data?.audioMetadata as MediaMetadata[]
 
         // Assert
         expect(result).to.deep.equal([
@@ -176,13 +189,25 @@ describe('mediaResolver', () => {
             .resolves(true)
 
           // Act
-          const fn = () =>
-            audioMetadataQuery(testClient, userId, roomId, h5pId, h5pSubId, {
-              authentication: authenticationToken,
+          const response = await request
+            .post('/graphql')
+            .set({
+              ContentType: 'application/json',
+              cookie: null,
             })
-
-          // Assert
-          await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
+            .send({
+              query: AUDIO_METADATA,
+              variables: {
+                userId,
+                roomId,
+                h5pId,
+                h5pSubId,
+              },
+            })
+            .expect(500)
+          expect(response.body?.errors?.[0]?.message).to.equal(
+            ErrorMessage.notAuthenticated,
+          )
         })
       },
     )
@@ -190,44 +215,24 @@ describe('mediaResolver', () => {
 })
 
 export const AUDIO_METADATA = `
-query audioMetadata(
+  query audioMetadata(
     $userId: String!
     $roomId: String!
     $h5pId: String!
-    $h5pSubId: String) {
-  audioMetadata(
-    userId: $userId
-    roomId: $roomId
-    h5pId: $h5pId
-    h5pSubId: $h5pSubId
+    $h5pSubId: String
   ) {
-    id
-    userId
-    roomId
-    h5pId
-    h5pSubId
-    createdAt
+    audioMetadata(
+      userId: $userId
+      roomId: $roomId
+      h5pId: $h5pId
+      h5pSubId: $h5pSubId
+    ) {
+      id
+      userId
+      roomId
+      h5pId
+      h5pSubId
+      createdAt
+    }
   }
-}
 `
-async function audioMetadataQuery(
-  testClient: ApolloServerTestClient,
-  userId: string,
-  roomId: string,
-  h5pId: string,
-  h5pSubId: string,
-  headers?: Headers,
-  logErrors = true,
-) {
-  const { query } = testClient
-
-  const operation = () =>
-    query({
-      query: AUDIO_METADATA,
-      variables: { userId, roomId, h5pId, h5pSubId },
-      headers,
-    })
-
-  const res = await gqlTry(operation, logErrors)
-  return res.data?.audioMetadata as MediaMetadata[]
-}

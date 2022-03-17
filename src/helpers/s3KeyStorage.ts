@@ -7,7 +7,7 @@ import {
 } from '@aws-sdk/client-s3'
 import IKeyStorage from '../interfaces/keyStorage'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { Readable } from 'stream'
+import s3BodyToBuffer from './s3BodyToBuffer'
 
 const logger = withLogger('S3KeyStorage')
 
@@ -23,18 +23,8 @@ export class S3KeyStorage implements IKeyStorage {
       Key: objectKey,
     }
     try {
-      const result = await this.s3Client.send(new GetObjectCommand(getParams))
-      const body = result.Body as Readable
-      if (!body) {
-        logger.error('Expected body to be instanceof Readable.')
-        return
-      }
-      return new Promise<Buffer>((resolve, reject) => {
-        const chunks: Buffer[] = []
-        body.on('data', (chunk) => chunks.push(chunk))
-        body.once('end', () => resolve(Buffer.concat(chunks)))
-        body.once('error', reject)
-      })
+      const response = await this.s3Client.send(new GetObjectCommand(getParams))
+      return s3BodyToBuffer(response.Body)
     } catch (e) {
       // Object doesn't exist. Just let it return undefined.
     }

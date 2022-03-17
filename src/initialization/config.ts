@@ -1,3 +1,4 @@
+/* eslint-disable node/no-process-env */
 import { S3Client } from '@aws-sdk/client-s3'
 import { throwExpression } from '../helpers/throwExpression'
 
