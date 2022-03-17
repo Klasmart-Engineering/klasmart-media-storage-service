@@ -7,7 +7,7 @@ import {
 } from '../utils/createTestClient'
 import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
-import AWS from 'aws-sdk'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Config } from '../../src/initialization/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
 import { MediaMetadata } from '../../src/entities/mediaMetadata'
@@ -20,11 +20,12 @@ import { generateAuthenticationToken } from '../utils/generateToken'
 import { TestCompositionRoot } from './testCompositionRoot'
 import { bootstrapService } from '../../src/initialization/bootstrapper'
 import { getRepository } from 'typeorm'
+import axios from 'axios'
 
 describe('mediaResolver.getRequiredDownloadInfo', () => {
   let testClient: ApolloServerTestClient
   let compositionRoot: TestCompositionRoot
-  let s3Client: AWS.S3
+  let s3Client: S3Client
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
@@ -64,27 +65,27 @@ describe('mediaResolver.getRequiredDownloadInfo', () => {
         const symmetricKey = box.keyPair().secretKey
         const base64EncryptedSymmetricKey = encrypt(userSharedKey, symmetricKey)
 
-        await s3Client
-          .putObject({
+        await s3Client.send(
+          new PutObjectCommand({
             Bucket: Config.getPublicKeyBucket(),
             Key: roomId,
             Body: Buffer.from(serverKeyPair.publicKey),
-          })
-          .promise()
-        await s3Client
-          .putObject({
+          }),
+        )
+        await s3Client.send(
+          new PutObjectCommand({
             Bucket: Config.getPrivateKeyBucket(),
             Key: roomId,
             Body: Buffer.from(serverKeyPair.secretKey),
-          })
-          .promise()
-        await s3Client
-          .putObject({
+          }),
+        )
+        await s3Client.send(
+          new PutObjectCommand({
             Bucket: Config.getMediaFileBucket(),
             Key: `audio/${mediaId}`,
             Body: Buffer.from([1, 2, 3]),
-          })
-          .promise()
+          }),
+        )
         const metadata = await new MediaMetadataBuilder()
           .withId(mediaId)
           .withUserId(endUserId)

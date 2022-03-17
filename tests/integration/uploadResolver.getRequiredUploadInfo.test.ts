@@ -18,11 +18,18 @@ import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadI
 import { clearS3Buckets } from '../utils/s3BucketUtil'
 import { TestCompositionRoot } from './testCompositionRoot'
 import { bootstrapService } from '../../src/initialization/bootstrapper'
+import {
+  GetObjectCommand,
+  ListObjectsCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
+import s3BodyToBuffer from '../../src/helpers/s3BodyToBuffer'
 
 describe('mediaResolver.getRequiredUploadInfo', () => {
   let testClient: ApolloServerTestClient
   let compositionRoot: TestCompositionRoot
-  let s3Client: AWS.S3
+  let s3Client: S3Client
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
@@ -79,9 +86,9 @@ describe('mediaResolver.getRequiredUploadInfo', () => {
     })
 
     it('server public key is saved in S3 bucket', async () => {
-      const publicKeyBucket = await s3Client
-        .listObjectsV2({ Bucket: Config.getPublicKeyBucket() })
-        .promise()
+      const publicKeyBucket = await s3Client.send(
+        new ListObjectsCommand({ Bucket: Config.getPublicKeyBucket() }),
+      )
       expect(publicKeyBucket.Contents == null).to.be.false
       expect(publicKeyBucket.Contents).to.have.lengthOf(1)
       expect(publicKeyBucket.Contents?.[0].Size).to.equal(32)
@@ -89,9 +96,9 @@ describe('mediaResolver.getRequiredUploadInfo', () => {
     })
 
     it('server private key is saved in S3 bucket', async () => {
-      const privateKeyBucket = await s3Client
-        .listObjectsV2({ Bucket: Config.getPrivateKeyBucket() })
-        .promise()
+      const privateKeyBucket = await s3Client.send(
+        new ListObjectsCommand({ Bucket: Config.getPrivateKeyBucket() }),
+      )
       expect(privateKeyBucket.Contents == null).to.be.false
       expect(privateKeyBucket.Contents).to.have.lengthOf(1)
       expect(privateKeyBucket.Contents?.[0].Size).to.equal(32)
@@ -113,20 +120,20 @@ describe('mediaResolver.getRequiredUploadInfo', () => {
       const endUserId = v4()
       const mimeType = 'audio/webm'
 
-      await s3Client
-        .putObject({
+      await s3Client.send(
+        new PutObjectCommand({
           Bucket: Config.getPublicKeyBucket(),
           Key: roomId,
           Body: Buffer.from(serverKeyPair.publicKey),
-        })
-        .promise()
-      await s3Client
-        .putObject({
+        }),
+      )
+      await s3Client.send(
+        new PutObjectCommand({
           Bucket: Config.getPrivateKeyBucket(),
           Key: roomId,
           Body: Buffer.from(serverKeyPair.secretKey),
-        })
-        .promise()
+        }),
+      )
 
       // Act
       result = await getRequiredUploadInfoQuery(testClient, mimeType, {
@@ -164,32 +171,39 @@ describe('mediaResolver.getRequiredUploadInfo', () => {
     })
 
     it('server public key is still saved in S3 bucket', async () => {
-      const publicKeyBucket = await s3Client
-        .listObjectsV2({ Bucket: Config.getPublicKeyBucket() })
-        .promise()
-      const publicKeyInBucket = await s3Client
-        .getObject({ Bucket: Config.getPublicKeyBucket(), Key: roomId })
-        .promise()
+      const publicKeyBucket = await s3Client.send(
+        new ListObjectsCommand({ Bucket: Config.getPublicKeyBucket() }),
+      )
+      const publicKeyInBucket = await s3Client.send(
+        new GetObjectCommand({
+          Bucket: Config.getPublicKeyBucket(),
+          Key: roomId,
+        }),
+      )
+      const publicKeyBuffer = await s3BodyToBuffer(publicKeyInBucket.Body)
+
       expect(publicKeyBucket.Contents == null).to.be.false
       expect(publicKeyBucket.Contents).to.have.lengthOf(1)
-      expect(publicKeyInBucket.Body).to.deep.equal(
+      expect(publicKeyBuffer).to.deep.equal(
         Buffer.from(serverKeyPair.publicKey),
       )
     })
 
     it('server private key is still saved in S3 bucket', async () => {
-      const privateKeyBucket = await s3Client
-        .listObjectsV2({ Bucket: Config.getPrivateKeyBucket() })
-        .promise()
-      const privateKeyInBucket = await s3Client
-        .getObject({
+      const privateKeyBucket = await s3Client.send(
+        new ListObjectsCommand({ Bucket: Config.getPrivateKeyBucket() }),
+      )
+      const privateKeyInBucket = await s3Client.send(
+        new GetObjectCommand({
           Bucket: Config.getPrivateKeyBucket(),
           Key: roomId,
-        })
-        .promise()
+        }),
+      )
+      const privateKeyBuffer = await s3BodyToBuffer(privateKeyInBucket.Body)
+
       expect(privateKeyBucket.Contents).to.not.be.undefined
       expect(privateKeyBucket.Contents).to.have.lengthOf(1)
-      expect(privateKeyInBucket.Body).to.deep.equal(
+      expect(privateKeyBuffer).to.deep.equal(
         Buffer.from(serverKeyPair.secretKey),
       )
     })

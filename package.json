@@ -66,6 +66,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.1",
     "inquirer": "^8.1.2",
+    "jsonwebtoken": "^8.5.1",
     "lint-staged": "^12.3.3",
     "mocha": "^9.2.0",
     "node-fetch": "^2.6.6",
@@ -79,10 +80,10 @@
     "uuid": "^8.3.2"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.49.0",
+    "@aws-sdk/client-s3": "^3.54.1",
+    "@aws-sdk/s3-request-presigner": "^3.54.1",
     "apollo-server-core": "^3.6.2",
     "apollo-server-express": "^3.6.2",
-    "aws-sdk": "^2.1068.0",
     "axios": "^0.26.0",
     "class-validator": "^0.13.1",
     "compression": "^1.7.4",
@@ -92,7 +93,6 @@
     "graphql": "^15.8.0",
     "graphql-request": "^4.0.0",
     "ioredis": "^4.28.5",
-    "jsonwebtoken": "^8.5.1",
     "kidsloop-nodejs-logger": "bitbucket:calmisland/kidsloop-nodejs-logger#v0.2.15",
     "kidsloop-token-validation": "bitbucket:calmisland/kidsloop-token-validation#v1.4.1",
     "newrelic": "^8.7.1",

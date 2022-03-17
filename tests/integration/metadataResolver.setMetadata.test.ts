@@ -8,7 +8,7 @@ import { gqlTry } from '../utils/gqlTry'
 import { Headers } from 'node-mocks-http'
 import { box } from 'tweetnacl'
 import { MediaMetadata } from '../../src/entities/mediaMetadata'
-import AWS from 'aws-sdk'
+import { S3Client } from '@aws-sdk/client-s3'
 import { Config } from '../../src/initialization/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
 import {
@@ -23,7 +23,7 @@ import { getRepository } from 'typeorm'
 describe('mediaResolver.setMetadata', () => {
   let testClient: ApolloServerTestClient
   let compositionRoot: TestCompositionRoot
-  let s3Client: AWS.S3
+  let s3Client: S3Client
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()

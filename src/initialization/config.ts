@@ -1,17 +1,12 @@
-import AWS from 'aws-sdk'
+import { S3Client } from '@aws-sdk/client-s3'
 import { throwExpression } from '../helpers/throwExpression'
 
 export class Config {
-  public static getS3Client(): AWS.S3 {
-    return new AWS.S3({
+  public static getS3Client(): S3Client {
+    return new S3Client({
       endpoint: process.env.S3_BUCKET_ENDPOINT,
       // Needed with minio.
-      s3ForcePathStyle: true,
-      signatureVersion: 'v4',
-      // Needed for private key storage. Otherwise,
-      // "Requests specifying Server Side Encryption with AWS KMS managed keys must be made over a secure connection"
-      sslEnabled: true,
-      correctClockSkew: true,
+      forcePathStyle: true,
     })
   }
 
