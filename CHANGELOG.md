@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.10](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.10..v0.1.9) (2022-03-18)
+
+
+### Features
+
+* add updateAt column and a roomId index ([ad18b66](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/ad18b66457a4a0823197543f6a4ac7528ab216f9))
+* **DAS-301:** switch from Apollo Server to Fastify+Mercurius ([ce9c47b](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/ce9c47b1011b62fe72a3d4ec3d476a22a2884a27))
+* move setMetadata logic to getUploadInfo ([cb3b5b8](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/cb3b5b8adac45c105a60ddec10ac4c0214f9ea27))
+* use aws sdk v3 ([56a657e](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/56a657e9e66d79876168c0a7c1cf2284218f221e))
+
 ### [0.1.9](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.9..v0.1.8) (2022-03-11)
 
 
