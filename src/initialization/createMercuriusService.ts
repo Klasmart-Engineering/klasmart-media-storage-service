@@ -5,6 +5,7 @@ import Fastify, { FastifyReply, FastifyRequest, LogLevel } from 'fastify'
 import mercurius from 'mercurius'
 import cors from 'fastify-cors'
 import compression from 'fastify-compress'
+import healthcheck from 'fastify-healthcheck'
 import IMediaStorageService from '../interfaces/mediaStorageService'
 import { posix } from 'path'
 import getContext from './getContext'
@@ -21,8 +22,8 @@ export default async function createMercuriusServer(
 
   const app = Fastify({ bodyLimit: 1048576 }) // (1MiB)
 
+  app.register(healthcheck)
   app.register(compression)
-
   app.register(cors, getCorsOptions(domain))
 
   app.register(mercurius, {

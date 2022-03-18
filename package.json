@@ -98,6 +98,7 @@
     "fastify": "^3.27.4",
     "fastify-compress": "^4.0.1",
     "fastify-cors": "^6.0.3",
+    "fastify-healthcheck": "^3.1.0",
     "graphql-request": "^4.0.0",
     "ioredis": "^4.28.5",
     "kidsloop-nodejs-logger": "bitbucket:calmisland/kidsloop-nodejs-logger#v0.2.15",
