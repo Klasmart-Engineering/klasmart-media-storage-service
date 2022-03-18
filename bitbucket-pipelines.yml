@@ -95,14 +95,14 @@ definitions:
               SERVICE_NAME: 'kl-alpha-h5p-audio'
               FORCE_NEW_DEPLOYMENT: 'true'
               WAIT: 'true'
-        after-script:
-          - export VERSION_TAG=$(cat ./version.txt)
-          - pipe: docker://cabauman/slack-notify-commits:0.6.1
-            variables:
-              WEBHOOK_URL: $SLACK_WEBHOOK
-              MESSAGE: '🚀 A new build of Media Storage service ($VERSION_TAG) has been deployed to *alpha*.'
-              BITBUCKET_USER: $BITBUCKET_PIPELINE_READER_USER
-              BITBUCKET_APP_PASSWORD: $BITBUCKET_PIPELINE_READER_APP_PASSWORD
+        # after-script:
+        #   - export VERSION_TAG=$(cat ./version.txt)
+        #   - pipe: docker://cabauman/slack-notify-commits:0.6.1
+        #     variables:
+        #       WEBHOOK_URL: $SLACK_WEBHOOK
+        #       MESSAGE: '🚀 A new build of Media Storage service ($VERSION_TAG) has been deployed to *alpha*.'
+        #       BITBUCKET_USER: $BITBUCKET_PIPELINE_READER_USER
+        #       BITBUCKET_APP_PASSWORD: $BITBUCKET_PIPELINE_READER_APP_PASSWORD
 
 pipelines:
   pull-requests:
