@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.11](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.11..v0.1.10) (2022-03-18)
+
+
+### Bug Fixes
+
+* error Cannot find module 'node-fetch' ([1c98454](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/1c984544db0e68a3111aca1bfff9d3b672935591))
+
 ### [0.1.10](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.10..v0.1.9) (2022-03-18)
 
 
