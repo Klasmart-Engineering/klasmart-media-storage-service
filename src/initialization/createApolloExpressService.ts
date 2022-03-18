@@ -27,8 +27,12 @@ export default async function createApolloExpressServer(
   app.use(express.urlencoded({ limit: '1mb', extended: true }))
   server.applyMiddleware({
     app,
+    disableHealthCheck: true,
     cors: getCorsOptions(domain),
     path: routePrefix,
+  })
+  app.get('/health', (req, res) => {
+    res.sendStatus(200)
   })
 
   return {

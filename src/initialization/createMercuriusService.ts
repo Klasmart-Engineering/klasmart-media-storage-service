@@ -44,7 +44,7 @@ export default async function createMercuriusServer(
     server: app.server,
     path: posix.join(routePrefix, '/graphql'),
     listen: async (port: number, callback: () => void) => {
-      await app.listen(port)
+      await app.listen(port, '0.0.0.0')
       callback()
     },
   }
