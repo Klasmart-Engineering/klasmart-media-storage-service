@@ -35,25 +35,6 @@ type MediaMetadata {
   userId: ID!
 }
 
-type Mutation {
-  """
-  Stores the media metadata in persistent storage.
-  This should be called *after* getRequiredUploadInfo and *after* successfully
-  uploading the media file.
-  """
-  setMetadata(
-    base64EncryptedSymmetricKey: String!
-    base64UserPublicKey: String!
-    description: String!
-    h5pId: String!
-    h5pSubId: String
-    mediaId: String!
-
-    """Supported: image/*, audio/*"""
-    mimeType: String!
-  ): Boolean!
-}
-
 type Query {
   """Returns a list of audio metadata matching the provided arguments."""
   audioMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [MediaMetadata!]!
@@ -65,14 +46,20 @@ type Query {
   """
   getRequiredDownloadInfo(mediaId: String!, roomId: String!): RequiredDownloadInfo!
 
-  """
-  Returns a generated media ID, a base64 encoded server public key
-  and a presigned upload URL. This should be called *before* setMetadata.
-  """
+  """Returns a generated media ID and a presigned upload URL."""
   getRequiredUploadInfo(
+    base64EncryptedSymmetricKey: String!
+    base64UserPublicKey: String!
+    description: String!
+    h5pId: String!
+    h5pSubId: String
+
     """Supported: image/*, audio/*"""
     mimeType: String!
   ): RequiredUploadInfo!
+
+  """Returns a base64 encoded server public key."""
+  getServerPublicKey: String!
 }
 
 """The info required to download a media file."""
@@ -88,9 +75,6 @@ type RequiredDownloadInfo {
 
 """The info required to upload a media file."""
 type RequiredUploadInfo {
-  """A base64 encoded server public key."""
-  base64ServerPublicKey: String!
-
   """A generated UUID to identify a media file."""
   mediaId: String!
 

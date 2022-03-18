@@ -140,3 +140,25 @@ query getRequiredDownloadInfo($mediaId: String!, $roomId: String!) {
   }
 }
 `
+// async function getRequiredDownloadInfoQuery(
+//   testClient: ApolloServerTestClient,
+//   mediaId: string,
+//   roomId: string,
+//   headers?: Headers,
+//   logErrors = true,
+// ) {
+//   const { query } = testClient
+
+//   const operation = () =>
+//     query({
+//       query: GET_REQUIRED_DOWNLOAD_INFO,
+//       variables: {
+//         mediaId,
+//         roomId,
+//       },
+//       headers,
+//     })
+
+//   const res = await gqlTry(operation, logErrors)
+//   return res.data?.getRequiredDownloadInfo as RequiredDownloadInfo
+// }

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import RedisClient, { Redis } from 'ioredis'
-import { Connection } from 'typeorm'
+import { Connection, Repository } from 'typeorm'
 import { MediaMetadata } from '../entities/mediaMetadata'
 import IKeyStorage from '../interfaces/keyStorage'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
@@ -21,9 +21,12 @@ import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
 import { connectToMetadataDatabase } from './connectToMetadataDatabase'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { GraphQLClient } from 'graphql-request'
-import { UploadResolver } from '../resolvers/uploadResolver'
 import { MetadataResolver } from '../resolvers/metadataResolver'
 import SymmetricKeyProvider from '../providers/symmetricKeyProvider'
+import { UploadResolver } from '../resolvers/uploadResolver'
+import IUploadValidator from '../interfaces/uploadValidator'
+import UploadValidator from '../providers/uploadValidator'
+import { MediaFileStorageChecker } from '../providers/mediaFileStorageChecker'
 
 const logger = withLogger('CompositionRoot')
 
@@ -41,6 +44,7 @@ export class CompositionRoot {
   protected typeorm?: Connection
   protected keyPairProvider?: KeyPairProvider
   protected presignedUrlProvider?: IPresignedUrlProvider
+  protected uploadValidator?: UploadValidator
 
   /**
    * Call this method at service startup to instantiate the GraphQL resolvers.
@@ -48,14 +52,19 @@ export class CompositionRoot {
    * instantiated the first time they're accessed.
    */
   public async buildObjectGraph() {
-    this.downloadResolver = await this.getDownloadResolver()
-    this.metadataResolver = await this.getMetadataResolver()
-    this.uploadResolver = await this.getUploadResolver()
+    this.typeorm = await this.connectToDb()
+    this.downloadResolver = this.getDownloadResolver()
+    this.metadataResolver = this.getMetadataResolver()
+    this.uploadResolver = this.getUploadResolver()
   }
 
-  public async getDownloadResolver(): Promise<DownloadResolver> {
+  protected connectToDb() {
+    return connectToMetadataDatabase(Config.getMetadataDatabaseUrl())
+  }
+
+  public getDownloadResolver(): DownloadResolver {
     this.downloadResolver ??= new DownloadResolver(
-      await this.getMetadataRepository(),
+      this.getMetadataRepository(),
       this.getSymmetricKeyProvider(),
       this.getPresignedUrlProvider(),
       this.getAuthorizationProvider(),
@@ -63,17 +72,17 @@ export class CompositionRoot {
     return this.downloadResolver
   }
 
-  public async getMetadataResolver(): Promise<MetadataResolver> {
-    this.metadataResolver ??= new MetadataResolver(
-      await this.getMetadataRepository(),
-    )
+  public getMetadataResolver(): MetadataResolver {
+    this.metadataResolver ??= new MetadataResolver(this.getMetadataRepository())
     return this.metadataResolver
   }
 
-  public async getUploadResolver(): Promise<UploadResolver> {
+  public getUploadResolver(): UploadResolver {
     this.uploadResolver ??= new UploadResolver(
       this.getKeyPairProvider(),
       this.getPresignedUrlProvider(),
+      this.getMetadataRepository(),
+      this.getUploadValidator(),
     )
     return this.uploadResolver
   }
@@ -149,18 +158,34 @@ export class CompositionRoot {
     }
   }
 
-  protected async getMetadataRepository() {
+  protected getMetadataRepository(): Repository<MediaMetadata> {
     if (!this.typeorm) {
-      this.typeorm = await connectToMetadataDatabase(
-        Config.getMetadataDatabaseUrl(),
-      )
+      throw new Error('typeorm should have been instantiated by now.')
     }
     return this.typeorm.getRepository(MediaMetadata)
+  }
+
+  protected getUploadValidator(): IUploadValidator {
+    this.uploadValidator ??= new UploadValidator(
+      this.getMediaFileStorageChecker(),
+      (mediaId) => this.getMetadataRepository().delete(mediaId),
+      // TODO: Config.getFileValidationDelayMs()
+      60000,
+    )
+    return this.uploadValidator
+  }
+
+  protected getMediaFileStorageChecker(): MediaFileStorageChecker {
+    return new MediaFileStorageChecker(
+      Config.getS3Client(),
+      Config.getMediaFileBucket(),
+    )
   }
 
   public async cleanUp() {
     logger.debug('[cleanUp] disconnecting from redis and typeorm...')
     await this.redis?.quit()
     await this.typeorm?.close()
+    this.uploadValidator?.cleanUp()
   }
 }

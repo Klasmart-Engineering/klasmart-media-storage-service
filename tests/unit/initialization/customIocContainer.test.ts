@@ -12,7 +12,7 @@ describe('CustomIocContainer.get', () => {
       const sut = new CustomIocContainer(compositionRoot)
 
       const mediaResolver = Substitute.for<DownloadResolver>()
-      compositionRoot.getDownloadResolver().resolves(mediaResolver)
+      compositionRoot.getDownloadResolver().returns(mediaResolver)
 
       // Act
       const actual = await sut.get(DownloadResolver)
@@ -29,7 +29,7 @@ describe('CustomIocContainer.get', () => {
       const sut = new CustomIocContainer(compositionRoot)
 
       const mediaResolver = Substitute.for<DownloadResolver>()
-      compositionRoot.getDownloadResolver().resolves(mediaResolver)
+      compositionRoot.getDownloadResolver().returns(mediaResolver)
 
       // Act
       const actual = await sut.get(CompositionRoot)

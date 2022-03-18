@@ -8,9 +8,6 @@ export class RequiredUploadInfo {
   @Field({ description: 'A generated UUID to identify a media file.' })
   public mediaId!: string
 
-  @Field({ description: 'A base64 encoded server public key.' })
-  public base64ServerPublicKey!: string
-
   @Field({ description: 'A presigned upload URL.' })
   public presignedUrl!: string
 }

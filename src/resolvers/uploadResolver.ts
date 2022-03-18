@@ -9,8 +9,11 @@ import { UserInputError } from 'apollo-server-core'
 import createMediaFileKey from '../helpers/createMediaFileKey'
 import isMimeTypeSupported from '../helpers/isMimeTypeSupported'
 import { ErrorMessage } from '../helpers/errorMessages'
+import { Repository } from 'typeorm'
+import { MediaMetadata } from '../entities/mediaMetadata'
+import IUploadValidator from '../interfaces/uploadValidator'
 
-const logger = withLogger('MediaResolver')
+const logger = withLogger('UploadResolver')
 
 @Resolver(RequiredUploadInfo)
 export class UploadResolver {
@@ -19,21 +22,47 @@ export class UploadResolver {
   constructor(
     private readonly keyPairProvider: KeyPairProvider,
     private readonly presignedUrlProvider: IPresignedUrlProvider,
+    private readonly metadataRepository: Repository<MediaMetadata>,
+    private readonly uploadValidator: IUploadValidator,
   ) {}
 
+  @Query(() => String, {
+    description: 'Returns a base64 encoded server public key.',
+  })
+  public async getServerPublicKey(
+    @UserID() endUserId?: string,
+    @RoomID() roomId?: string,
+  ): Promise<string> {
+    logger.debug(
+      `[getServerPublicKey] endUserId: ${endUserId}; roomId: ${roomId}`,
+    )
+    if (!endUserId) {
+      throw new UnauthorizedError()
+    }
+    const keyPairKey = roomId || UploadResolver.NoRoomIdKeyName
+    const serverPublicKey = await this.keyPairProvider.getPublicKey(keyPairKey)
+    const base64ServerPublicKey =
+      Buffer.from(serverPublicKey).toString('base64')
+
+    return base64ServerPublicKey
+  }
+
   @Query(() => RequiredUploadInfo, {
-    description:
-      'Returns a generated media ID, a base64 encoded server public key\n' +
-      'and a presigned upload URL. This should be called *before* setMetadata.',
+    description: 'Returns a generated media ID and a presigned upload URL.',
   })
   public async getRequiredUploadInfo(
+    @Arg('base64UserPublicKey') base64UserPublicKey: string,
+    @Arg('base64EncryptedSymmetricKey') base64EncryptedSymmetricKey: string,
     @Arg('mimeType', { description: 'Supported: image/*, audio/*' })
     mimeType: string,
-    @RoomID() roomId?: string,
+    @Arg('h5pId') h5pId: string,
+    @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
+    @Arg('description') description: string,
     @UserID() endUserId?: string,
+    @RoomID() roomId?: string,
   ): Promise<RequiredUploadInfo> {
     logger.debug(
-      `[getRequiredUploadInfo] endUserId: ${endUserId}; roomId: ${roomId}`,
+      `[getRequiredUploadInfo] endUserId: ${endUserId}; roomId: ${roomId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}; mimeType: ${mimeType}`,
     )
     if (!endUserId) {
       throw new UnauthorizedError()
@@ -41,10 +70,6 @@ export class UploadResolver {
     if (!isMimeTypeSupported(mimeType)) {
       throw new UserInputError(ErrorMessage.unsupportedMimeType(mimeType))
     }
-    const keyPairKey = roomId || UploadResolver.NoRoomIdKeyName
-    const serverPublicKey = await this.keyPairProvider.getPublicKey(keyPairKey)
-    const base64ServerPublicKey =
-      Buffer.from(serverPublicKey).toString('base64')
     const mediaId = v4()
     const mediaFileKey = createMediaFileKey(mediaId, mimeType)
     const presignedUrl = await this.presignedUrlProvider.getUploadUrl(
@@ -52,6 +77,21 @@ export class UploadResolver {
       mimeType,
     )
 
-    return { mediaId: mediaId, base64ServerPublicKey, presignedUrl }
+    const entity = this.metadataRepository.create({
+      id: mediaId,
+      userId: endUserId,
+      base64UserPublicKey,
+      base64EncryptedSymmetricKey,
+      createdAt: new Date(),
+      roomId,
+      mimeType,
+      h5pId,
+      h5pSubId,
+      description,
+    })
+    await this.metadataRepository.insert(entity)
+    this.uploadValidator.validate(mediaFileKey, mediaId)
+
+    return { mediaId, presignedUrl }
   }
 }

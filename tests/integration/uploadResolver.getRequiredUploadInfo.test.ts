@@ -1,5 +1,4 @@
 import '../utils/globalIntegrationTestHooks'
-import fetch from 'node-fetch'
 import { expect } from 'chai'
 import { Config } from '../../src/initialization/config'
 import {
@@ -11,15 +10,11 @@ import { v4 } from 'uuid'
 import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadInfo'
 import { clearS3Buckets } from '../utils/s3BucketUtil'
 import { TestCompositionRoot } from './testCompositionRoot'
-import {
-  GetObjectCommand,
-  ListObjectsCommand,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3'
-import s3BodyToBuffer from '../../src/helpers/s3BodyToBuffer'
+import { S3Client } from '@aws-sdk/client-s3'
 import bootstrap from '../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
+import { getRepository } from 'typeorm'
+import { MediaMetadata } from '../../src/entities/mediaMetadata'
 
 describe('mediaResolver.getRequiredUploadInfo', () => {
   let request: SuperTest<supertest.Test>
@@ -37,205 +32,165 @@ describe('mediaResolver.getRequiredUploadInfo', () => {
     await compositionRoot.cleanUp()
   })
 
-  context('server key pair does not exist in storage', () => {
-    let result: RequiredUploadInfo
-    const roomId = 'room1'
+  // TODO: Split assertions like other tests.
+  context(
+    'authentication token userId does not match authorization token userId',
+    () => {
+      it('saves metadata to db with roomId equal to null', async () => {
+        // Clean slate
+        await clearS3Buckets(s3Client)
+        await compositionRoot.reset()
 
-    before(async () => {
-      // Clean slate
-      await clearS3Buckets(s3Client)
-      await compositionRoot.reset()
+        // Arrange
+        const base64UserPublicKey = Buffer.from(
+          box.keyPair().publicKey,
+        ).toString('base64')
+        const base64EncryptedSymmetricKey = Buffer.from(
+          box.keyPair().secretKey,
+        ).toString('base64')
+        const roomId = 'room1'
+        const mimeType = 'audio/webm'
+        const h5pId = 'h5p1'
+        const h5pSubId = 'h5pSub1'
+        const description = 'some description'
+        const endUserId = v4()
+        const endUserId2 = v4()
 
-      // Arrange
-      const endUserId = v4()
-      const roomId = 'room1'
-      const mimeType = 'audio/webm'
+        // Act
+        const response = await request
+          .post('/graphql')
+          .set({
+            ContentType: 'application/json',
+            cookie: `access=${generateAuthenticationToken(endUserId)}`,
+            'live-authorization': generateLiveAuthorizationToken(
+              endUserId2,
+              roomId,
+            ),
+          })
+          .send({
+            query: GET_REQUIRED_UPLOAD_INFO,
+            variables: {
+              base64UserPublicKey,
+              base64EncryptedSymmetricKey,
+              mimeType,
+              h5pId,
+              h5pSubId,
+              description,
+            },
+          })
+        const result = response.body.data
+          ?.getRequiredUploadInfo as RequiredUploadInfo
 
-      // Act
-      const response = await request
-        .post('/graphql')
-        .set({
-          ContentType: 'application/json',
-          cookie: `access=${generateAuthenticationToken(endUserId)}`,
-          'live-authorization': generateLiveAuthorizationToken(
-            endUserId,
-            roomId,
-          ),
-        })
-        .send({
-          query: GET_REQUIRED_UPLOAD_INFO,
-          variables: {
+        // Assert
+        // Ensure metadata is saved in the database.
+        const count = await getRepository(MediaMetadata).count()
+        expect(count).to.equal(1)
+        const entry = await getRepository(MediaMetadata).findOne({
+          where: {
+            // ******* main difference ******* //
+            roomId: null,
+            // ******* main difference ******* //
             mimeType,
+            h5pId,
+            h5pSubId,
+            userId: endUserId,
+            base64UserPublicKey,
+            base64EncryptedSymmetricKey,
           },
         })
-      result = response.body.data?.getRequiredUploadInfo as RequiredUploadInfo
-    })
-
-    it('result is not nullish', () => {
-      expect(result == null).to.be.false
-    })
-
-    it('result.mediaId is not nullish or empty', () => {
-      expect(result.mediaId == null).to.be.false
-      expect(result.mediaId).to.not.be.empty
-    })
-
-    it('result.presignedUrl is not nullish or empty', () => {
-      expect(result.presignedUrl == null).to.be.false
-      expect(result.presignedUrl).to.not.be.empty
-    })
-
-    it('presignedUrl web request is successful', async () => {
-      const response = await fetch(result.presignedUrl, {
-        method: 'PUT',
-        body: '123',
+        expect(entry == null).to.be.false
       })
-      expect(response.ok, response.statusText).to.be.true
-    })
+    },
+  )
 
-    it('server public key is saved in S3 bucket', async () => {
-      const publicKeyBucket = await s3Client.send(
-        new ListObjectsCommand({ Bucket: Config.getPublicKeyBucket() }),
-      )
-      expect(publicKeyBucket.Contents == null).to.be.false
-      expect(publicKeyBucket.Contents).to.have.lengthOf(1)
-      expect(publicKeyBucket.Contents?.[0].Size).to.equal(32)
-      expect(publicKeyBucket.Contents?.[0].Key).to.equal(roomId)
-    })
+  // TODO: Split assertions like other tests.
+  // TODO: Fix this. Fastify returns the array as a comma separated list...
+  context.skip(
+    'live authorization header is an array rather than a string; second element is not valid',
+    () => {
+      it('uses first element; returns true, and saves metadata to db', async () => {
+        // Clean slate
+        await clearS3Buckets(s3Client)
+        await compositionRoot.reset()
 
-    it('server private key is saved in S3 bucket', async () => {
-      const privateKeyBucket = await s3Client.send(
-        new ListObjectsCommand({ Bucket: Config.getPrivateKeyBucket() }),
-      )
-      expect(privateKeyBucket.Contents == null).to.be.false
-      expect(privateKeyBucket.Contents).to.have.lengthOf(1)
-      expect(privateKeyBucket.Contents?.[0].Size).to.equal(32)
-      expect(privateKeyBucket.Contents?.[0].Key).to.equal(roomId)
-    })
-  })
+        // Arrange
+        const base64UserPublicKey = Buffer.from(
+          box.keyPair().publicKey,
+        ).toString('base64')
+        const base64EncryptedSymmetricKey = Buffer.from(
+          box.keyPair().secretKey,
+        ).toString('base64')
+        const roomId = 'room1'
+        const mimeType = 'audio/webm'
+        const h5pId = 'h5p1'
+        const h5pSubId = 'h5pSub1'
+        const description = 'some description'
+        const endUserId = v4()
 
-  context('server key pair exists in storage', () => {
-    let result: RequiredUploadInfo
-    const roomId = 'room1'
-    const serverKeyPair = box.keyPair()
+        // Act
+        const response = await request
+          .post('/graphql')
+          .set({
+            ContentType: 'application/json',
+            cookie: `access=${generateAuthenticationToken(endUserId)}`,
+            'live-authorization': [
+              generateLiveAuthorizationToken(endUserId, roomId),
+              'some other value',
+            ],
+          })
+          .send({
+            query: GET_REQUIRED_UPLOAD_INFO,
+            variables: {
+              base64UserPublicKey,
+              base64EncryptedSymmetricKey,
+              mimeType,
+              h5pId,
+              h5pSubId,
+              description,
+            },
+          })
+        const result = response.body.data
+          ?.getRequiredUploadInfo as RequiredUploadInfo
 
-    before(async () => {
-      // Clean slate
-      await clearS3Buckets(s3Client)
-      await compositionRoot.reset()
-
-      // Arrange
-      const endUserId = v4()
-      const mimeType = 'audio/webm'
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: Config.getPublicKeyBucket(),
-          Key: roomId,
-          Body: Buffer.from(serverKeyPair.publicKey),
-        }),
-      )
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: Config.getPrivateKeyBucket(),
-          Key: roomId,
-          Body: Buffer.from(serverKeyPair.secretKey),
-        }),
-      )
-
-      // Act
-      const response = await request
-        .post('/graphql')
-        .set({
-          ContentType: 'application/json',
-          cookie: `access=${generateAuthenticationToken(endUserId)}`,
-          'live-authorization': generateLiveAuthorizationToken(
-            endUserId,
+        // Assert
+        // Ensure metadata is saved in the database.
+        const count = await getRepository(MediaMetadata).count()
+        expect(count).to.equal(1)
+        const entry1 = await getRepository(MediaMetadata).findOne()
+        const entry = await getRepository(MediaMetadata).findOne({
+          where: {
             roomId,
-          ),
-        })
-        .send({
-          query: GET_REQUIRED_UPLOAD_INFO,
-          variables: {
             mimeType,
+            h5pId,
+            h5pSubId,
+            userId: endUserId,
+            base64UserPublicKey,
+            base64EncryptedSymmetricKey,
           },
         })
-      result = response.body.data?.getRequiredUploadInfo as RequiredUploadInfo
-    })
-
-    it('result is not nullish', () => {
-      expect(result == null).to.be.false
-    })
-
-    it('result.mediaId is not nullish or empty', () => {
-      expect(result.mediaId == null).to.be.false
-      expect(result.mediaId).to.not.be.empty
-    })
-
-    it('result.presignedUrl is not nullish or empty', () => {
-      expect(result.presignedUrl == null).to.be.false
-      expect(result.presignedUrl).to.not.be.empty
-    })
-
-    it('presignedUrl web request is successful', async () => {
-      const response = await fetch(result.presignedUrl, {
-        method: 'PUT',
-        body: '123',
+        expect(entry == null).to.be.false
       })
-      expect(response.ok, response.statusText).to.be.true
-    })
-
-    it('result.base64ServerPublicKey matches the server public key', () => {
-      expect(result.base64ServerPublicKey).to.equal(
-        Buffer.from(serverKeyPair.publicKey).toString('base64'),
-      )
-    })
-
-    it('server public key is still saved in S3 bucket', async () => {
-      const publicKeyBucket = await s3Client.send(
-        new ListObjectsCommand({ Bucket: Config.getPublicKeyBucket() }),
-      )
-      const publicKeyInBucket = await s3Client.send(
-        new GetObjectCommand({
-          Bucket: Config.getPublicKeyBucket(),
-          Key: roomId,
-        }),
-      )
-      const publicKeyBuffer = await s3BodyToBuffer(publicKeyInBucket.Body)
-
-      expect(publicKeyBucket.Contents == null).to.be.false
-      expect(publicKeyBucket.Contents).to.have.lengthOf(1)
-      expect(publicKeyBuffer).to.deep.equal(
-        Buffer.from(serverKeyPair.publicKey),
-      )
-    })
-
-    it('server private key is still saved in S3 bucket', async () => {
-      const privateKeyBucket = await s3Client.send(
-        new ListObjectsCommand({ Bucket: Config.getPrivateKeyBucket() }),
-      )
-      const privateKeyInBucket = await s3Client.send(
-        new GetObjectCommand({
-          Bucket: Config.getPrivateKeyBucket(),
-          Key: roomId,
-        }),
-      )
-      const privateKeyBuffer = await s3BodyToBuffer(privateKeyInBucket.Body)
-
-      expect(privateKeyBucket.Contents).to.not.be.undefined
-      expect(privateKeyBucket.Contents).to.have.lengthOf(1)
-      expect(privateKeyBuffer).to.deep.equal(
-        Buffer.from(serverKeyPair.secretKey),
-      )
-    })
-  })
+    },
+  )
 })
 
 export const GET_REQUIRED_UPLOAD_INFO = `
-query getRequiredUploadInfo($mimeType: String!) {
-  getRequiredUploadInfo(mimeType: $mimeType) {
+query getRequiredUploadInfo(
+    $base64UserPublicKey: String!,
+    $base64EncryptedSymmetricKey: String!,
+    $mimeType: String!,
+    $h5pId: String!,
+    $h5pSubId: String,
+    $description: String!) {
+  getRequiredUploadInfo(
+    base64UserPublicKey: $base64UserPublicKey,
+    base64EncryptedSymmetricKey: $base64EncryptedSymmetricKey,
+    mimeType: $mimeType,
+    h5pId: $h5pId,
+    h5pSubId: $h5pSubId
+    description: $description
+  ) {
     mediaId
-    base64ServerPublicKey
     presignedUrl
   }
 }
