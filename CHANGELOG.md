@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.13](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.13..v0.1.12) (2022-03-18)
+
+
+### Bug Fixes
+
+* health check fails ([971c282](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/971c282cb0767197751e3a0ba1110eee8f12949a))
+
 ### [0.1.12](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.12..v0.1.11) (2022-03-18)
 
 
