@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.14](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.14..v0.1.13) (2022-03-18)
+
+
+### Features
+
+* use same health check endpoint for apollo and fastify ([cd3deea](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/cd3deeab9783b51ad2fe151036dbd428ed9d0796))
+
 ### [0.1.13](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.13..v0.1.12) (2022-03-18)
 
 
