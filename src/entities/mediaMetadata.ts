@@ -1,5 +1,12 @@
 import { Field, ID, ObjectType } from 'type-graphql'
-import { Column, Entity, PrimaryColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 
 @ObjectType({
   simpleResolvers: true,
@@ -14,6 +21,7 @@ export class MediaMetadata {
   @Field(() => String, {
     description: 'The ID of the Live room where this media was captured.',
   })
+  @Index()
   @Column({ type: 'varchar', name: 'room_id', nullable: true })
   public readonly roomId!: string | null
 
@@ -37,6 +45,12 @@ export class MediaMetadata {
   @Column({ type: 'varchar', name: 'h5p_sub_id', nullable: true })
   public readonly h5pSubId!: string | null
 
+  @Field({
+    description: 'The mime type of the captured media.',
+  })
+  @Column({ type: 'varchar', name: 'mime_type' })
+  public readonly mimeType!: string
+
   @Field(() => String, {
     description: 'The description of the media context.',
   })
@@ -46,14 +60,11 @@ export class MediaMetadata {
   @Field({
     description: 'The date/time when this media was captured.',
   })
-  @Column({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   public readonly createdAt!: Date
 
-  @Field({
-    description: 'The mime type of the captured media.',
-  })
-  @Column({ type: 'varchar', name: 'mime_type' })
-  public readonly mimeType!: string
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  public readonly updatedAt!: Date
 
   @Column({ type: 'varchar', name: 'base64_user_public_key' })
   public readonly base64UserPublicKey!: string

@@ -19,7 +19,7 @@ export function getMetadataDatabaseConnectionOptions(
   return {
     type: 'postgres',
     url,
-    synchronize: false,
+    synchronize: true,
     entities: [
       path.join(__dirname, '../entities/*.ts'),
       path.join(__dirname, '../entities/*.js'),
@@ -27,7 +27,7 @@ export function getMetadataDatabaseConnectionOptions(
     migrations: [path.join(__dirname, '../migrations/*.{ts,js}')],
     logging: getLogging(),
     migrationsTableName: 'migrations',
-    migrationsRun: true,
+    migrationsRun: false,
     cli: {
       migrationsDir: 'src/migrations',
     },

@@ -1,12 +1,6 @@
 import '../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import {
-  ApolloServerTestClient,
-  createTestClient,
-} from '../utils/createTestClient'
-import { gqlTry } from '../utils/gqlTry'
-import { Headers } from 'node-mocks-http'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Config } from '../../src/initialization/config'
 import { clearS3Buckets } from '../utils/s3BucketUtil'

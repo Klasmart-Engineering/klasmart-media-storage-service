@@ -73,7 +73,6 @@ export class MetadataResolver {
       userId: endUserId,
       base64UserPublicKey,
       base64EncryptedSymmetricKey,
-      createdAt: new Date(),
       roomId,
       mimeType,
       h5pId,
