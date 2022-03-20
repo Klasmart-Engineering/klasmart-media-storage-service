@@ -204,7 +204,6 @@ describe('mediaResolver', () => {
                 h5pSubId,
               },
             })
-            .expect(500)
           expect(response.body?.errors?.[0]?.message).to.equal(
             ErrorMessage.notAuthenticated,
           )

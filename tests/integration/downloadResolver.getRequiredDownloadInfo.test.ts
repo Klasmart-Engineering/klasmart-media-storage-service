@@ -118,7 +118,10 @@ describe('mediaResolver.getRequiredDownloadInfo', () => {
 
       it('presignedUrl web request is successful', async () => {
         const response = await fetch(result.presignedUrl, { method: 'GET' })
-        expect(response.ok, response.statusText).to.be.true
+        expect(
+          response.ok,
+          `status: ${response.statusText}: ${await response.text()}`,
+        ).to.be.true
       })
 
       it('result.base64SymmetricKey is not nullish or empty', async () => {

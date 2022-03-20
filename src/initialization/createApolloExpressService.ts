@@ -7,12 +7,13 @@ import { getCorsOptions } from './getCorsOptions'
 import { Config } from './config'
 import { GraphQLSchema } from 'graphql'
 import IMediaStorageService from '../interfaces/mediaStorageService'
+import cors from 'cors'
 
-const logger = withLogger('createApolloExpressServer')
+const logger = withLogger('createApolloExpressService')
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
-export default async function createApolloExpressServer(
+export default async function createApolloExpressService(
   schema: GraphQLSchema,
 ): Promise<IMediaStorageService> {
   const server = createApolloServer(schema)
@@ -23,12 +24,13 @@ export default async function createApolloExpressServer(
   const app = express()
   app.use(compression())
   app.use(cookieParser())
+  app.use(cors(getCorsOptions(domain)))
   app.use(express.json({ limit: '1mb' }))
   app.use(express.urlencoded({ limit: '1mb', extended: true }))
   server.applyMiddleware({
     app,
     disableHealthCheck: true,
-    cors: getCorsOptions(domain),
+    cors: false,
     path: routePrefix,
   })
   app.get('/health', (req, res) => {

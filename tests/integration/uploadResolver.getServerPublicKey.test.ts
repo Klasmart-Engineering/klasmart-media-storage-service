@@ -177,7 +177,7 @@ describe('mediaResolver.getServerPublicKey', () => {
       )
       const privateKeyBuffer = await s3BodyToBuffer(privateKeyInBucket.Body)
 
-      expect(privateKeyBucket.Contents).to.not.be.undefined
+      expect(privateKeyBucket.Contents == null).to.be.false
       expect(privateKeyBucket.Contents).to.have.lengthOf(1)
       expect(privateKeyBuffer).to.deep.equal(
         Buffer.from(serverKeyPair.secretKey),

@@ -11,11 +11,11 @@ import { posix } from 'path'
 import getContext from './getContext'
 import { getCorsOptions } from './getCorsOptions'
 
-const logger = withLogger('createMercuriusServer')
+const logger = withLogger('createMercuriusService')
 
 const routePrefix = process.env.ROUTE_PREFIX || ''
 
-export default async function createMercuriusServer(
+export default async function createMercuriusService(
   schema: GraphQLSchema,
 ): Promise<IMediaStorageService> {
   const domain = Config.getCorsDomain()

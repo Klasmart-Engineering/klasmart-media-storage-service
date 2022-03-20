@@ -2,10 +2,9 @@ import { expect } from 'chai'
 import { Config } from '../../../src/initialization/config'
 import { setEnvVar, restoreEnvVar } from '../../utils/setAndRestoreEnvVar'
 
-// TODO: Consider using contants to refer to environment variable names.
 describe('config', () => {
   describe('error should be thrown when required environment variables are not defined', () => {
-    const testCases: { [key: string]: () => string } = {
+    const testCases: { [key in keyof NodeJS.ProcessEnv]: () => string } = {
       DOMAIN: () => Config.getCorsDomain(),
       METADATA_DATABASE_URL: () => Config.getMetadataDatabaseUrl(),
       PUBLIC_KEY_BUCKET: () => Config.getPublicKeyBucket(),
@@ -14,14 +13,11 @@ describe('config', () => {
       CMS_API_URL: () => Config.getCmsApiUrl(),
       USER_SERVICE_ENDPOINT: () => Config.getUserServiceEndpoint(),
     }
-    for (const envVar in testCases) {
+    for (const [envVar, fn] of Object.entries(testCases)) {
       context(`${envVar} is not defined`, () => {
         it('throws error with specified message', async () => {
           // Arrange
           const errorMessage = `${envVar} must be defined`
-
-          // Act
-          const fn = testCases[envVar]
 
           // Assert
           expect(fn).to.throw(errorMessage)
@@ -32,7 +28,7 @@ describe('config', () => {
 
   describe('expected values are returned', () => {
     const testCases: {
-      [key: string]: { expected: unknown; fn: () => unknown }
+      [key in keyof NodeJS.ProcessEnv]: { expected: unknown; fn: () => unknown }
     } = {
       CMS_API_URL: {
         expected: 'https://dummy-cms-service.net',
@@ -49,9 +45,10 @@ describe('config', () => {
       REDIS_PORT: { expected: 6379, fn: () => Config.getRedisPort() },
     }
 
-    for (const envVar in testCases) {
+    for (const [key, value] of Object.entries(testCases)) {
+      const envVar = key as keyof NodeJS.ProcessEnv
       context(`${envVar} is defined`, () => {
-        const expected = testCases[envVar].expected
+        const expected = value.expected
         let original: string | undefined
 
         before(() => {
@@ -64,7 +61,7 @@ describe('config', () => {
 
         it('returns expected value', async () => {
           // Act
-          const actual = testCases[envVar].fn()
+          const actual = value.fn()
 
           // Assert
           expect(actual).to.equal(expected)

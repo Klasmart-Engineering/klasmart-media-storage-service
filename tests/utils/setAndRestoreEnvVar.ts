@@ -1,4 +1,7 @@
-export function setEnvVar(envName: string, value: string | undefined) {
+export function setEnvVar(
+  envName: keyof NodeJS.ProcessEnv,
+  value: string | undefined,
+) {
   const original = process.env[envName]
   if (value === undefined) {
     delete process.env[envName]
@@ -8,7 +11,10 @@ export function setEnvVar(envName: string, value: string | undefined) {
   return original
 }
 
-export function restoreEnvVar(envName: string, original: string | undefined) {
+export function restoreEnvVar(
+  envName: keyof NodeJS.ProcessEnv,
+  original: string | undefined,
+) {
   if (original === undefined) {
     delete process.env[envName]
     return
