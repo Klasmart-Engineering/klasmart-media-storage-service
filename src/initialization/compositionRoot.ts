@@ -1,6 +1,6 @@
 import axios from 'axios'
 import RedisClient, { Redis } from 'ioredis'
-import { Connection, Repository } from 'typeorm'
+import { Connection } from 'typeorm'
 import { MediaMetadata } from '../entities/mediaMetadata'
 import IKeyStorage from '../interfaces/keyStorage'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
@@ -27,6 +27,8 @@ import { UploadResolver } from '../resolvers/uploadResolver'
 import IUploadValidator from '../interfaces/uploadValidator'
 import UploadValidator from '../providers/uploadValidator'
 import { MediaFileStorageChecker } from '../providers/mediaFileStorageChecker'
+import IMetadataRepository from '../interfaces/metadataRepository'
+import TypeormMetadataRepository from '../providers/typeormMetadataRepository'
 
 const logger = withLogger('CompositionRoot')
 
@@ -45,6 +47,7 @@ export class CompositionRoot {
   protected keyPairProvider?: KeyPairProvider
   protected presignedUrlProvider?: IPresignedUrlProvider
   protected uploadValidator?: UploadValidator
+  protected metadataRepository?: IMetadataRepository
 
   /**
    * Call this method at service startup to instantiate the GraphQL resolvers.
@@ -158,11 +161,14 @@ export class CompositionRoot {
     }
   }
 
-  protected getMetadataRepository(): Repository<MediaMetadata> {
+  protected getMetadataRepository(): IMetadataRepository {
     if (!this.typeorm) {
       throw new Error('typeorm should have been instantiated by now.')
     }
-    return this.typeorm.getRepository(MediaMetadata)
+    this.metadataRepository ??= new TypeormMetadataRepository(
+      this.typeorm.getRepository(MediaMetadata),
+    )
+    return this.metadataRepository
   }
 
   protected getUploadValidator(): IUploadValidator {

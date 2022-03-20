@@ -1,6 +1,4 @@
 import { Arg, Query, Resolver, UnauthorizedError } from 'type-graphql'
-import { Repository } from 'typeorm'
-import { MediaMetadata } from '../entities/mediaMetadata'
 import { AuthenticationToken, UserID } from '../auth/context'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import { RequiredDownloadInfo } from '../graphqlResultTypes/requiredDownloadInfo'
@@ -9,13 +7,14 @@ import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import SymmetricKeyProvider from '../providers/symmetricKeyProvider'
 import createMediaFileKey from '../helpers/createMediaFileKey'
+import IMetadataRepository from '../interfaces/metadataRepository'
 
 const logger = withLogger('DownloadResolver')
 
 @Resolver(RequiredDownloadInfo)
 export class DownloadResolver {
   constructor(
-    private readonly metadataRepository: Repository<MediaMetadata>,
+    private readonly metadataRepository: IMetadataRepository,
     private readonly symmetricKeyProvider: SymmetricKeyProvider,
     private readonly presignedUrlProvider: IPresignedUrlProvider,
     private readonly authorizationProvider: IAuthorizationProvider,
@@ -44,9 +43,7 @@ export class DownloadResolver {
     if (isAuthorized === false || !endUserId) {
       throw new UnauthorizedError()
     }
-    const mediaMetadata = await this.metadataRepository.findOne({
-      id: mediaId,
-    })
+    const mediaMetadata = await this.metadataRepository.findById(mediaId)
 
     if (!mediaMetadata) {
       throw new Error(ErrorMessage.mediaMetadataNotFound(mediaId, endUserId))

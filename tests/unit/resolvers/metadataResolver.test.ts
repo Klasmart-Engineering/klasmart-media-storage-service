@@ -1,17 +1,16 @@
 import expect from '../../utils/chaiAsPromisedSetup'
 import Substitute from '@fluffy-spoon/substitute'
-import { Like, Repository } from 'typeorm'
-import { MediaMetadata } from '../../../src/entities/mediaMetadata'
 import MediaMetadataBuilder from '../../builders/mediaMetadataBuilder'
 import { v4 } from 'uuid'
 import { MetadataResolver } from '../../../src/resolvers/metadataResolver'
+import IMetadataRepository from '../../../src/interfaces/metadataRepository'
 
 describe('MetadataResolver', () => {
   describe('mediaMetadata', () => {
     context('1 matching metadata entry exists', () => {
       it('returns an array of 1 item', async () => {
         // Arrange
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
 
         const roomId = 'room1'
         const userId = v4()
@@ -26,7 +25,7 @@ describe('MetadataResolver', () => {
           .build()
 
         metadataRepository
-          .find({ roomId, userId, h5pId, h5pSubId, mimeType: Like('audio/%') })
+          .find({ roomId, userId, h5pId, h5pSubId, mediaType: 'audio' })
           .resolves([matchingMetadata])
 
         const sut = new MetadataResolver(metadataRepository)

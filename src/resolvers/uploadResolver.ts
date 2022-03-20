@@ -9,9 +9,8 @@ import { UserInputError } from 'apollo-server-core'
 import createMediaFileKey from '../helpers/createMediaFileKey'
 import isMimeTypeSupported from '../helpers/isMimeTypeSupported'
 import { ErrorMessage } from '../helpers/errorMessages'
-import { Repository } from 'typeorm'
-import { MediaMetadata } from '../entities/mediaMetadata'
 import IUploadValidator from '../interfaces/uploadValidator'
+import IMetadataRepository from '../interfaces/metadataRepository'
 
 const logger = withLogger('UploadResolver')
 
@@ -22,7 +21,7 @@ export class UploadResolver {
   constructor(
     private readonly keyPairProvider: KeyPairProvider,
     private readonly presignedUrlProvider: IPresignedUrlProvider,
-    private readonly metadataRepository: Repository<MediaMetadata>,
+    private readonly metadataRepository: IMetadataRepository,
     private readonly uploadValidator: IUploadValidator,
   ) {}
 
@@ -77,7 +76,7 @@ export class UploadResolver {
       mimeType,
     )
 
-    const entity = this.metadataRepository.create({
+    await this.metadataRepository.create({
       id: mediaId,
       userId: endUserId,
       base64UserPublicKey,
@@ -89,7 +88,6 @@ export class UploadResolver {
       h5pSubId,
       description,
     })
-    await this.metadataRepository.insert(entity)
     this.uploadValidator.validate(mediaFileKey, mediaId)
 
     return { mediaId, presignedUrl }

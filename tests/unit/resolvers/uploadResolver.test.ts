@@ -4,9 +4,8 @@ import { KeyPairProvider } from '../../../src/providers/keyPairProvider'
 import IPresignedUrlProvider from '../../../src/interfaces/presignedUrlProvider'
 import { UploadResolver } from '../../../src/resolvers/uploadResolver'
 import { ErrorMessage } from '../../../src/helpers/errorMessages'
-import { Repository } from 'typeorm'
-import { MediaMetadata } from '../../../src/entities/mediaMetadata'
 import IUploadValidator from '../../../src/interfaces/uploadValidator'
+import IMetadataRepository from '../../../src/interfaces/metadataRepository'
 
 describe('UploadResolver', () => {
   describe('getRequiredUploadInfo', () => {
@@ -15,7 +14,7 @@ describe('UploadResolver', () => {
         // Arrange
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const uploadValidator = Substitute.for<IUploadValidator>()
 
         // Input
@@ -31,8 +30,6 @@ describe('UploadResolver', () => {
         // Output
         const presignedUrl = 'my-upload-url'
         const serverPublicKey = Uint8Array.from([1, 2, 3])
-        const base64ServerPublicKey =
-          Buffer.from(serverPublicKey).toString('base64')
 
         presignedUrlProvider
           .getUploadUrl(Arg.any(), mimeType)
@@ -63,7 +60,7 @@ describe('UploadResolver', () => {
 
         // Assert
         expect(actual).to.deep.include(expected)
-        metadataRepository.received(1).insert(Arg.any())
+        metadataRepository.received(1).create(Arg.any())
       })
     })
 
@@ -72,7 +69,7 @@ describe('UploadResolver', () => {
         // Arrange
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const uploadValidator = Substitute.for<IUploadValidator>()
 
         // Input
@@ -90,8 +87,6 @@ describe('UploadResolver', () => {
         // Output
         const presignedUrl = 'my-upload-url'
         const serverPublicKey = Uint8Array.from([1, 2, 3])
-        const base64ServerPublicKey =
-          Buffer.from(serverPublicKey).toString('base64')
 
         presignedUrlProvider
           .getUploadUrl(Arg.any(), mimeType)
@@ -122,7 +117,7 @@ describe('UploadResolver', () => {
 
         // Assert
         expect(actual).to.deep.include(expected)
-        metadataRepository.received(1).insert(Arg.any())
+        metadataRepository.received(1).create(Arg.any())
       })
     })
 
@@ -131,7 +126,7 @@ describe('UploadResolver', () => {
         // Arrange
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const uploadValidator = Substitute.for<IUploadValidator>()
 
         // Input
@@ -149,8 +144,6 @@ describe('UploadResolver', () => {
         // Output
         const presignedUrl = 'my-upload-url'
         const serverPublicKey = Uint8Array.from([1, 2, 3])
-        const base64ServerPublicKey =
-          Buffer.from(serverPublicKey).toString('base64')
 
         presignedUrlProvider
           .getUploadUrl(Arg.any(), mimeType)
@@ -183,7 +176,7 @@ describe('UploadResolver', () => {
 
         // Assert
         expect(actual).to.deep.include(expected)
-        metadataRepository.received(1).insert(Arg.any())
+        metadataRepository.received(1).create(Arg.any())
       })
     })
 
@@ -192,7 +185,7 @@ describe('UploadResolver', () => {
         // Arrange
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const uploadValidator = Substitute.for<IUploadValidator>()
 
         // Input
@@ -240,7 +233,7 @@ describe('UploadResolver', () => {
 
         // Assert
         await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
-        metadataRepository.received(0).insert(Arg.any())
+        metadataRepository.received(0).create(Arg.any())
       })
     })
 
@@ -251,7 +244,7 @@ describe('UploadResolver', () => {
           // Arrange
           const keyPairProvider = Substitute.for<KeyPairProvider>()
           const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
-          const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+          const metadataRepository = Substitute.for<IMetadataRepository>()
           const uploadValidator = Substitute.for<IUploadValidator>()
 
           // Input
@@ -301,7 +294,7 @@ describe('UploadResolver', () => {
           await expect(fn()).to.be.rejectedWith(
             ErrorMessage.unsupportedMimeType(mimeType),
           )
-          metadataRepository.received(0).insert(Arg.any())
+          metadataRepository.received(0).create(Arg.any())
         })
       },
     )
@@ -311,7 +304,7 @@ describe('UploadResolver', () => {
         // Arrange
         const keyPairProvider = Substitute.for<KeyPairProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const uploadValidator = Substitute.for<IUploadValidator>()
 
         // Input
@@ -361,7 +354,7 @@ describe('UploadResolver', () => {
         await expect(fn()).to.be.rejectedWith(
           ErrorMessage.unsupportedMimeType(mimeType),
         )
-        metadataRepository.received(0).insert(Arg.any())
+        metadataRepository.received(0).create(Arg.any())
       })
     })
   })

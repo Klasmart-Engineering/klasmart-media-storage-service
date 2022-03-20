@@ -1,14 +1,14 @@
 import { Arg, Query, Resolver, UnauthorizedError } from 'type-graphql'
-import { Repository, Like } from 'typeorm'
 import { MediaMetadata } from '../entities/mediaMetadata'
 import { UserID } from '../auth/context'
 import { withLogger } from 'kidsloop-nodejs-logger'
+import IMetadataRepository from '../interfaces/metadataRepository'
 
 const logger = withLogger('MetadataResolver')
 
 @Resolver(MediaMetadata)
 export class MetadataResolver {
-  constructor(private readonly metadataRepository: Repository<MediaMetadata>) {}
+  constructor(private readonly metadataRepository: IMetadataRepository) {}
 
   @Query(() => [MediaMetadata], {
     description:
@@ -33,7 +33,7 @@ export class MetadataResolver {
       roomId,
       h5pId,
       h5pSubId,
-      mimeType: Like('audio/%'),
+      mediaType: 'audio',
     })
     return results
   }

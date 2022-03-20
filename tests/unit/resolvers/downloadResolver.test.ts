@@ -1,8 +1,6 @@
 import expect from '../../utils/chaiAsPromisedSetup'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { DownloadResolver } from '../../../src/resolvers/downloadResolver'
-import { Repository } from 'typeorm'
-import { MediaMetadata } from '../../../src/entities/mediaMetadata'
 import IPresignedUrlProvider from '../../../src/interfaces/presignedUrlProvider'
 import MediaMetadataBuilder from '../../builders/mediaMetadataBuilder'
 import { v4 } from 'uuid'
@@ -12,6 +10,7 @@ import AuthorizationProvider from '../../../src/providers/authorizationProvider'
 import SymmetricKeyProvider from '../../../src/providers/symmetricKeyProvider'
 import { UploadResolver } from '../../../src/resolvers/uploadResolver'
 import createMediaFileKey from '../../../src/helpers/createMediaFileKey'
+import IMetadataRepository from '../../../src/interfaces/metadataRepository'
 
 const UnauthorizedErrorMessage =
   'Access denied! You need to be authorized to perform this action!'
@@ -21,7 +20,7 @@ describe('DownloadResolver', () => {
     context('valid arguments provided', () => {
       it('returns expected download info', async () => {
         // Arrange
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const symmetricKeyProvider = Substitute.for<SymmetricKeyProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
         const authorizationProvider = Substitute.for<AuthorizationProvider>()
@@ -55,7 +54,7 @@ describe('DownloadResolver', () => {
             base64EncryptedSymmetricKey,
           )
           .resolves(base64SymmetricKey)
-        metadataRepository.findOne({ id: mediaId }).resolves(metadata)
+        metadataRepository.findById(mediaId).resolves(metadata)
         authorizationProvider.isAuthorized(Arg.all()).resolves(true)
 
         const sut = new DownloadResolver(
@@ -85,7 +84,7 @@ describe('DownloadResolver', () => {
     context('endUserId is undefined', () => {
       it('throws UnauthorizedError', async () => {
         // Arrange
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const symmetricKeyProvider = Substitute.for<SymmetricKeyProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
         const authorizationProvider = Substitute.for<AuthorizationProvider>()
@@ -122,7 +121,7 @@ describe('DownloadResolver', () => {
     context('metadata roomId is null', () => {
       it('throws "no associated room id" error', async () => {
         // Arrange
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const symmetricKeyProvider = Substitute.for<SymmetricKeyProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
         const authorizationProvider = Substitute.for<AuthorizationProvider>()
@@ -159,7 +158,7 @@ describe('DownloadResolver', () => {
             base64EncryptedSymmetricKey,
           )
           .resolves(base64SymmetricKey)
-        metadataRepository.findOne({ id: mediaId }).resolves(metadata)
+        metadataRepository.findById(mediaId).resolves(metadata)
         authorizationProvider.isAuthorized(Arg.all()).resolves(true)
 
         const sut = new DownloadResolver(
@@ -186,7 +185,7 @@ describe('DownloadResolver', () => {
     context('metadata does not exist matching mediaId', () => {
       it('throws "media metadata not found" error', async () => {
         // Arrange
-        const metadataRepository = Substitute.for<Repository<MediaMetadata>>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
         const symmetricKeyProvider = Substitute.for<SymmetricKeyProvider>()
         const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
         const authorizationProvider = Substitute.for<AuthorizationProvider>()
@@ -197,7 +196,7 @@ describe('DownloadResolver', () => {
         const mediaId = v4()
 
         // ******* main difference ******* //
-        metadataRepository.findOne({ id: mediaId }).resolves(undefined)
+        metadataRepository.findById(mediaId).resolves(undefined)
         // ******* main difference ******* //
         authorizationProvider.isAuthorized(Arg.all()).resolves(true)
 
