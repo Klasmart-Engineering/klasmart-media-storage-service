@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.15](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.15..v0.1.14) (2022-03-21)
+
+
+### Features
+
+* type-safe process.env + cors tests ([f5b5af2](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/f5b5af2d63f9531ea38dede241ce28532194715a))
+
+
+### Bug Fixes
+
+* permission check error ([5cc73f9](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/5cc73f9ddfd5a11a49185e298f82e0ee175e0b67))
+
+
+### Refactor
+
+* abtract metadata repo and add typeorm implementation ([7d2d3ee](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/7d2d3ee90afc976a89d3a2b135610dc045eb66e8))
+
 ### [0.1.14](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.14..v0.1.13) (2022-03-18)
 
 
