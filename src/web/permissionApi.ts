@@ -22,7 +22,7 @@ export class PermissionApi {
     try {
       orgPermissionResponse = await this.client.request<OrgPermissionResponse>(
         GET_HAS_ORG_PERMISSION,
-        { organizationId, classId, PERMISSION_ID },
+        { organizationId, classId, permissionId: PERMISSION_ID },
         requestHeaders,
       )
     } catch (error) {
@@ -67,7 +67,7 @@ export class PermissionApi {
       schoolPermissionResponse =
         await this.client.request<SchoolPermissionResponse>(
           GET_HAS_SCHOOL_PERMISSION,
-          { schoolId, PERMISSION_ID },
+          { schoolId, permissionId: PERMISSION_ID },
           requestHeaders,
         )
     } catch (error) {
