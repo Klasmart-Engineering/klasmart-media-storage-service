@@ -1,5 +1,4 @@
 import { Arg, Query, Resolver, UnauthorizedError } from 'type-graphql'
-import { KeyPairProvider } from '../providers/keyPairProvider'
 import { RoomID, UserID } from '../auth/context'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import { v4 } from 'uuid'
@@ -11,6 +10,7 @@ import isMimeTypeSupported from '../helpers/isMimeTypeSupported'
 import { ErrorMessage } from '../helpers/errorMessages'
 import IUploadValidator from '../interfaces/uploadValidator'
 import IMetadataRepository from '../interfaces/metadataRepository'
+import { IKeyPairProvider } from '../interfaces/keyPairProvider'
 
 const logger = withLogger('UploadResolver')
 
@@ -19,7 +19,7 @@ export class UploadResolver {
   public static readonly NoRoomIdKeyName = 'no-room-id'
 
   constructor(
-    private readonly keyPairProvider: KeyPairProvider,
+    private readonly keyPairProvider: IKeyPairProvider,
     private readonly presignedUrlProvider: IPresignedUrlProvider,
     private readonly metadataRepository: IMetadataRepository,
     private readonly uploadValidator: IUploadValidator,
@@ -39,9 +39,8 @@ export class UploadResolver {
       throw new UnauthorizedError()
     }
     const keyPairKey = roomId || UploadResolver.NoRoomIdKeyName
-    const serverPublicKey = await this.keyPairProvider.getPublicKey(keyPairKey)
     const base64ServerPublicKey =
-      Buffer.from(serverPublicKey).toString('base64')
+      await this.keyPairProvider.getPublicKeyOrCreatePair(keyPairKey)
 
     return base64ServerPublicKey
   }
@@ -88,7 +87,10 @@ export class UploadResolver {
       h5pSubId,
       description,
     })
-    this.uploadValidator.validate(mediaFileKey, mediaId)
+    // TODO: Consider passing a callback here instead of the constructor.
+    // Because doing it here has a lot more context that could be used
+    // to log details about uploads that fail validation.
+    this.uploadValidator.scheduleValidation(mediaFileKey, mediaId)
 
     return { mediaId, presignedUrl }
   }

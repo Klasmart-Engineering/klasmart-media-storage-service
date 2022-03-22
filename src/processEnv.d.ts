@@ -18,5 +18,6 @@ declare namespace NodeJS {
     REDIS_PORT?: string
     DATABASE_LOGGING?: string
     MERCURIUS_LOG_LEVEL?: string
+    CACHE?: string
   }
 }

@@ -1,22 +1,28 @@
 import IKeyStorage from '../interfaces/keyStorage'
 import { ErrorMessage } from '../helpers/errorMessages'
 import { KeyPair } from '../helpers/keyPair'
+import { throwExpression } from '../helpers/throwExpression'
+import { IKeyPairProvider } from '../interfaces/keyPairProvider'
 
-export class KeyPairProvider {
+export class KeyPairProvider implements IKeyPairProvider {
   public constructor(
     private readonly publicKeyStorage: IKeyStorage,
     private readonly privateKeyStorage: IKeyStorage,
     private readonly keyPairFactory: () => KeyPair,
   ) {}
 
-  public async getPublicKey(objectKey: string): Promise<Uint8Array> {
+  public async getPublicKeyOrCreatePair(objectKey: string): Promise<string> {
     const keyPair = await this.getKeyPair(objectKey)
-    return keyPair.publicKey
+    const base64PublicKey = Buffer.from(keyPair.publicKey).toString('base64')
+    return base64PublicKey
   }
 
-  public async getPrivateKey(objectKey: string): Promise<Uint8Array> {
-    const keyPair = await this.getKeyPair(objectKey)
-    return keyPair.privateKey
+  public async getPrivateKeyOrThrow(objectKey: string): Promise<Uint8Array> {
+    const privateKey = await this.privateKeyStorage.getKey(objectKey)
+    return (
+      privateKey ??
+      throwExpression(`Server private key doesn't exist: ${objectKey}`)
+    )
   }
 
   private async getKeyPair(objectKey: string): Promise<KeyPair> {
@@ -26,6 +32,7 @@ export class KeyPairProvider {
       const keyPair = this.keyPairFactory()
       publicKey = keyPair.publicKey
       privateKey = keyPair.privateKey
+      // TODO: Consider using Promise.allSettled
       try {
         await this.publicKeyStorage.saveKey(objectKey, publicKey)
       } catch (e) {

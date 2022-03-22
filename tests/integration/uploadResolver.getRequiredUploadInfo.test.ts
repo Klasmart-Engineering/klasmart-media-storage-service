@@ -17,7 +17,7 @@ import supertest, { SuperTest } from 'supertest'
 import { getRepository } from 'typeorm'
 import { MediaMetadata } from '../../src/entities/mediaMetadata'
 
-describe('mediaResolver.getRequiredUploadInfo', () => {
+describe('uploadResolver.getRequiredUploadInfo', () => {
   let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
   let s3Client: S3Client

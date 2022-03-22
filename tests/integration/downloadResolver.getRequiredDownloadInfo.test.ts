@@ -16,7 +16,7 @@ import bootstrap from '../../src/initialization/bootstrap'
 import { getRepository } from 'typeorm'
 import supertest, { SuperTest } from 'supertest'
 
-describe('mediaResolver.getRequiredDownloadInfo', () => {
+describe('downloadResolver.getRequiredDownloadInfo', () => {
   let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
   let s3Client: S3Client

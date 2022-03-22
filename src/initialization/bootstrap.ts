@@ -11,8 +11,10 @@ export default async function bootstrap(compositionRoot?: CompositionRoot) {
 
   let service: IMediaStorageService
   if (process.env.SERVER_IMPL === 'apollo-express') {
+    console.log('apollo')
     service = await createApolloExpressService(schema)
   } else {
+    console.log('mercurius')
     service = await createMercuriusService(schema)
   }
   return service

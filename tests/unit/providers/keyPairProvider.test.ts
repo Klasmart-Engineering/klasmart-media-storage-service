@@ -20,16 +20,17 @@ describe('KeyPairProvider', () => {
           keyPairFactory,
         )
 
-        const organizationId = 'org1'
-        const publicKey = Uint8Array.from([1, 2, 3])
+        const objectKey = 'room1'
+        const publicKey = Buffer.from([1, 2, 3])
+        const base64PublicKey = publicKey.toString('base64')
         const privateKey = Uint8Array.from([4, 5, 6])
 
-        publicKeyStorage.getKey(organizationId).resolves(publicKey)
-        privateKeyStorage.getKey(organizationId).resolves(privateKey)
+        publicKeyStorage.getKey(objectKey).resolves(publicKey)
+        privateKeyStorage.getKey(objectKey).resolves(privateKey)
 
         // Act
-        const expected = publicKey
-        const actual = await sut.getPublicKey(organizationId)
+        const expected = base64PublicKey
+        const actual = await sut.getPublicKeyOrCreatePair(objectKey)
 
         // Assert
         expect(actual).equal(expected)
@@ -43,7 +44,8 @@ describe('KeyPairProvider', () => {
         // Arrange
         const publicKeyStorage = Substitute.for<IKeyStorage>()
         const privateKeyStorage = Substitute.for<IKeyStorage>()
-        const publicKey = Uint8Array.from([1, 2, 3])
+        const publicKey = Buffer.from([1, 2, 3])
+        const base64PublicKey = publicKey.toString('base64')
         const privateKey = Uint8Array.from([4, 5, 6])
         const keyPairFactory = () => new KeyPair(publicKey, privateKey)
         const sut = new KeyPairProvider(
@@ -52,19 +54,19 @@ describe('KeyPairProvider', () => {
           keyPairFactory,
         )
 
-        const organizationId = 'org1'
+        const objectKey = 'room1'
 
-        publicKeyStorage.getKey(organizationId).resolves(undefined)
-        privateKeyStorage.getKey(organizationId).resolves(undefined)
+        publicKeyStorage.getKey(objectKey).resolves(undefined)
+        privateKeyStorage.getKey(objectKey).resolves(undefined)
 
         // Act
-        const expected = publicKey
-        const actual = await sut.getPublicKey(organizationId)
+        const expected = base64PublicKey
+        const actual = await sut.getPublicKeyOrCreatePair(objectKey)
 
         // Assert
         expect(actual).equal(expected)
-        publicKeyStorage.received(1).saveKey(organizationId, publicKey)
-        privateKeyStorage.received(1).saveKey(organizationId, privateKey)
+        publicKeyStorage.received(1).saveKey(objectKey, publicKey)
+        privateKeyStorage.received(1).saveKey(objectKey, privateKey)
       })
     })
 
@@ -76,7 +78,8 @@ describe('KeyPairProvider', () => {
           const publicKeyStorage = Substitute.for<IKeyStorage>()
           const privateKeyStorage = Substitute.for<IKeyStorage>()
           const storedPublicKey = Uint8Array.from([7, 8, 9])
-          const newPublicKey = Uint8Array.from([1, 2, 3])
+          const newPublicKey = Buffer.from([1, 2, 3])
+          const base64NewPublicKey = newPublicKey.toString('base64')
           const newPrivateKey = Uint8Array.from([4, 5, 6])
           const keyPairFactory = () => new KeyPair(newPublicKey, newPrivateKey)
           const sut = new KeyPairProvider(
@@ -85,19 +88,19 @@ describe('KeyPairProvider', () => {
             keyPairFactory,
           )
 
-          const organizationId = 'org1'
+          const objectKey = 'room1'
 
-          publicKeyStorage.getKey(organizationId).resolves(storedPublicKey)
-          privateKeyStorage.getKey(organizationId).resolves(undefined)
+          publicKeyStorage.getKey(objectKey).resolves(storedPublicKey)
+          privateKeyStorage.getKey(objectKey).resolves(undefined)
 
           // Act
-          const expected = newPublicKey
-          const actual = await sut.getPublicKey(organizationId)
+          const expected = base64NewPublicKey
+          const actual = await sut.getPublicKeyOrCreatePair(objectKey)
 
           // Assert
           expect(actual).equal(expected)
-          publicKeyStorage.received(1).saveKey(organizationId, newPublicKey)
-          privateKeyStorage.received(1).saveKey(organizationId, newPrivateKey)
+          publicKeyStorage.received(1).saveKey(objectKey, newPublicKey)
+          privateKeyStorage.received(1).saveKey(objectKey, newPrivateKey)
         })
       },
     )
@@ -110,7 +113,8 @@ describe('KeyPairProvider', () => {
           const publicKeyStorage = Substitute.for<IKeyStorage>()
           const privateKeyStorage = Substitute.for<IKeyStorage>()
           const storedPrivateKey = Uint8Array.from([7, 8, 9])
-          const newPublicKey = Uint8Array.from([1, 2, 3])
+          const newPublicKey = Buffer.from([1, 2, 3])
+          const base64NewPublicKey = newPublicKey.toString('base64')
           const newPrivateKey = Uint8Array.from([4, 5, 6])
           const keyPairFactory = () => new KeyPair(newPublicKey, newPrivateKey)
           const sut = new KeyPairProvider(
@@ -119,19 +123,19 @@ describe('KeyPairProvider', () => {
             keyPairFactory,
           )
 
-          const organizationId = 'org1'
+          const objectKey = 'room1'
 
-          publicKeyStorage.getKey(organizationId).resolves(undefined)
-          privateKeyStorage.getKey(organizationId).resolves(storedPrivateKey)
+          publicKeyStorage.getKey(objectKey).resolves(undefined)
+          privateKeyStorage.getKey(objectKey).resolves(storedPrivateKey)
 
           // Act
-          const expected = newPublicKey
-          const actual = await sut.getPublicKey(organizationId)
+          const expected = base64NewPublicKey
+          const actual = await sut.getPublicKeyOrCreatePair(objectKey)
 
           // Assert
           expect(actual).equal(expected)
-          publicKeyStorage.received(1).saveKey(organizationId, newPublicKey)
-          privateKeyStorage.received(1).saveKey(organizationId, newPrivateKey)
+          publicKeyStorage.received(1).saveKey(objectKey, newPublicKey)
+          privateKeyStorage.received(1).saveKey(objectKey, newPrivateKey)
         })
       },
     )
@@ -153,20 +157,20 @@ describe('KeyPairProvider', () => {
             keyPairFactory,
           )
 
-          const organizationId = 'org1'
-          publicKeyStorage.saveKey(organizationId, publicKey).rejects(awsError)
+          const objectKey = 'room1'
+          publicKeyStorage.saveKey(objectKey, publicKey).rejects(awsError)
 
-          publicKeyStorage.getKey(organizationId).resolves(undefined)
-          privateKeyStorage.getKey(organizationId).resolves(undefined)
+          publicKeyStorage.getKey(objectKey).resolves(undefined)
+          privateKeyStorage.getKey(objectKey).resolves(undefined)
 
           // Act
-          const fn = () => sut.getPublicKey(organizationId)
+          const fn = () => sut.getPublicKeyOrCreatePair(objectKey)
 
           // Assert
           await expect(fn()).to.be.rejectedWith(
             ErrorMessage.publicKeySaveFailed(awsError),
           )
-          publicKeyStorage.received(1).saveKey(organizationId, publicKey)
+          publicKeyStorage.received(1).saveKey(objectKey, publicKey)
           privateKeyStorage.didNotReceive().saveKey(Arg.all())
         })
       },
@@ -189,23 +193,21 @@ describe('KeyPairProvider', () => {
             keyPairFactory,
           )
 
-          const organizationId = 'org1'
-          privateKeyStorage
-            .saveKey(organizationId, privateKey)
-            .rejects(awsError)
+          const objectKey = 'room1'
+          privateKeyStorage.saveKey(objectKey, privateKey).rejects(awsError)
 
-          publicKeyStorage.getKey(organizationId).resolves(undefined)
-          privateKeyStorage.getKey(organizationId).resolves(undefined)
+          publicKeyStorage.getKey(objectKey).resolves(undefined)
+          privateKeyStorage.getKey(objectKey).resolves(undefined)
 
           // Act
-          const fn = () => sut.getPublicKey(organizationId)
+          const fn = () => sut.getPublicKeyOrCreatePair(objectKey)
 
           // Assert
           await expect(fn()).to.be.rejectedWith(
             ErrorMessage.privateKeySaveFailed(awsError),
           )
-          publicKeyStorage.received(1).saveKey(organizationId, publicKey)
-          privateKeyStorage.received(1).saveKey(organizationId, privateKey)
+          publicKeyStorage.received(1).saveKey(objectKey, publicKey)
+          privateKeyStorage.received(1).saveKey(objectKey, privateKey)
         })
       },
     )

@@ -11,7 +11,7 @@ import { TestCompositionRoot } from './testCompositionRoot'
 import supertest, { SuperTest } from 'supertest'
 import bootstrap from '../../src/initialization/bootstrap'
 
-describe('mediaResolver', () => {
+describe('metadataResolver', () => {
   let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
 

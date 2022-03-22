@@ -19,7 +19,7 @@ import s3BodyToBuffer from '../../src/helpers/s3BodyToBuffer'
 import bootstrap from '../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
 
-describe('mediaResolver.getServerPublicKey', () => {
+describe('uploadResolver.getServerPublicKey', () => {
   let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
   let s3Client: S3Client
@@ -160,9 +160,7 @@ describe('mediaResolver.getServerPublicKey', () => {
 
       expect(publicKeyBucket.Contents == null).to.be.false
       expect(publicKeyBucket.Contents).to.have.lengthOf(1)
-      expect(publicKeyBuffer).to.deep.equal(
-        Buffer.from(serverKeyPair.publicKey),
-      )
+      expect(publicKeyBuffer).to.deep.equal(serverKeyPair.publicKey)
     })
 
     it('server private key is still saved in S3 bucket', async () => {

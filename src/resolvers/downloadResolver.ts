@@ -58,17 +58,13 @@ export class DownloadResolver {
       throw new Error(ErrorMessage.mismatchingRoomIds)
     }
 
-    const userPublicKey = Buffer.from(
-      mediaMetadata.base64UserPublicKey,
-      'base64',
-    )
-
     const base64SymmetricKey =
       await this.symmetricKeyProvider.getBase64SymmetricKey(
         roomId,
-        userPublicKey,
+        mediaMetadata.base64UserPublicKey,
         mediaMetadata.base64EncryptedSymmetricKey,
       )
+
     const mediaFileKey = createMediaFileKey(mediaId, mediaMetadata.mimeType)
     const presignedUrl = await this.presignedUrlProvider.getDownloadUrl(
       mediaFileKey,

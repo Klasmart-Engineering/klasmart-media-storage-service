@@ -16,7 +16,7 @@ import { KeyPair } from '../helpers/keyPair'
 import AuthorizationProvider from '../providers/authorizationProvider'
 import { ScheduleApi } from '../web/scheduleApi'
 import { PermissionApi } from '../web/permissionApi'
-import RedisAuthorizationProvider from '../providers/redisAuthorizationProvider'
+import CachedAuthorizationProvider from '../providers/cachedAuthorizationProvider'
 import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
 import { connectToMetadataDatabase } from './connectToMetadataDatabase'
 import { withLogger } from 'kidsloop-nodejs-logger'
@@ -29,6 +29,11 @@ import UploadValidator from '../providers/uploadValidator'
 import { MediaFileStorageChecker } from '../providers/mediaFileStorageChecker'
 import IMetadataRepository from '../interfaces/metadataRepository'
 import TypeormMetadataRepository from '../providers/typeormMetadataRepository'
+import { ICacheProvider } from '../interfaces/cacheProvider'
+import MemoryCacheProvider from '../providers/memoryCacheProvider'
+import RedisCacheProvider from '../providers/redisCacheProvider'
+import { IKeyPairProvider } from '../interfaces/keyPairProvider'
+import { CachedKeyPairProvider } from '../providers/cachedKeyPairProvider'
 
 const logger = withLogger('CompositionRoot')
 
@@ -44,10 +49,13 @@ export class CompositionRoot {
   // Resolver dependencies
   protected redis?: Redis
   protected typeorm?: Connection
-  protected keyPairProvider?: KeyPairProvider
+  protected keyPairProvider?: IKeyPairProvider
   protected presignedUrlProvider?: IPresignedUrlProvider
   protected uploadValidator?: UploadValidator
   protected metadataRepository?: IMetadataRepository
+  protected authorizationProvider?: IAuthorizationProvider
+  protected cachePruneTicker?: NodeJS.Timer
+  protected tickerCallbacks: (() => void)[] = []
 
   /**
    * Call this method at service startup to instantiate the GraphQL resolvers.
@@ -90,12 +98,21 @@ export class CompositionRoot {
     return this.uploadResolver
   }
 
-  protected getKeyPairProvider(): KeyPairProvider {
-    this.keyPairProvider ??= new KeyPairProvider(
+  protected getKeyPairProvider(): IKeyPairProvider {
+    if (this.keyPairProvider != null) {
+      return this.keyPairProvider
+    }
+    this.keyPairProvider = new KeyPairProvider(
       this.getPublicKeyStorage(),
       this.getPrivateKeyStorage(),
       this.getKeyPairFactory(),
     )
+    if (Config.getCache()) {
+      this.keyPairProvider = new CachedKeyPairProvider(
+        this.keyPairProvider,
+        this.getCacheProvider(),
+      )
+    }
     return this.keyPairProvider
   }
 
@@ -108,14 +125,30 @@ export class CompositionRoot {
   }
 
   protected getAuthorizationProvider(): IAuthorizationProvider {
-    let result: IAuthorizationProvider = new AuthorizationProvider(
+    if (this.authorizationProvider != null) {
+      return this.authorizationProvider
+    }
+    this.authorizationProvider = new AuthorizationProvider(
       this.getScheduleApi(),
       this.getPermissionApi(),
     )
-    if (Config.getRedisHost() && Config.getRedisPort()) {
-      result = new RedisAuthorizationProvider(result, this.getRedisClient())
+    if (Config.getCache()) {
+      this.authorizationProvider = new CachedAuthorizationProvider(
+        this.authorizationProvider,
+        this.getCacheProvider(),
+      )
     }
-    return result
+    return this.authorizationProvider
+  }
+
+  protected getCacheProvider(): ICacheProvider {
+    if (Config.getCache() === 'redis') {
+      return new RedisCacheProvider(this.getRedisClient())
+    }
+    const memoryCache = new MemoryCacheProvider()
+    this.tickerCallbacks.push(() => memoryCache.prune())
+    this.startCachePruneTicker()
+    return memoryCache
   }
 
   protected getRedisClient() {
@@ -175,8 +208,7 @@ export class CompositionRoot {
     this.uploadValidator ??= new UploadValidator(
       this.getMediaFileStorageChecker(),
       (mediaId) => this.getMetadataRepository().delete(mediaId),
-      // TODO: Config.getFileValidationDelayMs()
-      60000,
+      Config.getFileValidationDelayMs(),
     )
     return this.uploadValidator
   }
@@ -188,10 +220,19 @@ export class CompositionRoot {
     )
   }
 
+  protected startCachePruneTicker() {
+    this.cachePruneTicker ??= setInterval(() => {
+      this.tickerCallbacks.forEach((cb) => cb())
+    }, 24 * 60 * 60 * 1000)
+  }
+
   public async cleanUp() {
     logger.debug('[cleanUp] disconnecting from redis and typeorm...')
     await this.redis?.quit()
     await this.typeorm?.close()
     this.uploadValidator?.cleanUp()
+    if (this.cachePruneTicker) {
+      clearTimeout(this.cachePruneTicker)
+    }
   }
 }

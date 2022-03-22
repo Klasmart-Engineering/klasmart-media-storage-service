@@ -10,12 +10,11 @@ export default class UploadValidator implements IUploadValidator {
     private readonly fileValidationDelayMs: number,
   ) {}
 
-  // validateAfterUploadPeriod
-  // validateAfterDelay
-  public validate(objectKey: string, mediaId: string): void {
+  public scheduleValidation(objectKey: string, mediaId: string): void {
     const timer = setTimeout(async () => {
       const exists = await this.mediaFileStorageChecker.objectExists(objectKey)
       this.timers.delete(objectKey)
+      // undefined means the check was unsuccessful, so we just leave it alone.
       if (exists === true || undefined) {
         return
       }

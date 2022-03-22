@@ -11,7 +11,7 @@ import {
 } from '../../../src/initialization/connectToMetadataDatabase'
 import Substitute from '@fluffy-spoon/substitute'
 
-describe('mediaResolver', () => {
+describe('connectToMetadataDatabase', () => {
   context('database does not exist', () => {
     context(
       'createIfDoesntExist=false, error.code=INVALID_CATALOG_NAME',

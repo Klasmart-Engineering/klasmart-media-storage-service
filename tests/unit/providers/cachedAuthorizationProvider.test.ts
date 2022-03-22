@@ -1,27 +1,27 @@
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
-import { Redis } from 'ioredis'
-import RedisAuthorizationProvider from '../../../src/providers/redisAuthorizationProvider'
+import CachedAuthorizationProvider from '../../../src/providers/cachedAuthorizationProvider'
 import { IAuthorizationProvider } from '../../../src/interfaces/authorizationProvider'
+import { ICacheProvider } from '../../../src/interfaces/cacheProvider'
 
-describe('redisAuthorizationProvider', () => {
+describe('cachedAuthorizationProvider', () => {
   describe('isAuthorized', () => {
-    context('redis client returns true', () => {
+    context('cache returns true', () => {
       it('returns true, and does not call the underlying authorization provider', async () => {
         // Arrange
         const endUserId = 'teacher1'
         const roomId = 'my-room'
         const authenticationToken = 'auth-token'
-        const redisClient = Substitute.for<Redis>()
+        const cache = Substitute.for<ICacheProvider>()
         const defaultAutorizationProvider =
           Substitute.for<IAuthorizationProvider>()
-        const sut = new RedisAuthorizationProvider(
+        const sut = new CachedAuthorizationProvider(
           defaultAutorizationProvider,
-          redisClient,
+          cache,
         )
 
-        const redisKey = `${endUserId}|${roomId}`
-        redisClient.get(redisKey).resolves('true')
+        const key = CachedAuthorizationProvider.getCacheKey(endUserId, roomId)
+        cache.get(key).resolves('true')
 
         // Act
         const actual = await sut.isAuthorized(
@@ -36,22 +36,22 @@ describe('redisAuthorizationProvider', () => {
       })
     })
 
-    context('redis client returns false', () => {
+    context('cache returns false', () => {
       it('returns false, and does not call the underlying authorization provider', async () => {
         // Arrange
         const endUserId = 'teacher1'
         const roomId = 'my-room'
         const authenticationToken = 'auth-token'
-        const redisClient = Substitute.for<Redis>()
+        const cache = Substitute.for<ICacheProvider>()
         const defaultAutorizationProvider =
           Substitute.for<IAuthorizationProvider>()
-        const sut = new RedisAuthorizationProvider(
+        const sut = new CachedAuthorizationProvider(
           defaultAutorizationProvider,
-          redisClient,
+          cache,
         )
 
-        const redisKey = `${endUserId}|${roomId}`
-        redisClient.get(redisKey).resolves('false')
+        const key = CachedAuthorizationProvider.getCacheKey(endUserId, roomId)
+        cache.get(key).resolves('false')
 
         // Act
         const actual = await sut.isAuthorized(
@@ -67,23 +67,23 @@ describe('redisAuthorizationProvider', () => {
     })
 
     context(
-      'redis client returns null; underlying authorization provider returns true',
+      'cache returns null; underlying authorization provider returns true',
       () => {
-        it('returns true, and calls redis.set', async () => {
+        it('returns true, and calls cache.set', async () => {
           // Arrange
           const endUserId = 'teacher1'
           const roomId = 'my-room'
           const authenticationToken = 'auth-token'
-          const redisClient = Substitute.for<Redis>()
+          const cache = Substitute.for<ICacheProvider>()
           const defaultAutorizationProvider =
             Substitute.for<IAuthorizationProvider>()
-          const sut = new RedisAuthorizationProvider(
+          const sut = new CachedAuthorizationProvider(
             defaultAutorizationProvider,
-            redisClient,
+            cache,
           )
 
-          const redisKey = `${endUserId}|${roomId}`
-          redisClient.get(redisKey).resolves(null)
+          const key = CachedAuthorizationProvider.getCacheKey(endUserId, roomId)
+          cache.get(key).resolves(null)
           defaultAutorizationProvider.isAuthorized(Arg.all()).resolves(true)
 
           // Act
@@ -95,29 +95,29 @@ describe('redisAuthorizationProvider', () => {
 
           // Assert
           expect(actual).to.equal(true)
-          redisClient.received(1).set(redisKey, 'true', 'ex', 24 * 60 * 60)
+          cache.received(1).set(key, 'true', 24 * 60 * 60)
         })
       },
     )
 
     context(
-      'redis client returns null; underlying authorization provider returns false',
+      'cache returns null; underlying authorization provider returns false',
       () => {
-        it('returns false, and calls redis.set', async () => {
+        it('returns false, and calls cache.set', async () => {
           // Arrange
           const endUserId = 'teacher1'
           const roomId = 'my-room'
           const authenticationToken = 'auth-token'
-          const redisClient = Substitute.for<Redis>()
+          const cache = Substitute.for<ICacheProvider>()
           const defaultAutorizationProvider =
             Substitute.for<IAuthorizationProvider>()
-          const sut = new RedisAuthorizationProvider(
+          const sut = new CachedAuthorizationProvider(
             defaultAutorizationProvider,
-            redisClient,
+            cache,
           )
 
-          const redisKey = `${endUserId}|${roomId}`
-          redisClient.get(redisKey).resolves(null)
+          const key = CachedAuthorizationProvider.getCacheKey(endUserId, roomId)
+          cache.get(key).resolves(null)
           defaultAutorizationProvider.isAuthorized(Arg.all()).resolves(false)
 
           // Act
@@ -129,7 +129,8 @@ describe('redisAuthorizationProvider', () => {
 
           // Assert
           expect(actual).to.equal(false)
-          redisClient.received(1).set(redisKey, 'false', 'ex', 24 * 60 * 60)
+          // Consider moving values to config.
+          cache.received(1).set(key, 'false', 24 * 60 * 60)
         })
       },
     )

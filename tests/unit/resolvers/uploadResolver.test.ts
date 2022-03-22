@@ -29,12 +29,14 @@ describe('UploadResolver', () => {
 
         // Output
         const presignedUrl = 'my-upload-url'
-        const serverPublicKey = Uint8Array.from([1, 2, 3])
+        const base64ServerPublicKey = Buffer.from([1, 2, 3]).toString('base64')
 
         presignedUrlProvider
           .getUploadUrl(Arg.any(), mimeType)
           .resolves(presignedUrl)
-        keyPairProvider.getPublicKey(roomId).resolves(serverPublicKey)
+        keyPairProvider
+          .getPublicKeyOrCreatePair(roomId)
+          .resolves(base64ServerPublicKey)
 
         const sut = new UploadResolver(
           keyPairProvider,
@@ -86,12 +88,14 @@ describe('UploadResolver', () => {
 
         // Output
         const presignedUrl = 'my-upload-url'
-        const serverPublicKey = Uint8Array.from([1, 2, 3])
+        const base64ServerPublicKey = Buffer.from([1, 2, 3]).toString('base64')
 
         presignedUrlProvider
           .getUploadUrl(Arg.any(), mimeType)
           .resolves(presignedUrl)
-        keyPairProvider.getPublicKey(roomId).resolves(serverPublicKey)
+        keyPairProvider
+          .getPublicKeyOrCreatePair(roomId)
+          .resolves(base64ServerPublicKey)
 
         const sut = new UploadResolver(
           keyPairProvider,
@@ -143,14 +147,14 @@ describe('UploadResolver', () => {
 
         // Output
         const presignedUrl = 'my-upload-url'
-        const serverPublicKey = Uint8Array.from([1, 2, 3])
+        const base64ServerPublicKey = Buffer.from([1, 2, 3]).toString('base64')
 
         presignedUrlProvider
           .getUploadUrl(Arg.any(), mimeType)
           .resolves(presignedUrl)
         keyPairProvider
-          .getPublicKey(UploadResolver.NoRoomIdKeyName)
-          .resolves(serverPublicKey)
+          .getPublicKeyOrCreatePair(UploadResolver.NoRoomIdKeyName)
+          .resolves(base64ServerPublicKey)
 
         const sut = new UploadResolver(
           keyPairProvider,
@@ -202,14 +206,14 @@ describe('UploadResolver', () => {
 
         // Output
         const presignedUrl = 'my-upload-url'
-        const serverPublicKey = Uint8Array.from([1, 2, 3])
+        const base64ServerPublicKey = Buffer.from([1, 2, 3]).toString('base64')
 
         presignedUrlProvider
           .getUploadUrl(Arg.any(), mimeType)
           .resolves(presignedUrl)
         keyPairProvider
-          .getPublicKey(UploadResolver.NoRoomIdKeyName)
-          .resolves(serverPublicKey)
+          .getPublicKeyOrCreatePair(UploadResolver.NoRoomIdKeyName)
+          .resolves(base64ServerPublicKey)
 
         const sut = new UploadResolver(
           keyPairProvider,
@@ -261,14 +265,16 @@ describe('UploadResolver', () => {
 
           // Output
           const presignedUrl = 'my-upload-url'
-          const serverPublicKey = Uint8Array.from([1, 2, 3])
+          const base64ServerPublicKey = Buffer.from([1, 2, 3]).toString(
+            'base64',
+          )
 
           presignedUrlProvider
             .getUploadUrl(Arg.any(), mimeType)
             .resolves(presignedUrl)
           keyPairProvider
-            .getPublicKey(UploadResolver.NoRoomIdKeyName)
-            .resolves(serverPublicKey)
+            .getPublicKeyOrCreatePair(UploadResolver.NoRoomIdKeyName)
+            .resolves(base64ServerPublicKey)
 
           const sut = new UploadResolver(
             keyPairProvider,
@@ -321,14 +327,14 @@ describe('UploadResolver', () => {
 
         // Output
         const presignedUrl = 'my-upload-url'
-        const serverPublicKey = Uint8Array.from([1, 2, 3])
+        const base64ServerPublicKey = Buffer.from([1, 2, 3]).toString('base64')
 
         presignedUrlProvider
           .getUploadUrl(Arg.any(), mimeType)
           .resolves(presignedUrl)
         keyPairProvider
-          .getPublicKey(UploadResolver.NoRoomIdKeyName)
-          .resolves(serverPublicKey)
+          .getPublicKeyOrCreatePair(UploadResolver.NoRoomIdKeyName)
+          .resolves(base64ServerPublicKey)
 
         const sut = new UploadResolver(
           keyPairProvider,

@@ -3,12 +3,14 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { throwExpression } from '../helpers/throwExpression'
 
 export class Config {
+  private static s3Client: S3Client
   public static getS3Client(): S3Client {
-    return new S3Client({
+    this.s3Client ??= new S3Client({
       endpoint: process.env.S3_BUCKET_ENDPOINT,
       // Needed with minio.
       forcePathStyle: true,
     })
+    return this.s3Client
   }
 
   public static getCorsDomain(): string {
@@ -54,6 +56,20 @@ export class Config {
       process.env.USER_SERVICE_ENDPOINT ??
       throwExpression('USER_SERVICE_ENDPOINT must be defined')
     )
+  }
+
+  static getFileValidationDelayMs(): number {
+    return 60000
+  }
+
+  static getCache(): 'redis' | 'memory' | undefined {
+    const cache = process.env.CACHE ?? 'memory'
+    if (cache !== 'redis' && cache !== 'memory' && cache !== undefined) {
+      throw new Error(
+        "Invalid value for CACHE. Valid options: 'redis', 'memory', or undefined",
+      )
+    }
+    return cache
   }
 
   static getRedisHost(): string | undefined {

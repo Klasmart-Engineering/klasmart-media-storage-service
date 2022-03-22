@@ -34,7 +34,6 @@ describe('DownloadResolver', () => {
           base64EncryptedSymmetricKey,
           base64SymmetricKey,
           base64UserPublicKey,
-          userPublicKey,
         } = getSampleEncryptedData()
         const metadata = new MediaMetadataBuilder()
           .withId(mediaId)
@@ -49,8 +48,7 @@ describe('DownloadResolver', () => {
         symmetricKeyProvider
           .getBase64SymmetricKey(
             roomId,
-            // This special comparison is necessary. Without it, Buffer != Uint8Array.
-            Arg.is((x) => Buffer.compare(x, userPublicKey) === 0),
+            base64UserPublicKey,
             base64EncryptedSymmetricKey,
           )
           .resolves(base64SymmetricKey)
@@ -139,7 +137,6 @@ describe('DownloadResolver', () => {
           base64EncryptedSymmetricKey,
           base64SymmetricKey,
           base64UserPublicKey,
-          userPublicKey,
         } = getSampleEncryptedData()
         const metadata = new MediaMetadataBuilder()
           .withId(mediaId)
@@ -153,8 +150,7 @@ describe('DownloadResolver', () => {
         symmetricKeyProvider
           .getBase64SymmetricKey(
             keyPairObjectKey,
-            // This special comparison is necessary. Without it, Buffer != Uint8Array.
-            Arg.is((x) => Buffer.compare(x, userPublicKey) === 0),
+            base64UserPublicKey,
             base64EncryptedSymmetricKey,
           )
           .resolves(base64SymmetricKey)
