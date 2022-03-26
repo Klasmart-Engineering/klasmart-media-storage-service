@@ -364,4 +364,65 @@ describe('UploadResolver', () => {
       })
     })
   })
+
+  describe('getServerPublicKey', () => {
+    context('endUserId is falsy', () => {
+      it('throws authentication error', async () => {
+        // Arrange
+        const keyPairProvider = Substitute.for<KeyPairProvider>()
+        const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
+        const uploadValidator = Substitute.for<IUploadValidator>()
+
+        // Input
+        const endUserId = undefined
+        const roomId = 'room1'
+
+        const sut = new UploadResolver(
+          keyPairProvider,
+          presignedUrlProvider,
+          metadataRepository,
+          uploadValidator,
+        )
+
+        // Act
+        const fn = () => sut.getServerPublicKey(endUserId, roomId)
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
+      })
+    })
+
+    context('roomId is nullish', () => {
+      it('returns expected server public key', async () => {
+        // Arrange
+        const keyPairProvider = Substitute.for<KeyPairProvider>()
+        const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
+        const uploadValidator = Substitute.for<IUploadValidator>()
+
+        // Input
+        const endUserId = 'user1'
+        const roomId = undefined
+        const base64ServerPublicKey = 'key1'
+
+        const sut = new UploadResolver(
+          keyPairProvider,
+          presignedUrlProvider,
+          metadataRepository,
+          uploadValidator,
+        )
+
+        keyPairProvider
+          .getPublicKeyOrCreatePair(UploadResolver.NoRoomIdKeyName)
+          .resolves(base64ServerPublicKey)
+
+        // Act
+        const actual = await sut.getServerPublicKey(endUserId, roomId)
+
+        // Assert
+        expect(actual).to.equal(base64ServerPublicKey)
+      })
+    })
+  })
 })

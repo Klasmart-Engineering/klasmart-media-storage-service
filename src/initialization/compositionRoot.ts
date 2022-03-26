@@ -145,7 +145,7 @@ export class CompositionRoot {
     if (Config.getCache() === 'redis') {
       return new RedisCacheProvider(this.getRedisClient())
     }
-    const memoryCache = new MemoryCacheProvider()
+    const memoryCache = new MemoryCacheProvider(Date)
     this.tickerCallbacks.push(() => memoryCache.prune())
     this.startCachePruneTicker()
     return memoryCache

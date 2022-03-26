@@ -15,7 +15,7 @@ export default class UploadValidator implements IUploadValidator {
       const exists = await this.mediaFileStorageChecker.objectExists(objectKey)
       this.timers.delete(objectKey)
       // undefined means the check was unsuccessful, so we just leave it alone.
-      if (exists === true || undefined) {
+      if (exists === true || exists === undefined) {
         return
       }
       await this.failCallback(mediaId)

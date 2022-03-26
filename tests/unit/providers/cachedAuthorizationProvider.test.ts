@@ -134,5 +134,32 @@ describe('cachedAuthorizationProvider', () => {
         })
       },
     )
+
+    context('endUserId is falsy', () => {
+      it('returns false, and does not call the underlying authorization provider', async () => {
+        // Arrange
+        const endUserId = undefined
+        const roomId = 'my-room'
+        const authenticationToken = 'auth-token'
+        const cache = Substitute.for<ICacheProvider>()
+        const defaultAutorizationProvider =
+          Substitute.for<IAuthorizationProvider>()
+        const sut = new CachedAuthorizationProvider(
+          defaultAutorizationProvider,
+          cache,
+        )
+
+        // Act
+        const actual = await sut.isAuthorized(
+          endUserId,
+          roomId,
+          authenticationToken,
+        )
+
+        // Assert
+        expect(actual).to.equal(false)
+        defaultAutorizationProvider.didNotReceive().isAuthorized(Arg.all())
+      })
+    })
   })
 })

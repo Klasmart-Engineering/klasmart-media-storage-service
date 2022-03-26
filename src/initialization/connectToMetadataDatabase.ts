@@ -6,6 +6,7 @@ import {
   LoggerOptions,
 } from 'typeorm'
 import { withLogger } from 'kidsloop-nodejs-logger'
+import { delay } from '../helpers/delay'
 
 const logger = withLogger('connectToMetadataDatabase')
 
@@ -72,10 +73,6 @@ export async function connectToMetadataDatabase(
     )
     throw e
   }
-}
-
-function delay(ms: number): Promise<boolean> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 async function tryCreateMetadataDatabase(

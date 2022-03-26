@@ -1,0 +1,132 @@
+import expect from '../../utils/chaiAsPromisedSetup'
+import MemoryCacheProvider, {
+  IClock,
+  MemoryCacheRecord,
+} from '../../../src/providers/memoryCacheProvider'
+
+describe('MemoryCacheProvider', () => {
+  describe('get', () => {
+    context('key exists in cache', () => {
+      it('returns corresponding value', async () => {
+        // Arrange
+        const cacheKey = 'key1'
+        const cacheValue = 'value1'
+        const record: MemoryCacheRecord = {
+          value: cacheValue,
+          expirationMs: 1000,
+        }
+        const map = new Map([[cacheKey, record]])
+        const sut = new MemoryCacheProvider(new TestClock(), map)
+
+        // Act
+        const expected = cacheValue
+        const actual = await sut.get(cacheKey)
+
+        // Assert
+        expect(actual).equal(expected)
+      })
+    })
+
+    context('key exists in cache but it is expired', () => {
+      it('returns null', async () => {
+        // Arrange
+        const cacheKey = 'key1'
+        const cacheValue = 'value1'
+        const record: MemoryCacheRecord = {
+          value: cacheValue,
+          expirationMs: 10,
+        }
+        const map = new Map([[cacheKey, record]])
+        const sut = new MemoryCacheProvider(new TestClock(12), map)
+
+        // Act
+        const expected = null
+        const actual = await sut.get(cacheKey)
+
+        // Assert
+        expect(actual).equal(expected)
+      })
+    })
+
+    context('key does not exist in cache', () => {
+      it('returns null', async () => {
+        // Arrange
+        const cacheKey = 'key1'
+        const map = new Map<string, MemoryCacheRecord>()
+        const sut = new MemoryCacheProvider(new TestClock(), map)
+
+        // Act
+        const expected = null
+        const actual = await sut.get(cacheKey)
+
+        // Assert
+        expect(actual).equal(expected)
+      })
+    })
+  })
+
+  describe('set', () => {
+    context('key does not exist in cache', () => {
+      it('returns "OK"', async () => {
+        // Arrange
+        const cacheKey = 'key1'
+        const cacheValue = 'value1'
+        const map = new Map<string, MemoryCacheRecord>()
+        const sut = new MemoryCacheProvider(new TestClock(), map)
+
+        const ttlSeconds = 1
+
+        // Act
+        const expected = 'OK'
+        const actual = await sut.set(cacheKey, cacheValue, ttlSeconds)
+
+        // Assert
+        expect(actual).equal(expected)
+
+        const record: MemoryCacheRecord = {
+          value: cacheValue,
+          expirationMs: 1000,
+        }
+        expect(map).has.lengthOf(1)
+        expect(map.get(cacheKey)).deep.equals(record)
+      })
+    })
+  })
+
+  describe('prune', () => {
+    context('1 expired key and 1 non-expired key exist', () => {
+      it('deletes the expired key', async () => {
+        // Arrange
+        const cacheKey1 = 'key1'
+        const cacheKey2 = 'key2'
+        const cacheValue = 'value'
+        const map = new Map<string, MemoryCacheRecord>([
+          [cacheKey1, { value: cacheValue, expirationMs: 10 }],
+          [cacheKey2, { value: cacheValue, expirationMs: 20 }],
+        ])
+        const clock = new TestClock()
+        const sut = new MemoryCacheProvider(clock, map)
+
+        // Act
+        clock.addMs(15)
+        sut.prune()
+
+        // Assert
+        expect(map).to.have.lengthOf(1)
+        expect(map).to.have.key(cacheKey2)
+      })
+    })
+  })
+})
+
+export class TestClock implements IClock {
+  constructor(private currentMs = 0) {}
+
+  now(): number {
+    return this.currentMs
+  }
+
+  public addMs(ms: number) {
+    this.currentMs += ms
+  }
+}

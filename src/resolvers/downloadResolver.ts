@@ -33,7 +33,7 @@ export class DownloadResolver {
     @AuthenticationToken() authenticationToken?: string,
   ): Promise<RequiredDownloadInfo> {
     logger.debug(
-      `[getRequiredDownloadInfo] mediaId: ${mediaId}; endUserId: ${endUserId}; roomId: ${roomId}`,
+      `[getRequiredDownloadInfo] endUserId: ${endUserId}; roomId: ${roomId}; mediaId: ${mediaId}`,
     )
     const isAuthorized = await this.authorizationProvider.isAuthorized(
       endUserId,
