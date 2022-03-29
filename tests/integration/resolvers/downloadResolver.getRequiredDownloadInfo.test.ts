@@ -1,11 +1,7 @@
 import '../../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import {
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Config } from '../../../src/initialization/config'
 import { clearS3Buckets } from '../../utils/s3BucketUtil'
 import { MediaMetadata } from '../../../src/entities/mediaMetadata'
@@ -62,17 +58,6 @@ describe('downloadResolver.getRequiredDownloadInfo', () => {
         )
         const symmetricKey = box.keyPair().secretKey
         const base64EncryptedSymmetricKey = encrypt(userSharedKey, symmetricKey)
-
-        try {
-          await s3Client.send(
-            new GetObjectCommand({
-              Bucket: Config.getPublicKeyBucket(),
-              Key: roomId,
-            }),
-          )
-        } catch (err) {
-          console.log(err)
-        }
 
         await s3Client.send(
           new PutObjectCommand({
