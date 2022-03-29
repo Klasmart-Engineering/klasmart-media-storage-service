@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.19](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.19..v0.1.18) (2022-03-29)
+
+
+### Features
+
+* authorize participant teachers to download ([06deddd](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/06deddd68bb8989b7ee374ac2a757d59c9cb26eb))
+
+
+### Refactor
+
+* rename variable to be more accurate ([656baf8](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/656baf885619d3704a5a0343c85fd42c8bcbe6e0))
+
 ### [0.1.18](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.18..v0.1.17) (2022-03-29)
 
 ### [0.1.17](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.17..v0.1.16) (2022-03-29)
