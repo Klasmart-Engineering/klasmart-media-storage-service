@@ -1,12 +1,13 @@
 import expect from '../../utils/chaiAsPromisedSetup'
 import MemoryCacheProvider, {
+  DateClock,
   IClock,
   MemoryCacheRecord,
 } from '../../../src/providers/memoryCacheProvider'
 
 describe('MemoryCacheProvider', () => {
   describe('get', () => {
-    context('key exists in cache', () => {
+    context('key exists in cache; not expired', () => {
       it('returns corresponding value', async () => {
         // Arrange
         const cacheKey = 'key1'
@@ -27,7 +28,7 @@ describe('MemoryCacheProvider', () => {
       })
     })
 
-    context('key exists in cache but it is expired', () => {
+    context('key exists in cache; expired', () => {
       it('returns null', async () => {
         // Arrange
         const cacheKey = 'key1'
@@ -91,6 +92,32 @@ describe('MemoryCacheProvider', () => {
         expect(map.get(cacheKey)).deep.equals(record)
       })
     })
+
+    context('key does not exist in cache; ttl undefined', () => {
+      it('returns "OK"', async () => {
+        // Arrange
+        const cacheKey = 'key1'
+        const cacheValue = 'value1'
+        const map = new Map<string, MemoryCacheRecord>()
+        const sut = new MemoryCacheProvider(new TestClock(), map)
+
+        const ttlSeconds = undefined
+
+        // Act
+        const expected = 'OK'
+        const actual = await sut.set(cacheKey, cacheValue, ttlSeconds)
+
+        // Assert
+        expect(actual).equal(expected)
+
+        const record: MemoryCacheRecord = {
+          value: cacheValue,
+          expirationMs: undefined,
+        }
+        expect(map).has.lengthOf(1)
+        expect(map.get(cacheKey)).deep.equals(record)
+      })
+    })
   })
 
   describe('prune', () => {
@@ -116,6 +143,20 @@ describe('MemoryCacheProvider', () => {
         expect(map).to.have.key(cacheKey2)
       })
     })
+  })
+})
+
+describe('DateClock.now', () => {
+  it('executes without error', async () => {
+    // Arrange
+    const sut = new DateClock()
+
+    // Act
+    const actual = sut.now()
+    const expected = Date.now()
+
+    // Assert
+    expect(actual).to.equal(expected)
   })
 })
 

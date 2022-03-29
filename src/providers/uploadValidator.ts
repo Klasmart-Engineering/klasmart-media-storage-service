@@ -6,11 +6,14 @@ export default class UploadValidator implements IUploadValidator {
 
   constructor(
     private readonly mediaFileStorageChecker: MediaFileStorageChecker,
-    private readonly failCallback: (mediaId: string) => Promise<unknown>,
     private readonly fileValidationDelayMs: number,
   ) {}
 
-  public scheduleValidation(objectKey: string, mediaId: string): void {
+  public scheduleValidation(
+    objectKey: string,
+    mediaId: string,
+    failCallback: (mediaId: string) => Promise<unknown>,
+  ): void {
     const timer = setTimeout(async () => {
       const exists = await this.mediaFileStorageChecker.objectExists(objectKey)
       this.timers.delete(objectKey)
@@ -18,7 +21,7 @@ export default class UploadValidator implements IUploadValidator {
       if (exists === true || exists === undefined) {
         return
       }
-      await this.failCallback(mediaId)
+      await failCallback(mediaId)
     }, this.fileValidationDelayMs)
     this.timers.set(objectKey, timer)
   }

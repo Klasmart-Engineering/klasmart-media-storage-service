@@ -1,21 +1,25 @@
-import '../utils/globalIntegrationTestHooks'
+import '../../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import { Config } from '../../src/initialization/config'
+import { Config } from '../../../src/initialization/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
-} from '../utils/generateToken'
+} from '../../utils/generateToken'
 import { box } from 'tweetnacl'
 import { v4 } from 'uuid'
-import { RequiredUploadInfo } from '../../src/graphqlResultTypes/requiredUploadInfo'
-import { clearS3Buckets } from '../utils/s3BucketUtil'
-import { TestCompositionRoot } from './testCompositionRoot'
+import { RequiredUploadInfo } from '../../../src/graphqlResultTypes/requiredUploadInfo'
+import { clearS3Buckets } from '../../utils/s3BucketUtil'
+import { TestCompositionRoot } from '../testCompositionRoot'
 import { S3Client } from '@aws-sdk/client-s3'
-import bootstrap from '../../src/initialization/bootstrap'
+import bootstrap from '../../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
 import { getRepository } from 'typeorm'
-import { MediaMetadata } from '../../src/entities/mediaMetadata'
+import { MediaMetadata } from '../../../src/entities/mediaMetadata'
+import UploadValidator from '../../../src/providers/uploadValidator'
+import { MediaFileStorageChecker } from '../../../src/providers/mediaFileStorageChecker'
+import Substitute, { Arg } from '@fluffy-spoon/substitute'
+import { delay } from '../../../src/helpers/delay'
 
 describe('uploadResolver.getRequiredUploadInfo', () => {
   let request: SuperTest<supertest.Test>
@@ -124,6 +128,78 @@ describe('uploadResolver.getRequiredUploadInfo', () => {
       expect(entry == null).to.be.false
     })
   })
+
+  context(
+    'empty database; fileValidationDelayMs is set to 100ms; check after 110ms',
+    () => {
+      const endUserId = v4()
+      const roomId = 'room1'
+      const mimeType = 'audio/webm'
+      const h5pId = 'h5p1'
+      const h5pSubId = 'h5pSub1'
+      const description = 'some description'
+
+      before(async () => {
+        // Clean slate
+        await clearS3Buckets(s3Client)
+        await compositionRoot.reset()
+
+        const fileValidationDelayMs = 100
+        const mediaFileStorageChecker =
+          Substitute.for<MediaFileStorageChecker>()
+        mediaFileStorageChecker.objectExists(Arg.any()).resolves(false)
+        compositionRoot['uploadValidator'] = new UploadValidator(
+          mediaFileStorageChecker,
+          fileValidationDelayMs,
+        )
+
+        // Act
+        await request
+          .post('/graphql')
+          .set({
+            ContentType: 'application/json',
+            cookie: `access=${generateAuthenticationToken(endUserId)}`,
+            'live-authorization': generateLiveAuthorizationToken(
+              endUserId,
+              roomId,
+            ),
+          })
+          .send({
+            query: GET_REQUIRED_UPLOAD_INFO,
+            variables: {
+              base64UserPublicKey,
+              base64EncryptedSymmetricKey,
+              mimeType,
+              h5pId,
+              h5pSubId,
+              description,
+            },
+          })
+        const count = await getRepository(MediaMetadata).count()
+        expect(count).to.equal(1)
+        await delay(110)
+      })
+
+      it('db is still empty', async () => {
+        // Assert
+        // Ensure metadata is saved in the database.
+        const count = await getRepository(MediaMetadata).count()
+        expect(count).to.equal(0)
+        const entry = await getRepository(MediaMetadata).findOne({
+          where: {
+            roomId,
+            mimeType,
+            h5pId,
+            h5pSubId,
+            userId: endUserId,
+            base64UserPublicKey,
+            base64EncryptedSymmetricKey,
+          },
+        })
+        expect(entry).to.be.undefined
+      })
+    },
+  )
 
   context(
     'authentication token userId does not match authorization token userId',

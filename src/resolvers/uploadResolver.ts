@@ -87,10 +87,20 @@ export class UploadResolver {
       h5pSubId,
       description,
     })
-    // TODO: Consider passing a callback here instead of the constructor.
-    // Because doing it here has a lot more context that could be used
-    // to log details about uploads that fail validation.
-    this.uploadValidator.scheduleValidation(mediaFileKey, mediaId)
+
+    this.uploadValidator.scheduleValidation(
+      mediaFileKey,
+      mediaId,
+      (mediaId) => {
+        logger.debug(
+          `[uploadValidator] Expected to find media (${mediaId}) in storage but it's not there. ` +
+            `This means the client-side upload, via presigned URL, must have failed. ` +
+            `Removing the entry from the database... ` +
+            `endUserId: ${endUserId}; roomId: ${roomId}; mediaId: ${mediaId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}; mimeType: ${mimeType}`,
+        )
+        return this.metadataRepository.delete(mediaId)
+      },
+    )
 
     return { mediaId, presignedUrl }
   }

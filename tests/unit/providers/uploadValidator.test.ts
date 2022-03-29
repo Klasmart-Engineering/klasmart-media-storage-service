@@ -22,13 +22,12 @@ describe('UploadValidator.scheduleValidation', () => {
 
       const sut = new UploadValidator(
         mediaFileStorageChecker,
-        failCallback,
         fileValidationDelayMs,
       )
 
       // Act
       const expected = true
-      sut.scheduleValidation(objectKey, mediaId)
+      sut.scheduleValidation(objectKey, mediaId, failCallback)
       await delay(2)
 
       // Assert
@@ -53,13 +52,12 @@ describe('UploadValidator.scheduleValidation', () => {
 
       const sut = new UploadValidator(
         mediaFileStorageChecker,
-        failCallback,
         fileValidationDelayMs,
       )
 
       // Act
       const expected = false
-      sut.scheduleValidation(objectKey, mediaId)
+      sut.scheduleValidation(objectKey, mediaId, failCallback)
       await delay(2)
 
       // Assert
@@ -84,13 +82,12 @@ describe('UploadValidator.scheduleValidation', () => {
 
       const sut = new UploadValidator(
         mediaFileStorageChecker,
-        failCallback,
         fileValidationDelayMs,
       )
 
       // Act
       const expected = false
-      sut.scheduleValidation(objectKey, mediaId)
+      sut.scheduleValidation(objectKey, mediaId, failCallback)
       await delay(2)
 
       // Assert

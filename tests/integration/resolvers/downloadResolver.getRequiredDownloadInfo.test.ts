@@ -1,18 +1,22 @@
-import '../utils/globalIntegrationTestHooks'
+import '../../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { Config } from '../../src/initialization/config'
-import { clearS3Buckets } from '../utils/s3BucketUtil'
-import { MediaMetadata } from '../../src/entities/mediaMetadata'
-import MediaMetadataBuilder from '../builders/mediaMetadataBuilder'
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
+import { Config } from '../../../src/initialization/config'
+import { clearS3Buckets } from '../../utils/s3BucketUtil'
+import { MediaMetadata } from '../../../src/entities/mediaMetadata'
+import MediaMetadataBuilder from '../../builders/mediaMetadataBuilder'
 import { box } from 'tweetnacl'
-import { encrypt } from '../../src/helpers/tweetnaclUtil'
+import { encrypt } from '../../../src/helpers/tweetnaclUtil'
 import { v4 } from 'uuid'
-import { RequiredDownloadInfo } from '../../src/graphqlResultTypes/requiredDownloadInfo'
-import { generateAuthenticationToken } from '../utils/generateToken'
-import { TestCompositionRoot } from './testCompositionRoot'
-import bootstrap from '../../src/initialization/bootstrap'
+import { RequiredDownloadInfo } from '../../../src/graphqlResultTypes/requiredDownloadInfo'
+import { generateAuthenticationToken } from '../../utils/generateToken'
+import { TestCompositionRoot } from '../testCompositionRoot'
+import bootstrap from '../../../src/initialization/bootstrap'
 import { getRepository } from 'typeorm'
 import supertest, { SuperTest } from 'supertest'
 
@@ -58,6 +62,17 @@ describe('downloadResolver.getRequiredDownloadInfo', () => {
         )
         const symmetricKey = box.keyPair().secretKey
         const base64EncryptedSymmetricKey = encrypt(userSharedKey, symmetricKey)
+
+        try {
+          await s3Client.send(
+            new GetObjectCommand({
+              Bucket: Config.getPublicKeyBucket(),
+              Key: roomId,
+            }),
+          )
+        } catch (err) {
+          console.log(err)
+        }
 
         await s3Client.send(
           new PutObjectCommand({

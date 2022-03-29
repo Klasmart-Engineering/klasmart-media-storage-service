@@ -1,22 +1,22 @@
-import '../utils/globalIntegrationTestHooks'
+import '../../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { Config } from '../../src/initialization/config'
+import { Config } from '../../../src/initialization/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
-} from '../utils/generateToken'
+} from '../../utils/generateToken'
 import { box } from 'tweetnacl'
 import { v4 } from 'uuid'
-import { clearS3Buckets } from '../utils/s3BucketUtil'
-import { TestCompositionRoot } from './testCompositionRoot'
+import { clearS3Buckets } from '../../utils/s3BucketUtil'
+import { TestCompositionRoot } from '../testCompositionRoot'
 import {
   GetObjectCommand,
   ListObjectsCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
-import s3BodyToBuffer from '../../src/helpers/s3BodyToBuffer'
-import bootstrap from '../../src/initialization/bootstrap'
+import s3BodyToBuffer from '../../../src/helpers/s3BodyToBuffer'
+import bootstrap from '../../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
 
 describe('uploadResolver.getServerPublicKey', () => {

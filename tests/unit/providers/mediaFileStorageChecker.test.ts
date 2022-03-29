@@ -6,6 +6,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import { MediaFileStorageChecker } from '../../../src/providers/mediaFileStorageChecker'
+import { CustomError } from '../../utils/customError'
 
 describe('MediaFileStorageChecker.objectExists', () => {
   context('s3Client returns metadata for objectKey', () => {
@@ -86,10 +87,3 @@ describe('MediaFileStorageChecker.objectExists', () => {
     })
   })
 })
-
-class CustomError extends Error {
-  constructor(name: string) {
-    super()
-    this.name = name
-  }
-}

@@ -32,6 +32,8 @@ export class TestCompositionRoot extends CompositionRoot {
     // Resolver dependencies
     this.keyPairProvider = undefined
     this.presignedUrlProvider = undefined
+    this.uploadValidator?.cleanUp()
+    this.uploadValidator = undefined
     // Don't set typeorm or redis to undefined.
     // Those have open connections that will be closed
     // when cleanUp() is called.

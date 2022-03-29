@@ -207,7 +207,6 @@ export class CompositionRoot {
   protected getUploadValidator(): IUploadValidator {
     this.uploadValidator ??= new UploadValidator(
       this.getMediaFileStorageChecker(),
-      (mediaId) => this.getMetadataRepository().delete(mediaId),
       Config.getFileValidationDelayMs(),
     )
     return this.uploadValidator
