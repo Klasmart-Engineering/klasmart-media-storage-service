@@ -14,20 +14,20 @@ export class S3PresignedUrlProvider implements IPresignedUrlProvider {
     private readonly s3Client: S3Client,
   ) {}
 
-  public getUploadUrl(mediaId: string, mimeType: string): Promise<string> {
+  public getUploadUrl(objectKey: string, mimeType: string): Promise<string> {
     const params: PutObjectCommandInput = {
       Bucket: this.bucketName,
-      Key: mediaId,
+      Key: objectKey,
       ContentType: mimeType,
     }
     const command = new PutObjectCommand(params)
     return getSignedUrl(this.s3Client, command, { expiresIn: 60 })
   }
 
-  public getDownloadUrl(mediaId: string): Promise<string> {
+  public getDownloadUrl(objectKey: string): Promise<string> {
     const params: GetObjectCommandInput = {
       Bucket: this.bucketName,
-      Key: mediaId,
+      Key: objectKey,
     }
     const command = new GetObjectCommand(params)
     return getSignedUrl(this.s3Client, command, { expiresIn: 60 })
