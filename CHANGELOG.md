@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.17](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.17..v0.1.16) (2022-03-29)
+
+
+### Features
+
+* **s3:** only ignore error if error.name is 'NoSuchKey' ([7b0f97d](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/7b0f97d01c605a7203f514db491f967939689757))
+
 ### [0.1.16](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.16..v0.1.15) (2022-03-22)
 
 
