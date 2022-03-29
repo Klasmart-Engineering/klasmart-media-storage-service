@@ -5,6 +5,7 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { S3PresignedUrlProvider } from '../../../src/providers/s3PresignedUrlProvider'
 
+// TODO: Finish these tests or remove.
 describe.skip('S3PresignedUrlProvider', () => {
   describe('getUploadUrl', () => {
     context('0 audio files in storage matching specified mediaId', () => {
