@@ -10,11 +10,12 @@ import { box } from 'tweetnacl'
 import { encrypt } from '../../../src/helpers/tweetnaclUtil'
 import { v4 } from 'uuid'
 import { RequiredDownloadInfo } from '../../../src/graphqlResultTypes/requiredDownloadInfo'
-import { generateAuthenticationToken } from '../../utils/generateToken'
+import { generateAuthenticationToken } from '../../../helpers/generateToken'
 import { TestCompositionRoot } from '../testCompositionRoot'
 import bootstrap from '../../../src/initialization/bootstrap'
 import { getRepository } from 'typeorm'
 import supertest, { SuperTest } from 'supertest'
+import { GET_REQUIRED_DOWNLOAD_INFO } from '../../../helpers/queries'
 
 describe('downloadResolver.getRequiredDownloadInfo', () => {
   let request: SuperTest<supertest.Test>
@@ -132,17 +133,6 @@ describe('downloadResolver.getRequiredDownloadInfo', () => {
   )
 })
 
-const GET_REQUIRED_DOWNLOAD_INFO = `
-query getRequiredDownloadInfo($mediaId: String!, $roomId: String!) {
-  getRequiredDownloadInfo(
-    mediaId: $mediaId,
-    roomId: $roomId,
-  ) {
-    base64SymmetricKey
-    presignedUrl
-  }
-}
-`
 // async function getRequiredDownloadInfoQuery(
 //   testClient: ApolloServerTestClient,
 //   mediaId: string,

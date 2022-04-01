@@ -4,7 +4,7 @@ import { Config } from '../../../src/initialization/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
-} from '../../utils/generateToken'
+} from '../../../helpers/generateToken'
 import { box } from 'tweetnacl'
 import { v4 } from 'uuid'
 import { clearS3Buckets } from '../../utils/s3BucketUtil'
@@ -18,6 +18,7 @@ import {
 import s3BodyToBuffer from '../../../src/helpers/s3BodyToBuffer'
 import bootstrap from '../../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
+import { GET_SERVER_PUBLIC_KEY } from '../../../helpers/queries'
 
 describe('uploadResolver.getServerPublicKey', () => {
   let request: SuperTest<supertest.Test>
@@ -183,9 +184,3 @@ describe('uploadResolver.getServerPublicKey', () => {
     })
   })
 })
-
-export const GET_SERVER_PUBLIC_KEY = `
-query getServerPublicKey {
-  getServerPublicKey
-}
-`

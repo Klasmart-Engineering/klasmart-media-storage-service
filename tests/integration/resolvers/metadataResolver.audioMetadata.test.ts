@@ -1,7 +1,7 @@
 import '../../utils/globalIntegrationTestHooks'
 import expect from '../../utils/chaiAsPromisedSetup'
 import MediaMetadataBuilder from '../../builders/mediaMetadataBuilder'
-import { generateAuthenticationToken } from '../../utils/generateToken'
+import { generateAuthenticationToken } from '../../../helpers/generateToken'
 import { v4 } from 'uuid'
 import { MediaMetadata } from '../../../src/entities/mediaMetadata'
 import { ErrorMessage } from '../../../src/helpers/errorMessages'
@@ -10,6 +10,7 @@ import AuthorizationProvider from '../../../src/providers/authorizationProvider'
 import { TestCompositionRoot } from '../testCompositionRoot'
 import supertest, { SuperTest } from 'supertest'
 import bootstrap from '../../../src/initialization/bootstrap'
+import { AUDIO_METADATA } from '../../../helpers/queries'
 
 describe('metadataResolver', () => {
   let request: SuperTest<supertest.Test>
@@ -212,26 +213,3 @@ describe('metadataResolver', () => {
     )
   })
 })
-
-export const AUDIO_METADATA = `
-  query audioMetadata(
-    $userId: String!
-    $roomId: String!
-    $h5pId: String!
-    $h5pSubId: String
-  ) {
-    audioMetadata(
-      userId: $userId
-      roomId: $roomId
-      h5pId: $h5pId
-      h5pSubId: $h5pSubId
-    ) {
-      id
-      userId
-      roomId
-      h5pId
-      h5pSubId
-      createdAt
-    }
-  }
-`

@@ -5,7 +5,7 @@ import { Config } from '../../../src/initialization/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
-} from '../../utils/generateToken'
+} from '../../../helpers/generateToken'
 import { box } from 'tweetnacl'
 import { v4 } from 'uuid'
 import { RequiredUploadInfo } from '../../../src/graphqlResultTypes/requiredUploadInfo'
@@ -20,6 +20,7 @@ import UploadValidator from '../../../src/providers/uploadValidator'
 import { MediaFileStorageChecker } from '../../../src/providers/mediaFileStorageChecker'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { delay } from '../../../src/helpers/delay'
+import { GET_REQUIRED_UPLOAD_INFO } from '../../../helpers/queries'
 
 describe('uploadResolver.getRequiredUploadInfo', () => {
   let request: SuperTest<supertest.Test>
@@ -291,25 +292,3 @@ describe('uploadResolver.getRequiredUploadInfo', () => {
     },
   )
 })
-
-export const GET_REQUIRED_UPLOAD_INFO = `
-query getRequiredUploadInfo(
-    $base64UserPublicKey: String!,
-    $base64EncryptedSymmetricKey: String!,
-    $mimeType: String!,
-    $h5pId: String!,
-    $h5pSubId: String,
-    $description: String!) {
-  getRequiredUploadInfo(
-    base64UserPublicKey: $base64UserPublicKey,
-    base64EncryptedSymmetricKey: $base64EncryptedSymmetricKey,
-    mimeType: $mimeType,
-    h5pId: $h5pId,
-    h5pSubId: $h5pSubId
-    description: $description
-  ) {
-    mediaId
-    presignedUrl
-  }
-}
-`

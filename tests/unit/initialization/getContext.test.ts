@@ -4,7 +4,7 @@ import getContext from '../../../src/initialization/getContext'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
-} from '../../utils/generateToken'
+} from '../../../helpers/generateToken'
 
 describe('getContext', () => {
   context(

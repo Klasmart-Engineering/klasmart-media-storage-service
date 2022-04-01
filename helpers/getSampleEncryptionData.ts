@@ -1,4 +1,4 @@
-import { encrypt } from '../../src/helpers/tweetnaclUtil'
+import { encrypt } from '../src/helpers/tweetnaclUtil'
 import { box } from 'tweetnacl'
 
 export function getSampleEncryptedData() {
