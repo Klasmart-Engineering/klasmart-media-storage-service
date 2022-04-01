@@ -18,11 +18,14 @@ export default class MemoryCacheProvider implements ICacheProvider {
     return Promise.resolve(record.value)
   }
 
-  set(key: string, value: string, ttlSeconds?: number): Promise<'OK' | null> {
+  // TODO: Consider creating a "Second" value object.
+  set(key: string, value: string, ttlSeconds: number): Promise<'OK' | null> {
+    const record = this.cache.get(key)
+    if (record && record.expirationMs >= this.clock.now()) {
+      return Promise.resolve(null)
+    }
     this.cache.set(key, {
-      expirationMs: ttlSeconds
-        ? this.clock.now() + ttlSeconds * 1000
-        : undefined,
+      expirationMs: this.clock.now() + ttlSeconds * 1000,
       value,
     })
     return Promise.resolve('OK')
@@ -39,7 +42,7 @@ export default class MemoryCacheProvider implements ICacheProvider {
 
 export type MemoryCacheRecord = {
   value: string
-  expirationMs?: number
+  expirationMs: number
 }
 
 export interface IClock {

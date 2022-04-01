@@ -8,7 +8,7 @@ export default class RedisCacheProvider implements ICacheProvider {
     return this.redisClient.get(key)
   }
 
-  set(key: string, value: string, ttlSeconds?: number): Promise<'OK' | null> {
-    return this.redisClient.set(key, value, 'ex', ttlSeconds)
+  set(key: string, value: string, ttlSeconds: number): Promise<'OK' | null> {
+    return this.redisClient.set(key, value, 'ex', ttlSeconds, 'nx')
   }
 }

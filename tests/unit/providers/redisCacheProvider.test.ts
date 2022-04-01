@@ -56,7 +56,9 @@ describe('RedisCacheProvider', () => {
         const sut = new RedisCacheProvider(redisClient)
 
         const ttlSeconds = 10
-        redisClient.set(cacheKey, cacheValue, 'ex', ttlSeconds).resolves('OK')
+        redisClient
+          .set(cacheKey, cacheValue, 'ex', ttlSeconds, 'nx')
+          .resolves('OK')
 
         // Act
         const expected = 'OK'

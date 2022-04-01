@@ -93,26 +93,58 @@ describe('MemoryCacheProvider', () => {
       })
     })
 
-    context('key does not exist in cache; ttl undefined', () => {
-      it('returns "OK"', async () => {
+    context('key exists in cache and has not expired', () => {
+      it('returns null', async () => {
         // Arrange
         const cacheKey = 'key1'
         const cacheValue = 'value1'
         const map = new Map<string, MemoryCacheRecord>()
         const sut = new MemoryCacheProvider(new TestClock(), map)
 
-        const ttlSeconds = undefined
+        const ttlSeconds1 = 1
+        const ttlSeconds2 = 2
+        await sut.set(cacheKey, cacheValue, ttlSeconds1)
 
         // Act
-        const expected = 'OK'
-        const actual = await sut.set(cacheKey, cacheValue, ttlSeconds)
+        const expected = null
+        const actual = await sut.set(cacheKey, cacheValue, ttlSeconds2)
 
         // Assert
         expect(actual).equal(expected)
 
         const record: MemoryCacheRecord = {
           value: cacheValue,
-          expirationMs: undefined,
+          expirationMs: ttlSeconds1 * 1000,
+        }
+        expect(map).has.lengthOf(1)
+        expect(map.get(cacheKey)).deep.equals(record)
+      })
+    })
+
+    context('key exists in cache and has expired', () => {
+      it('returns "OK"', async () => {
+        // Arrange
+        const cacheKey = 'key1'
+        const cacheValue = 'value1'
+        const map = new Map<string, MemoryCacheRecord>()
+        const clock = new TestClock()
+        const sut = new MemoryCacheProvider(clock, map)
+
+        const ttlSeconds1 = 1
+        const ttlSeconds2 = 2
+        await sut.set(cacheKey, cacheValue, ttlSeconds1)
+        clock.addMs(1500)
+
+        // Act
+        const expected = 'OK'
+        const actual = await sut.set(cacheKey, cacheValue, ttlSeconds2)
+
+        // Assert
+        expect(actual).equal(expected)
+
+        const record: MemoryCacheRecord = {
+          value: cacheValue,
+          expirationMs: 1500 + ttlSeconds2 * 1000,
         }
         expect(map).has.lengthOf(1)
         expect(map.get(cacheKey)).deep.equals(record)

@@ -3,6 +3,8 @@ import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import { ICacheProvider } from '../../../src/interfaces/cacheProvider'
 import { IKeyPairProvider } from '../../../src/interfaces/keyPairProvider'
 import { CachedKeyPairProvider } from '../../../src/providers/cachedKeyPairProvider'
+import MemoryCacheProvider from '../../../src/providers/memoryCacheProvider'
+import { TestClock } from './memoryCacheProvider.test'
 
 describe('CachedKeyPairProvider', () => {
   describe('getPublicKeyOrCreatePair', () => {
@@ -32,6 +34,40 @@ describe('CachedKeyPairProvider', () => {
         // Assert
         expect(actual).equal(expected)
         keyPairProvider.didNotReceive().getPublicKeyOrCreatePair(Arg.all())
+      })
+    })
+
+    context('2 requests for the same object key', () => {
+      it('both requests return same result', async () => {
+        // Arrange
+        const keyPairProvider = Substitute.for<IKeyPairProvider>()
+        const cache = new MemoryCacheProvider(new TestClock())
+        const ttlSeconds = 1
+        const sut = new CachedKeyPairProvider(
+          keyPairProvider,
+          cache,
+          ttlSeconds,
+        )
+
+        const objectKey = 'room1'
+        const publicKey1 = Buffer.from([1, 2, 3])
+        const base64PublicKey1 = publicKey1.toString('base64')
+        const publicKey2 = Buffer.from([2, 3, 4])
+        const base64PublicKey2 = publicKey2.toString('base64')
+
+        // First call returns base64PublicKey1 and second call returns base64PublicKey2.
+        keyPairProvider
+          .getPublicKeyOrCreatePair(objectKey)
+          .resolves(base64PublicKey1, base64PublicKey2)
+
+        // Act
+        const task = sut.getPublicKeyOrCreatePair(objectKey)
+        const result1 = await sut.getPublicKeyOrCreatePair(objectKey)
+        const result2 = await task
+
+        // Assert
+        expect(result1).equal(result2)
+        keyPairProvider.received(1).getPublicKeyOrCreatePair(Arg.all())
       })
     })
   })
