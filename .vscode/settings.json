@@ -1,10 +1,7 @@
 {
-    "editor.tabSize": 2,
-    "editor.formatOnSave": false,
-    "[typescript]": {
-        "editor.formatOnSave": true
-    },
-    "[json]": {
-        "editor.formatOnSave": true
-    }
+  "editor.tabSize": 2,
+  "editor.formatOnSave": false,
+  "[typescript][javascript][json]": {
+    "editor.formatOnSave": true
+  }
 }

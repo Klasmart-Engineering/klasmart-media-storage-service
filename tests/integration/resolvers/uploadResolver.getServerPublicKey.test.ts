@@ -24,11 +24,13 @@ describe('uploadResolver.getServerPublicKey', () => {
   let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
   let s3Client: S3Client
+  let requestPath: string
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
     const service = await bootstrap(compositionRoot)
     request = supertest(service.server)
+    requestPath = service.path
     s3Client = Config.getS3Client()
   })
 
@@ -51,7 +53,7 @@ describe('uploadResolver.getServerPublicKey', () => {
 
       // Act
       const response = await request
-        .post('/graphql')
+        .post(requestPath)
         .set({
           ContentType: 'application/json',
           cookie: `access=${generateAuthenticationToken(endUserId)}`,
@@ -122,7 +124,7 @@ describe('uploadResolver.getServerPublicKey', () => {
 
       // Act
       const response = await request
-        .post('/graphql')
+        .post(requestPath)
         .set({
           ContentType: 'application/json',
           cookie: `access=${generateAuthenticationToken(endUserId)}`,

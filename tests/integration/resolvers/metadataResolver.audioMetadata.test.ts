@@ -15,11 +15,13 @@ import { AUDIO_METADATA } from '../../../helpers/queries'
 describe('metadataResolver', () => {
   let request: SuperTest<supertest.Test>
   let compositionRoot: TestCompositionRoot
+  let requestPath: string
 
   before(async () => {
     compositionRoot = new TestCompositionRoot()
     const service = await bootstrap(compositionRoot)
     request = supertest(service.server)
+    requestPath = service.path
   })
 
   after(async () => {
@@ -49,7 +51,7 @@ describe('metadataResolver', () => {
 
         // Act
         const response = await request
-          .post('/graphql')
+          .post(requestPath)
           .set({
             ContentType: 'application/json',
             cookie: `access=${authenticationToken}`,
@@ -89,7 +91,7 @@ describe('metadataResolver', () => {
 
         // Act
         const response = await request
-          .post('/graphql')
+          .post(requestPath)
           .set({
             ContentType: 'application/json',
             cookie: `access=${authenticationToken}`,
@@ -135,7 +137,7 @@ describe('metadataResolver', () => {
 
         // Act
         const response = await request
-          .post('/graphql')
+          .post(requestPath)
           .set({
             ContentType: 'application/json',
             cookie: `access=${authenticationToken}`,
@@ -191,7 +193,7 @@ describe('metadataResolver', () => {
 
           // Act
           const response = await request
-            .post('/graphql')
+            .post(requestPath)
             .set({
               ContentType: 'application/json',
               cookie: null,

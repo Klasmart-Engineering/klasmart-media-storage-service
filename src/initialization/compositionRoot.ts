@@ -34,6 +34,7 @@ import MemoryCacheProvider from '../providers/memoryCacheProvider'
 import RedisCacheProvider from '../providers/redisCacheProvider'
 import { IKeyPairProvider } from '../interfaces/keyPairProvider'
 import { CachedKeyPairProvider } from '../providers/cachedKeyPairProvider'
+import MockAuthorizationProvider from '../providers/mockAuthorizationProvider'
 
 const logger = withLogger('CompositionRoot')
 
@@ -128,10 +129,14 @@ export class CompositionRoot {
     if (this.authorizationProvider != null) {
       return this.authorizationProvider
     }
-    this.authorizationProvider = new AuthorizationProvider(
-      this.getScheduleApi(),
-      this.getPermissionApi(),
-    )
+    if (Config.useMockWebApis()) {
+      this.authorizationProvider = new MockAuthorizationProvider()
+    } else {
+      this.authorizationProvider = new AuthorizationProvider(
+        this.getScheduleApi(),
+        this.getPermissionApi(),
+      )
+    }
     if (Config.getCache()) {
       this.authorizationProvider = new CachedAuthorizationProvider(
         this.authorizationProvider,

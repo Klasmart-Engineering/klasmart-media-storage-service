@@ -17,6 +17,7 @@ export function getSampleEncryptedData() {
 
   return {
     serverPrivateKey: serverKeyPair.secretKey,
+    serverPublicKey: serverKeyPair.publicKey,
     userPublicKey: userKeyPair.publicKey,
     base64UserPublicKey,
     symmetricKey,

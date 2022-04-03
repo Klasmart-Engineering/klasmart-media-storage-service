@@ -45,6 +45,10 @@ export class Config {
     )
   }
 
+  static useMockWebApis(): boolean {
+    return process.env.MOCK_WEB_APIS === 'true'
+  }
+
   static getCmsApiUrl(): string {
     return (
       process.env.CMS_API_URL ?? throwExpression('CMS_API_URL must be defined')
@@ -63,7 +67,7 @@ export class Config {
   }
 
   static getCache(): 'redis' | 'memory' | undefined {
-    const cache = process.env.CACHE ?? 'memory'
+    const cache = process.env.CACHE
     if (cache !== 'redis' && cache !== 'memory' && cache !== undefined) {
       throw new Error(
         "Invalid value for CACHE. Valid options: 'redis', 'memory', or undefined",

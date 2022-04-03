@@ -19,10 +19,9 @@ definitions:
             docker run
             -d
             -p 80:9000
-            -p 81:9001
             -e "MINIO_ACCESS_KEY=minio"
             -e "MINIO_SECRET_KEY=minio123"
-            minio/minio server /data --console-address ":9001"
+            minio/minio server /data
           - export HUSKY=0
           - npm i
           - npm run test:codecov
@@ -46,19 +45,12 @@ definitions:
         artifacts:
           - dist/**
 
-    - step: &docker-build-and-run
+    - step: &docker-build
         name: '🐳 docker build and run'
         services:
           - docker
-          - postgres
         script:
           - docker build -t $DOCKER_REPO_NAME .
-          - >
-            docker run --add-host host.docker.internal:$BITBUCKET_DOCKER_HOST_INTERNAL \
-              -d \
-              --name=check-startup \
-              --env-file ./.env.ci \
-              $DOCKER_REPO_NAME && sleep 8 && docker logs check-startup && docker top check-startup
 
     - step: &version-bump
         name: '🏷️ version bump'
@@ -68,19 +60,25 @@ definitions:
           - version.txt
         services:
           - docker
+          - postgres
         script:
-          - npm run release
+          - npm run release --skip.commit --skip.tag
           - npm run build
           - npm prune --production
           - docker build -t $DOCKER_REPO_NAME .
           - export VERSION_TAG=$(git describe --tags --abbrev=0)
-          - echo $VERSION_TAG > ./version.txt
+          - npm install
+          - /bin/sh ./scripts/runBenchmarks.sh
           - apt-get update && apt-get install -y python3-pip
           - pip3 install -U awscli
           - /bin/sh ./scripts/build-and-push-to-ecr.sh
+          - git add .
+          - 'git commit -m "chore(release): ${VERSION_TAG:1} [skip ci]"'
+          - git tag $VERSION_TAG
           # This step will fail if 'main' branch write permissions isn't set to 'everyone'.
           - git push origin main
           - git push origin $VERSION_TAG
+          - echo $VERSION_TAG > ./version.txt
 
     - step: &deploy-to-alpha
         name: '🔔 deploy to alpha'
@@ -110,7 +108,7 @@ pipelines:
       - step: *npm-install-and-test
       - step: *commitlint
       - step: *npm-build
-      - step: *docker-build-and-run
+      - step: *docker-build
 
   branches:
     main:
