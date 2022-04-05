@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.20](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.20..v0.1.19) (2022-04-04)
+
+
+### Bug Fixes
+
+* **DAS-328:** server key pair race condition ([fd176d8](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/fd176d8ebadeac2540459e870a7dc6b863e11e20))
+
+
+### Refactor
+
+* move helpers and queries from tests directory to helpers ([c161679](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/c16167925d33954c45ea8a9f2de045ce7537cca0))
+
 ### [0.1.19](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.19..v0.1.18) (2022-03-29)
 
 
