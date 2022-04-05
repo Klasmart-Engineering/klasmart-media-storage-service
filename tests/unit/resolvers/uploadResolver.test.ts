@@ -9,7 +9,7 @@ import IMetadataRepository from '../../../src/interfaces/metadataRepository'
 
 describe('UploadResolver', () => {
   describe('getRequiredUploadInfo', () => {
-    context('valid arguments provided', () => {
+    context('userId is not defined', () => {
       it('returns expected upload info', async () => {
         // Arrange
         const keyPairProvider = Substitute.for<KeyPairProvider>()
@@ -19,6 +19,7 @@ describe('UploadResolver', () => {
 
         // Input
         const endUserId = 'user1'
+        const userId = null
         const roomId = 'room1'
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
@@ -56,6 +57,7 @@ describe('UploadResolver', () => {
           h5pId,
           h5pSubId,
           description,
+          userId,
           endUserId,
           roomId,
         )
@@ -64,6 +66,75 @@ describe('UploadResolver', () => {
         expect(actual).to.deep.include(expected)
         metadataRepository.received(1).create(Arg.any())
       })
+    })
+
+    context('userId is defined', () => {
+      it(
+        'returns expected upload info;' +
+          'metadataRepository.create is called with userId instead of endUserId',
+        async () => {
+          // Arrange
+          const keyPairProvider = Substitute.for<KeyPairProvider>()
+          const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+          const metadataRepository = Substitute.for<IMetadataRepository>()
+          const uploadValidator = Substitute.for<IUploadValidator>()
+
+          // Input
+          const endUserId = 'user1'
+          // ******* main difference ******* //
+          const userId = 'user2'
+          // ******* main difference ******* //
+          const roomId = 'room1'
+          const h5pId = 'h5p1'
+          const h5pSubId = 'h5pSub1'
+          const mimeType = 'audio/webm'
+          const description = 'some description'
+          const base64UserPublicKey = 'user-public-key'
+          const base64EncryptedSymmetricKey = 'symmetric-key'
+
+          // Output
+          const presignedUrl = 'my-upload-url'
+          const base64ServerPublicKey = Buffer.from([1, 2, 3]).toString(
+            'base64',
+          )
+
+          presignedUrlProvider
+            .getUploadUrl(Arg.any(), mimeType)
+            .resolves(presignedUrl)
+          keyPairProvider
+            .getPublicKeyOrCreatePair(roomId)
+            .resolves(base64ServerPublicKey)
+
+          const sut = new UploadResolver(
+            keyPairProvider,
+            presignedUrlProvider,
+            metadataRepository,
+            uploadValidator,
+          )
+
+          // Act
+          const expected = {
+            presignedUrl,
+          }
+          const actual = await sut.getRequiredUploadInfo(
+            base64UserPublicKey,
+            base64EncryptedSymmetricKey,
+            mimeType,
+            h5pId,
+            h5pSubId,
+            description,
+            userId,
+            endUserId,
+            roomId,
+          )
+
+          // Assert
+          expect(actual).to.deep.include(expected)
+          metadataRepository
+            .received(1)
+            .create(Arg.is((x) => x.userId === userId))
+        },
+      )
     })
 
     context('mimeType is image/jpeg', () => {
@@ -76,6 +147,7 @@ describe('UploadResolver', () => {
 
         // Input
         const endUserId = 'user1'
+        const userId = null
         const roomId = 'room1'
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
@@ -115,6 +187,7 @@ describe('UploadResolver', () => {
           h5pId,
           h5pSubId,
           description,
+          userId,
           endUserId,
           roomId,
         )
@@ -135,6 +208,7 @@ describe('UploadResolver', () => {
 
         // Input
         const endUserId = 'user1'
+        const userId = null
         // ******* main difference ******* //
         const roomId: string | undefined = undefined
         // ******* main difference ******* //
@@ -174,6 +248,7 @@ describe('UploadResolver', () => {
           h5pId,
           h5pSubId,
           description,
+          userId,
           endUserId,
           roomId,
         )
@@ -196,6 +271,7 @@ describe('UploadResolver', () => {
         // ******* main difference ******* //
         const endUserId = undefined
         // ******* main difference ******* //
+        const userId = null
         const roomId = 'room1'
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
@@ -231,6 +307,7 @@ describe('UploadResolver', () => {
             h5pId,
             h5pSubId,
             description,
+            userId,
             endUserId,
             roomId,
           )
@@ -253,6 +330,7 @@ describe('UploadResolver', () => {
 
           // Input
           const endUserId = 'user1'
+          const userId = null
           const roomId = 'room1'
           const h5pId = 'h5p1'
           const h5pSubId = 'h5pSub1'
@@ -292,6 +370,7 @@ describe('UploadResolver', () => {
               h5pId,
               h5pSubId,
               description,
+              userId,
               endUserId,
               roomId,
             )
@@ -315,6 +394,7 @@ describe('UploadResolver', () => {
 
         // Input
         const endUserId = 'user1'
+        const userId = null
         const roomId = 'room1'
         const h5pId = 'h5p1'
         const h5pSubId = 'h5pSub1'
@@ -352,6 +432,7 @@ describe('UploadResolver', () => {
             h5pId,
             h5pSubId,
             description,
+            userId,
             endUserId,
             roomId,
           )

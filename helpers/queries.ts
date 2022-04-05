@@ -11,7 +11,8 @@ query getRequiredUploadInfo(
     $mimeType: String!,
     $h5pId: String!,
     $h5pSubId: String,
-    $description: String!) {
+    $description: String!,
+    $userId: String) {
   getRequiredUploadInfo(
     base64UserPublicKey: $base64UserPublicKey,
     base64EncryptedSymmetricKey: $base64EncryptedSymmetricKey,
@@ -19,6 +20,7 @@ query getRequiredUploadInfo(
     h5pId: $h5pId,
     h5pSubId: $h5pSubId
     description: $description
+    userId: $userId
   ) {
     mediaId
     presignedUrl

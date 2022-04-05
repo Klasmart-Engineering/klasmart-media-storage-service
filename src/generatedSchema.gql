@@ -56,6 +56,7 @@ type Query {
 
     """Supported: image/*, audio/*"""
     mimeType: String!
+    userId: String
   ): RequiredUploadInfo!
 
   """Returns a base64 encoded server public key."""

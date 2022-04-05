@@ -56,8 +56,9 @@ export class UploadResolver {
     @Arg('h5pId') h5pId: string,
     @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
     @Arg('description') description: string,
-    @UserID() endUserId?: string,
-    @RoomID() roomId?: string,
+    @Arg('userId', () => String, { nullable: true }) userId: string | null,
+    @UserID() endUserId: string | undefined,
+    @RoomID() roomId: string | undefined,
   ): Promise<RequiredUploadInfo> {
     logger.debug(
       `[getRequiredUploadInfo] endUserId: ${endUserId}; roomId: ${roomId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}; mimeType: ${mimeType}`,
@@ -69,6 +70,8 @@ export class UploadResolver {
       throw new UserInputError(ErrorMessage.unsupportedMimeType(mimeType))
     }
     const mediaId = v4()
+    // TODO: Consider doing UUID validation.
+    userId ??= endUserId
     const mediaFileKey = createMediaFileKey(mediaId, mimeType)
     const presignedUrl = await this.presignedUrlProvider.getUploadUrl(
       mediaFileKey,
@@ -77,7 +80,7 @@ export class UploadResolver {
 
     await this.metadataRepository.create({
       id: mediaId,
-      userId: endUserId,
+      userId,
       base64UserPublicKey,
       base64EncryptedSymmetricKey,
       createdAt: new Date(),
