@@ -62,7 +62,7 @@ definitions:
           - docker
           - postgres
         script:
-          - npm run release --skip.commit --skip.tag
+          - npm run release
           - npm run build
           - npm prune --production
           - docker build -t $DOCKER_REPO_NAME .
@@ -73,7 +73,8 @@ definitions:
           - pip3 install -U awscli
           - /bin/sh ./scripts/build-and-push-to-ecr.sh
           - git add .
-          - 'git commit -m "chore(release): ${VERSION_TAG:1} [skip ci]"'
+          - git commit --amend --no-edit
+          - git tag -d $VERSION_TAG
           - git tag $VERSION_TAG
           # This step will fail if 'main' branch write permissions isn't set to 'everyone'.
           - git push origin main
