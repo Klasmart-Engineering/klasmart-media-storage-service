@@ -5,6 +5,7 @@ import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
 } from '../../../helpers/generateToken'
+import TokenParser from '../../../src/initialization/tokenParser'
 
 describe('getContext', () => {
   context(
@@ -13,8 +14,8 @@ describe('getContext', () => {
       it('uses first element', async () => {
         const roomId = 'room1'
         const endUserId = v4()
+        const tokenParser = new TokenParser()
 
-        const requestIp = '114.203.126.152'
         const validLiveAuthorizationToken = generateLiveAuthorizationToken(
           endUserId,
           roomId,
@@ -29,7 +30,7 @@ describe('getContext', () => {
         }
 
         // Act
-        const actual = await getContext(headers, requestIp)
+        const actual = await getContext(headers, tokenParser)
 
         // Assert
         expect(actual?.roomId).to.equal(roomId)

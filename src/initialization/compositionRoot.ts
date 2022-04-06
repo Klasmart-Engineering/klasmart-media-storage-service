@@ -38,6 +38,9 @@ import MockAuthorizationProvider from '../providers/mockAuthorizationProvider'
 import CachedMetadataRepository from '../providers/cachedMetadataRepository'
 import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
 import CachedSymmetricKeyProvider from '../providers/cachedSymmetricKeyProvider'
+import ITokenParser from '../interfaces/tokenParser'
+import TokenParser from './tokenParser'
+import CachedTokenParser from './cachedTokenParser'
 
 const logger = withLogger('CompositionRoot')
 
@@ -101,6 +104,14 @@ export class CompositionRoot {
       this.getUploadValidator(),
     )
     return this.uploadResolver
+  }
+
+  public getTokenParser(): ITokenParser {
+    let tokenParser = new TokenParser()
+    if (Config.getCache()) {
+      tokenParser = new CachedTokenParser(tokenParser, this.getCacheProvider())
+    }
+    return tokenParser
   }
 
   protected getKeyPairProvider(): IKeyPairProvider {

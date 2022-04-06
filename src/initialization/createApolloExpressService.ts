@@ -8,6 +8,7 @@ import { Config } from './config'
 import { GraphQLSchema } from 'graphql'
 import IMediaStorageService from '../interfaces/mediaStorageService'
 import cors from 'cors'
+import { CompositionRoot } from './compositionRoot'
 
 const logger = withLogger('createApolloExpressService')
 
@@ -15,8 +16,9 @@ const routePrefix = process.env.ROUTE_PREFIX || ''
 
 export default async function createApolloExpressService(
   schema: GraphQLSchema,
+  compositionRoot: CompositionRoot,
 ): Promise<IMediaStorageService> {
-  const server = createApolloServer(schema)
+  const server = createApolloServer(schema, compositionRoot)
   await server.start()
 
   const domain = Config.getCorsDomain()

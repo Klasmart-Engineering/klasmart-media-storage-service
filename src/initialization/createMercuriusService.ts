@@ -11,6 +11,7 @@ import { posix } from 'path'
 import getContext from './getContext'
 import { getCorsOptions } from './getCorsOptions'
 import error2Json from '../errors/error2Json'
+import { CompositionRoot } from './compositionRoot'
 
 const logger = withLogger('createMercuriusService')
 
@@ -18,6 +19,7 @@ const routePrefix = process.env.ROUTE_PREFIX || ''
 
 export default async function createMercuriusService(
   schema: GraphQLSchema,
+  compositionRoot: CompositionRoot,
 ): Promise<IMediaStorageService> {
   const domain = Config.getCorsDomain()
 
@@ -27,6 +29,8 @@ export default async function createMercuriusService(
   app.register(compression)
   app.register(cors, getCorsOptions(domain))
 
+  const tokenParser = compositionRoot.getTokenParser()
+
   app.register(mercurius, {
     schema,
     jit: 1,
@@ -35,7 +39,7 @@ export default async function createMercuriusService(
     ide: process.env.NODE_ENV !== 'production',
     logLevel: process.env.MERCURIUS_LOG_LEVEL as LogLevel,
     context: async (request: FastifyRequest, reply: FastifyReply) => {
-      return getContext(request.headers, request.ip)
+      return getContext(request.headers, tokenParser)
     },
     errorFormatter: (error, ...args) => {
       if (error.errors) {

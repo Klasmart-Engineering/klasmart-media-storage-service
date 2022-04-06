@@ -2,7 +2,6 @@ import { createParamDecorator } from 'type-graphql'
 
 export interface Context {
   authenticationToken?: string
-  ip?: string | string[]
   userId?: string
   roomId?: string
 }

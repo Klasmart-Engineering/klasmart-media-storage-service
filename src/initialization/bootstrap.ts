@@ -3,6 +3,9 @@ import { CompositionRoot } from './compositionRoot'
 import createApolloExpressService from './createApolloExpressService'
 import createMercuriusService from './createMercuriusService'
 import IMediaStorageService from '../interfaces/mediaStorageService'
+import { withLogger } from 'kidsloop-nodejs-logger'
+
+const logger = withLogger('bootstrap')
 
 export default async function bootstrap(compositionRoot?: CompositionRoot) {
   compositionRoot ??= new CompositionRoot()
@@ -11,11 +14,11 @@ export default async function bootstrap(compositionRoot?: CompositionRoot) {
 
   let service: IMediaStorageService
   if (process.env.SERVER_IMPL === 'apollo-express') {
-    console.log('apollo')
-    service = await createApolloExpressService(schema)
+    logger.info('Using Express + Apollo')
+    service = await createApolloExpressService(schema, compositionRoot)
   } else {
-    console.log('mercurius')
-    service = await createMercuriusService(schema)
+    logger.info('Using Fastify + Mercurius')
+    service = await createMercuriusService(schema, compositionRoot)
   }
   return service
 }

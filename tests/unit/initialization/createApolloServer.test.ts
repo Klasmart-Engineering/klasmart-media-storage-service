@@ -12,8 +12,9 @@ describe('createApolloServer', () => {
 
     before(async () => {
       nodeEnvOriginal = setEnvVar('NODE_ENV', 'production')
-      const schema = await buildDefaultSchema(new CompositionRoot())
-      sut = createApolloServer(schema)
+      const compositionRoot = new CompositionRoot()
+      const schema = await buildDefaultSchema(compositionRoot)
+      sut = createApolloServer(schema, compositionRoot)
       await sut.start()
     })
 
@@ -33,8 +34,9 @@ describe('createApolloServer', () => {
 
     before(async () => {
       nodeEnvOriginal = setEnvVar('NODE_ENV', undefined)
-      const schema = await buildDefaultSchema(new CompositionRoot())
-      sut = createApolloServer(schema)
+      const compositionRoot = new CompositionRoot()
+      const schema = await buildDefaultSchema(compositionRoot)
+      sut = createApolloServer(schema, compositionRoot)
       await sut.start()
     })
 
