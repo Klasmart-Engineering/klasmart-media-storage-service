@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.21](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.21..v0.1.20) (2022-04-07)
+
+
+### Features
+
+* **H5P-555:** use classActiveUserId for media events ([4979b2d](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/4979b2d78753af259f7cba2dbbc29aa3ff8f6307))
+
+
+### Refactor
+
+* **bench:** fix rawResults folder name: caching -> baseConfig ([daf7dcb](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/daf7dcb54f939042d8c8ce95df6c1b78daebcce4))
+
+
+### Performance
+
+* **DAS-329:** add metadata and download info caching ([4ed03f5](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/4ed03f548a9f011d38926dfeb115c50f8d015f80))
+
 ### [0.1.20](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.20..v0.1.19) (2022-04-04)
 
 

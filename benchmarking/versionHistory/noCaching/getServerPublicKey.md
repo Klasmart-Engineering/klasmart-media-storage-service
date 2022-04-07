@@ -8,4 +8,5 @@ query getServerPublicKey {
 
 | version | requests/sec | latency | throughput |
 | ------- | ------------ | ------- | ---------- |
+| v0.1.21 | 555.28       | 17.47   | 177131.64  |
 | v0.1.20 | 688          | 14.02   | 219467.64  |

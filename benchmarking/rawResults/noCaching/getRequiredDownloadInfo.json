@@ -1,5 +1,11 @@
 [
   {
+    "version": "v0.1.21",
+    "requests": 241.9,
+    "latency": 40.73,
+    "throughput": 185305.6
+  },
+  {
     "version": "v0.1.20",
     "requests": 264.46,
     "latency": 37.25,
