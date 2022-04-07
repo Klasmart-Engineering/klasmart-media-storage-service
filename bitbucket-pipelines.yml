@@ -116,3 +116,20 @@ pipelines:
       - step: *npm-install-and-test
       - step: *version-bump
       - step: *deploy-to-alpha
+
+  custom:
+    loadtest:
+      - step:
+          name: '⏱️ load test'
+          image: node:16
+          services:
+            - docker
+            - postgres
+          script:
+            - npm install
+            - npm run build
+            - npm prune --production
+            - docker build -t $DOCKER_REPO_NAME .
+            - npm install
+            - export VERSION_TAG=$(git describe --tags --abbrev=0)
+            - /bin/sh ./scripts/runBenchmarks.sh

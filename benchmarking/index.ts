@@ -77,7 +77,8 @@ const writeResult = async (
   }
   results.unshift(result)
   const dest = path.join(resultsDirectory, `${benchName}.json`)
-  return writeFile(dest, JSON.stringify(results, null, 2))
+  await writeFile(dest, JSON.stringify(results, null, 2))
+  return results
 }
 
 async function updateMarkdownTable(benchName: string, query: string) {
@@ -238,11 +239,12 @@ async function runBenchmarks() {
     validateResult(warmupResults)
     console.log('starting actual...')
     const result = await run({ ...bench, url })
-    await writeResult(version, bench.title, result)
+    const results = await writeResult(version, bench.title, result)
     await updateMarkdownTable(bench.title, bench.query)
+    const prevResult = results.length > 1 ? results[1].requests : 'N/A'
+    const newResult = results[0].requests
     console.log(
-      `result history updated: benchmarking/rawResults/${category}/${bench.title}.json\n` +
-        `markdown table updated: benchmarking/versionHistory/${category}/${bench.title}.md`,
+      `${category}/${bench.title} requests/sec: ${prevResult} -> ${newResult}`,
     )
   }
 }
