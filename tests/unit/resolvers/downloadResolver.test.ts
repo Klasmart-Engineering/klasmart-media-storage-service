@@ -47,6 +47,7 @@ describe('DownloadResolver', () => {
         presignedUrlProvider.getDownloadUrl(mediaFileKey).resolves(presignedUrl)
         symmetricKeyProvider
           .getBase64SymmetricKey(
+            mediaId,
             roomId,
             base64UserPublicKey,
             base64EncryptedSymmetricKey,
@@ -149,6 +150,7 @@ describe('DownloadResolver', () => {
         presignedUrlProvider.getDownloadUrl(mediaId).resolves(presignedUrl)
         symmetricKeyProvider
           .getBase64SymmetricKey(
+            mediaId,
             keyPairObjectKey,
             base64UserPublicKey,
             base64EncryptedSymmetricKey,

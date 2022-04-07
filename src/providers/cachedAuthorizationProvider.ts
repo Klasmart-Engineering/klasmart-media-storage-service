@@ -8,7 +8,7 @@ export default class CachedAuthorizationProvider
   implements IAuthorizationProvider
 {
   public static getCacheKey(endUserId: string, roomId: string) {
-    return `isAuthorized|${endUserId}|${roomId}`
+    return `CachedAuthorizationProvider.isAuthorized-${endUserId}|${roomId}`
   }
 
   constructor(

@@ -32,6 +32,7 @@ export class TestCompositionRoot extends CompositionRoot {
     // Resolver dependencies
     this.keyPairProvider = undefined
     this.presignedUrlProvider = undefined
+    this.symmetricKeyProvider = undefined
     this.uploadValidator?.cleanUp()
     this.uploadValidator = undefined
     // Don't set typeorm or redis to undefined.

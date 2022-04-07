@@ -35,6 +35,9 @@ import RedisCacheProvider from '../providers/redisCacheProvider'
 import { IKeyPairProvider } from '../interfaces/keyPairProvider'
 import { CachedKeyPairProvider } from '../providers/cachedKeyPairProvider'
 import MockAuthorizationProvider from '../providers/mockAuthorizationProvider'
+import CachedMetadataRepository from '../providers/cachedMetadataRepository'
+import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
+import CachedSymmetricKeyProvider from '../providers/cachedSymmetricKeyProvider'
 
 const logger = withLogger('CompositionRoot')
 
@@ -55,6 +58,7 @@ export class CompositionRoot {
   protected uploadValidator?: UploadValidator
   protected metadataRepository?: IMetadataRepository
   protected authorizationProvider?: IAuthorizationProvider
+  protected symmetricKeyProvider?: ISymmetricKeyProvider
   protected cachePruneTicker?: NodeJS.Timer
   protected tickerCallbacks: (() => void)[] = []
 
@@ -173,11 +177,21 @@ export class CompositionRoot {
     return new PermissionApi(new GraphQLClient(Config.getUserServiceEndpoint()))
   }
 
-  protected getSymmetricKeyProvider(): SymmetricKeyProvider {
-    return new SymmetricKeyProvider(
+  protected getSymmetricKeyProvider(): ISymmetricKeyProvider {
+    if (this.symmetricKeyProvider != null) {
+      return this.symmetricKeyProvider
+    }
+    this.symmetricKeyProvider = new SymmetricKeyProvider(
       this.getKeyPairProvider(),
       this.getDecryptionProvider(),
     )
+    if (Config.getCache()) {
+      this.symmetricKeyProvider = new CachedSymmetricKeyProvider(
+        this.symmetricKeyProvider,
+        this.getCacheProvider(),
+      )
+    }
+    return this.symmetricKeyProvider
   }
 
   protected getDecryptionProvider(): IDecryptionProvider {
@@ -203,9 +217,18 @@ export class CompositionRoot {
     if (!this.typeorm) {
       throw new Error('typeorm should have been instantiated by now.')
     }
-    this.metadataRepository ??= new TypeormMetadataRepository(
+    if (this.metadataRepository != null) {
+      return this.metadataRepository
+    }
+    this.metadataRepository = new TypeormMetadataRepository(
       this.typeorm.getRepository(MediaMetadata),
     )
+    if (Config.getCache()) {
+      this.metadataRepository = new CachedMetadataRepository(
+        this.metadataRepository,
+        this.getCacheProvider(),
+      )
+    }
     return this.metadataRepository
   }
 

@@ -5,9 +5,9 @@ import { RequiredDownloadInfo } from '../graphqlResultTypes/requiredDownloadInfo
 import { ErrorMessage } from '../helpers/errorMessages'
 import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import SymmetricKeyProvider from '../providers/symmetricKeyProvider'
 import createMediaFileKey from '../helpers/createMediaFileKey'
 import IMetadataRepository from '../interfaces/metadataRepository'
+import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
 
 const logger = withLogger('DownloadResolver')
 
@@ -15,7 +15,7 @@ const logger = withLogger('DownloadResolver')
 export class DownloadResolver {
   constructor(
     private readonly metadataRepository: IMetadataRepository,
-    private readonly symmetricKeyProvider: SymmetricKeyProvider,
+    private readonly symmetricKeyProvider: ISymmetricKeyProvider,
     private readonly presignedUrlProvider: IPresignedUrlProvider,
     private readonly authorizationProvider: IAuthorizationProvider,
   ) {}
@@ -60,6 +60,7 @@ export class DownloadResolver {
 
     const base64SymmetricKey =
       await this.symmetricKeyProvider.getBase64SymmetricKey(
+        mediaId,
         roomId,
         mediaMetadata.base64UserPublicKey,
         mediaMetadata.base64EncryptedSymmetricKey,

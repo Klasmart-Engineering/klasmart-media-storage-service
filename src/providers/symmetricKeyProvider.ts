@@ -1,17 +1,25 @@
+import { withLogger } from 'kidsloop-nodejs-logger'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
 import { IKeyPairProvider } from '../interfaces/keyPairProvider'
+import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
 
-export default class SymmetricKeyProvider {
+const logger = withLogger('SymmetricKeyProvider')
+
+export default class SymmetricKeyProvider implements ISymmetricKeyProvider {
   constructor(
     private readonly keyPairProvider: IKeyPairProvider,
     private readonly decryptionProvider: IDecryptionProvider,
   ) {}
 
   public async getBase64SymmetricKey(
+    mediaId: string,
     roomId: string,
     base64UserPublicKey: string,
     base64EncryptedSymmetricKey: string,
   ): Promise<string> {
+    logger.silly(
+      `[getBase64SymmetricKey] roomId: ${roomId}; mediaId: ${mediaId}`,
+    )
     const serverPrivateKey = await this.keyPairProvider.getPrivateKeyOrThrow(
       roomId,
     )
