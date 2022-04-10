@@ -10,6 +10,7 @@ import IMediaStorageService from '../interfaces/mediaStorageService'
 import { posix } from 'path'
 import getContext from './getContext'
 import { getCorsOptions } from './getCorsOptions'
+import error2Json from '../errors/error2Json'
 
 const logger = withLogger('createMercuriusService')
 
@@ -35,6 +36,16 @@ export default async function createMercuriusService(
     logLevel: process.env.MERCURIUS_LOG_LEVEL as LogLevel,
     context: async (request: FastifyRequest, reply: FastifyReply) => {
       return getContext(request.headers, request.ip)
+    },
+    errorFormatter: (error, ...args) => {
+      if (error.errors) {
+        const stringifiedErrors = error.errors.map((x) =>
+          error2Json(x.originalError),
+        )
+        logger.error(stringifiedErrors)
+      }
+      const formattedError = mercurius.defaultErrorFormatter(error, ...args)
+      return formattedError
     },
   })
 
