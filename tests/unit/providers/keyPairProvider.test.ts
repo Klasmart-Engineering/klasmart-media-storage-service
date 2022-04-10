@@ -168,10 +168,9 @@ describe('KeyPairProvider', () => {
 
           // Assert
           await expect(fn()).to.be.rejectedWith(
-            ErrorMessage.publicKeySaveFailed(awsError),
+            ErrorMessage.publicKeySaveFailed,
           )
           publicKeyStorage.received(1).saveKey(objectKey, publicKey)
-          privateKeyStorage.didNotReceive().saveKey(Arg.all())
         })
       },
     )
@@ -204,7 +203,7 @@ describe('KeyPairProvider', () => {
 
           // Assert
           await expect(fn()).to.be.rejectedWith(
-            ErrorMessage.privateKeySaveFailed(awsError),
+            ErrorMessage.privateKeySaveFailed,
           )
           publicKeyStorage.received(1).saveKey(objectKey, publicKey)
           privateKeyStorage.received(1).saveKey(objectKey, privateKey)

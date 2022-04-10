@@ -12,13 +12,13 @@ export class ErrorMessage {
     return `Media metadata not found for mediaId(${mediaId}), userId(${endUserId}).`
   }
 
-  static publicKeySaveFailed(e: unknown): string {
-    return `Saving public key to S3 failed: ${e}`
-  }
+  static readonly publicKeySaveFailed = 'Saving public key to S3 failed'
 
-  static privateKeySaveFailed(e: unknown): string {
-    return `Saving private key to S3 failed: ${e}`
-  }
+  static readonly privateKeySaveFailed = 'Saving private key to S3 failed'
+
+  static readonly publicKeyGetFailed = 'Getting public key from S3 failed'
+
+  static readonly privateKeyGetFailed = 'Getting private key from S3 failed'
 
   static unsupportedMimeType(mimeType: string): string {
     return `Only audio and image mime types are permitted. Received: ${mimeType}`

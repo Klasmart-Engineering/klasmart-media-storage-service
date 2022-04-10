@@ -3,6 +3,7 @@ import { ErrorMessage } from '../helpers/errorMessages'
 import { KeyPair } from '../helpers/keyPair'
 import { throwExpression } from '../helpers/throwExpression'
 import { IKeyPairProvider } from '../interfaces/keyPairProvider'
+import { ApplicationError } from '../errors/applicationError'
 
 export class KeyPairProvider implements IKeyPairProvider {
   public constructor(
@@ -26,22 +27,50 @@ export class KeyPairProvider implements IKeyPairProvider {
   }
 
   private async getKeyPair(objectKey: string): Promise<KeyPair> {
-    let publicKey = await this.publicKeyStorage.getKey(objectKey)
-    let privateKey = await this.privateKeyStorage.getKey(objectKey)
+    const getTasks = [
+      this.publicKeyStorage.getKey(objectKey),
+      this.privateKeyStorage.getKey(objectKey),
+    ]
+    const result = await Promise.allSettled(getTasks)
+    let publicKey: Uint8Array | undefined
+    if (result[0].status === 'fulfilled') {
+      publicKey = result[0].value
+    } else {
+      throw new ApplicationError(
+        ErrorMessage.publicKeyGetFailed,
+        result[0].reason,
+      )
+    }
+    let privateKey: Uint8Array | undefined
+    if (result[1].status === 'fulfilled') {
+      privateKey = result[1].value
+    } else {
+      throw new ApplicationError(
+        ErrorMessage.privateKeyGetFailed,
+        result[1].reason,
+      )
+    }
+
     if (!publicKey || !privateKey) {
       const keyPair = this.keyPairFactory()
       publicKey = keyPair.publicKey
       privateKey = keyPair.privateKey
-      // TODO: Consider using Promise.allSettled
-      try {
-        await this.publicKeyStorage.saveKey(objectKey, publicKey)
-      } catch (e) {
-        throw new Error(ErrorMessage.publicKeySaveFailed(e))
+      const saveTasks = [
+        this.publicKeyStorage.saveKey(objectKey, publicKey),
+        this.privateKeyStorage.saveKey(objectKey, privateKey),
+      ]
+      const result = await Promise.allSettled(saveTasks)
+      if (result[0].status === 'rejected') {
+        throw new ApplicationError(
+          ErrorMessage.publicKeySaveFailed,
+          result[0].reason,
+        )
       }
-      try {
-        await this.privateKeyStorage.saveKey(objectKey, privateKey)
-      } catch (e) {
-        throw new Error(ErrorMessage.privateKeySaveFailed(e))
+      if (result[1].status === 'rejected') {
+        throw new ApplicationError(
+          ErrorMessage.privateKeySaveFailed,
+          result[1].reason,
+        )
       }
     }
 
