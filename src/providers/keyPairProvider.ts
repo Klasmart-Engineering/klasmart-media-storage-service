@@ -1,11 +1,11 @@
 import IKeyStorage from '../interfaces/keyStorage'
-import { ErrorMessage } from '../helpers/errorMessages'
-import { KeyPair } from '../helpers/keyPair'
-import { throwExpression } from '../helpers/throwExpression'
-import { IKeyPairProvider } from '../interfaces/keyPairProvider'
+import ErrorMessage from '../helpers/errorMessages'
+import KeyPair from '../helpers/keyPair'
+import throwExpression from '../helpers/throwExpression'
+import IKeyPairProvider from '../interfaces/keyPairProvider'
 import { ApplicationError } from '../errors/applicationError'
 
-export class KeyPairProvider implements IKeyPairProvider {
+export default class KeyPairProvider implements IKeyPairProvider {
   public constructor(
     private readonly publicKeyStorage: IKeyStorage,
     private readonly privateKeyStorage: IKeyStorage,

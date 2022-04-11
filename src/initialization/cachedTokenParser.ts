@@ -2,7 +2,7 @@ import ITokenParser, {
   AuthenticationToken,
   LiveAuthorizationToken,
 } from '../interfaces/tokenParser'
-import { ICacheProvider } from '../interfaces/cacheProvider'
+import ICacheProvider from '../interfaces/cacheProvider'
 
 export default class CachedTokenParser implements ITokenParser {
   constructor(

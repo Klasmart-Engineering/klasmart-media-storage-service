@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import { v4 } from 'uuid'
 import { S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { S3PresignedUrlProvider } from '../../../src/providers/s3PresignedUrlProvider'
+import S3PresignedUrlProvider from '../../../src/providers/s3PresignedUrlProvider'
 
 // TODO: Finish these tests or remove.
 describe.skip('S3PresignedUrlProvider', () => {

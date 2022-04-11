@@ -1,7 +1,7 @@
-import { AxiosStatic, AxiosResponse, AxiosError } from 'axios'
+import { AxiosStatic, AxiosResponse } from 'axios'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import { ScheduleDto } from './scheduleResponse'
-import { throwExpression } from '../helpers/throwExpression'
+import throwExpression from '../helpers/throwExpression'
 
 const logger = withLogger('ScheduleApi')
 

@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis'
-import { ICacheProvider } from '../interfaces/cacheProvider'
+import ICacheProvider from '../interfaces/cacheProvider'
 
 export default class RedisCacheProvider implements ICacheProvider {
   constructor(private readonly redisClient: Redis) {}

@@ -1,5 +1,5 @@
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
+import IAuthorizationProvider from '../interfaces/authorizationProvider'
 import { ScheduleApi } from '../web/scheduleApi'
 import { PermissionApi } from '../web/permissionApi'
 

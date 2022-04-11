@@ -1,5 +1,5 @@
 import { MediaMetadata } from '../entities/mediaMetadata'
-import { ICacheProvider } from '../interfaces/cacheProvider'
+import ICacheProvider from '../interfaces/cacheProvider'
 import IMetadataRepository, {
   CreateInput,
   FindInput,

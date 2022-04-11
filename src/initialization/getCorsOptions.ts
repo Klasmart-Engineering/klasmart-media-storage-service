@@ -1,4 +1,4 @@
-export function getCorsOptions(domain: string) {
+export default function getCorsOptions(domain: string) {
   const domainRegex = new RegExp(
     `^http(s)?://(.*\\.)?${escapeRegex(domain)}(:\\d{1,5})?$`,
   )

@@ -1,8 +1,8 @@
 /* eslint-disable node/no-process-env */
 import { S3Client } from '@aws-sdk/client-s3'
-import { throwExpression } from '../helpers/throwExpression'
+import throwExpression from '../helpers/throwExpression'
 
-export class Config {
+export default class Config {
   private static s3Client: S3Client
   public static getS3Client(): S3Client {
     this.s3Client ??= new S3Client({

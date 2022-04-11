@@ -1,3 +1,3 @@
-export function delay(ms: number): Promise<boolean> {
+export default function delay(ms: number): Promise<boolean> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

@@ -8,7 +8,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 
-export class S3PresignedUrlProvider implements IPresignedUrlProvider {
+export default class S3PresignedUrlProvider implements IPresignedUrlProvider {
   public constructor(
     private readonly bucketName: string,
     private readonly s3Client: S3Client,

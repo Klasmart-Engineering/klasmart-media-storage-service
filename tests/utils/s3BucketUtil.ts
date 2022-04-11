@@ -6,7 +6,7 @@ import {
   CreateBucketCommand,
   HeadBucketCommand,
 } from '@aws-sdk/client-s3'
-import { Config } from '../../src/initialization/config'
+import Config from '../../src/initialization/config'
 
 const removeNulls = <S>(value: S | undefined): value is S => value != null
 

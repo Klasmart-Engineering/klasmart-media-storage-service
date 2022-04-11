@@ -1,7 +1,7 @@
 import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
 import { connectToMetadataDatabase } from '../../src/initialization/connectToMetadataDatabase'
-import { Config } from '../../src/initialization/config'
+import Config from '../../src/initialization/config'
 import { Connection } from 'typeorm'
 import { InitDatabase1646365428128 } from '../../src/migrations/1646365428128-InitDatabase'
 

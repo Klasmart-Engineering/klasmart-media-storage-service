@@ -5,7 +5,7 @@ import {
   HeadObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3'
-import { MediaFileStorageChecker } from '../../../src/providers/mediaFileStorageChecker'
+import MediaFileStorageChecker from '../../../src/providers/mediaFileStorageChecker'
 import { CustomError } from '../../utils/customError'
 
 describe('MediaFileStorageChecker.objectExists', () => {

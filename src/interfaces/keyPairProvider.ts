@@ -1,4 +1,4 @@
-export interface IKeyPairProvider {
+export default interface IKeyPairProvider {
   /**
    * Returns the base64 encoded public key corresponding to the provided object key.
    * @description Creates a new key pair if the public and/or

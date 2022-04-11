@@ -5,8 +5,8 @@ import {
   GET_HAS_ORG_PERMISSION,
   GET_HAS_SCHOOL_PERMISSION,
   OrgPermissionResponse,
-  PermissionApi,
   SchoolPermissionResponse,
+  PermissionApi,
 } from '../../../src/web/permissionApi'
 
 describe('permissionApi', () => {

@@ -1,6 +1,6 @@
 import '../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { CompositionRoot } from '../../src/initialization/compositionRoot'
+import CompositionRoot from '../../src/initialization/compositionRoot'
 import { restoreEnvVar, setEnvVar } from '../utils/setAndRestoreEnvVar'
 
 describe('compositionRoot.buildObjectGraph', () => {

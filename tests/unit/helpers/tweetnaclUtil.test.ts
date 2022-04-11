@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { box } from 'tweetnacl'
-import { ErrorMessage } from '../../../src/helpers/errorMessages'
+import ErrorMessage from '../../../src/helpers/errorMessages'
 import { decrypt, encrypt } from '../../../src/helpers/tweetnaclUtil'
 
 describe('tweetnaclUtil', () => {

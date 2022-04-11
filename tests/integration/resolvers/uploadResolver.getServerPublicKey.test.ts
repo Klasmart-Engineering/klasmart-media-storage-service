@@ -1,6 +1,6 @@
 import '../../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { Config } from '../../../src/initialization/config'
+import Config from '../../../src/initialization/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,

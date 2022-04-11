@@ -1,10 +1,10 @@
 import Substitute from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import { CustomIocContainer } from '../../../src/initialization/buildDefaultSchema'
-import { CompositionRoot } from '../../../src/initialization/compositionRoot'
-import { DownloadResolver } from '../../../src/resolvers/downloadResolver'
-import { MetadataResolver } from '../../../src/resolvers/metadataResolver'
-import { UploadResolver } from '../../../src/resolvers/uploadResolver'
+import CompositionRoot from '../../../src/initialization/compositionRoot'
+import DownloadResolver from '../../../src/resolvers/downloadResolver'
+import MetadataResolver from '../../../src/resolvers/metadataResolver'
+import UploadResolver from '../../../src/resolvers/uploadResolver'
 
 describe('CustomIocContainer.get', () => {
   context('objectType is MetadataResolver', () => {

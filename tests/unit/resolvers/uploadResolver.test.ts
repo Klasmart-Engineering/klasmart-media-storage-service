@@ -1,9 +1,9 @@
 import expect from '../../utils/chaiAsPromisedSetup'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
-import { KeyPairProvider } from '../../../src/providers/keyPairProvider'
+import KeyPairProvider from '../../../src/providers/keyPairProvider'
 import IPresignedUrlProvider from '../../../src/interfaces/presignedUrlProvider'
-import { UploadResolver } from '../../../src/resolvers/uploadResolver'
-import { ErrorMessage } from '../../../src/helpers/errorMessages'
+import UploadResolver from '../../../src/resolvers/uploadResolver'
+import ErrorMessage from '../../../src/helpers/errorMessages'
 import IUploadValidator from '../../../src/interfaces/uploadValidator'
 import IMetadataRepository from '../../../src/interfaces/metadataRepository'
 

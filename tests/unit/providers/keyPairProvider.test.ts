@@ -1,9 +1,9 @@
 import expect from '../../utils/chaiAsPromisedSetup'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import IKeyStorage from '../../../src/interfaces/keyStorage'
-import { KeyPairProvider } from '../../../src/providers/keyPairProvider'
-import { KeyPair } from '../../../src/helpers/keyPair'
-import { ErrorMessage } from '../../../src/helpers/errorMessages'
+import KeyPairProvider from '../../../src/providers/keyPairProvider'
+import KeyPair from '../../../src/helpers/keyPair'
+import ErrorMessage from '../../../src/helpers/errorMessages'
 
 describe('KeyPairProvider', () => {
   describe('getPublicKey', () => {

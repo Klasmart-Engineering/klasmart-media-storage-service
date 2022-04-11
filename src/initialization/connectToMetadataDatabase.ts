@@ -6,7 +6,7 @@ import {
   LoggerOptions,
 } from 'typeorm'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { delay } from '../helpers/delay'
+import delay from '../helpers/delay'
 
 const logger = withLogger('connectToMetadataDatabase')
 

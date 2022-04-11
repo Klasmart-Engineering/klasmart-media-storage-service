@@ -1,4 +1,4 @@
-import { ICacheProvider } from '../interfaces/cacheProvider'
+import ICacheProvider from '../interfaces/cacheProvider'
 
 export default class MemoryCacheProvider implements ICacheProvider {
   constructor(

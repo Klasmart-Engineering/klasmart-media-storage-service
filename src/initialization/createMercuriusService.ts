@@ -1,5 +1,5 @@
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { Config } from './config'
+import Config from './config'
 import { GraphQLSchema } from 'graphql'
 import Fastify, { FastifyReply, FastifyRequest, LogLevel } from 'fastify'
 import mercurius from 'mercurius'
@@ -9,9 +9,9 @@ import healthcheck from 'fastify-healthcheck'
 import IMediaStorageService from '../interfaces/mediaStorageService'
 import { posix } from 'path'
 import getContext from './getContext'
-import { getCorsOptions } from './getCorsOptions'
+import getCorsOptions from './getCorsOptions'
 import error2Json from '../errors/error2Json'
-import { CompositionRoot } from './compositionRoot'
+import CompositionRoot from './compositionRoot'
 
 const logger = withLogger('createMercuriusService')
 

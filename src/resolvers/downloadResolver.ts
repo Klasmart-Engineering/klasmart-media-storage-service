@@ -2,8 +2,8 @@ import { Arg, Query, Resolver, UnauthorizedError } from 'type-graphql'
 import { AuthenticationToken, UserID } from '../auth/context'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import { RequiredDownloadInfo } from '../graphqlResultTypes/requiredDownloadInfo'
-import { ErrorMessage } from '../helpers/errorMessages'
-import { IAuthorizationProvider } from '../interfaces/authorizationProvider'
+import ErrorMessage from '../helpers/errorMessages'
+import IAuthorizationProvider from '../interfaces/authorizationProvider'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import createMediaFileKey from '../helpers/createMediaFileKey'
 import IMetadataRepository from '../interfaces/metadataRepository'
@@ -12,7 +12,7 @@ import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
 const logger = withLogger('DownloadResolver')
 
 @Resolver(RequiredDownloadInfo)
-export class DownloadResolver {
+export default class DownloadResolver {
   constructor(
     private readonly metadataRepository: IMetadataRepository,
     private readonly symmetricKeyProvider: ISymmetricKeyProvider,

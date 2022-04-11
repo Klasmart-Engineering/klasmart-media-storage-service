@@ -7,7 +7,7 @@ import {
 } from 'apollo-server-core'
 import { withLogger } from 'kidsloop-nodejs-logger'
 import getContext from './getContext'
-import { CompositionRoot } from './compositionRoot'
+import CompositionRoot from './compositionRoot'
 
 const logger = withLogger('createApolloServer')
 

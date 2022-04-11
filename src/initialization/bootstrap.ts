@@ -1,5 +1,5 @@
 import buildDefaultSchema from './buildDefaultSchema'
-import { CompositionRoot } from './compositionRoot'
+import CompositionRoot from './compositionRoot'
 import createApolloExpressService from './createApolloExpressService'
 import createMercuriusService from './createMercuriusService'
 import IMediaStorageService from '../interfaces/mediaStorageService'

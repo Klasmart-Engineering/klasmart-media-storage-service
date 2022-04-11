@@ -1,4 +1,4 @@
-export interface IAuthorizationProvider {
+export default interface IAuthorizationProvider {
   isAuthorized(
     endUserId: string | undefined,
     roomId: string,

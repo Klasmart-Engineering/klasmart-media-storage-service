@@ -7,7 +7,7 @@ import IMetadataRepository from '../interfaces/metadataRepository'
 const logger = withLogger('MetadataResolver')
 
 @Resolver(MediaMetadata)
-export class MetadataResolver {
+export default class MetadataResolver {
   constructor(private readonly metadataRepository: IMetadataRepository) {}
 
   @Query(() => [MediaMetadata], {

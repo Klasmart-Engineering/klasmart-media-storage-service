@@ -1,10 +1,10 @@
 import path from 'path'
 import { GraphQLSchema } from 'graphql'
 import { buildSchema, ClassType } from 'type-graphql'
-import { DownloadResolver } from '../resolvers/downloadResolver'
-import { CompositionRoot } from './compositionRoot'
-import { UploadResolver } from '../resolvers/uploadResolver'
-import { MetadataResolver } from '../resolvers/metadataResolver'
+import DownloadResolver from '../resolvers/downloadResolver'
+import CompositionRoot from './compositionRoot'
+import UploadResolver from '../resolvers/uploadResolver'
+import MetadataResolver from '../resolvers/metadataResolver'
 
 export default function buildDefaultSchema(
   compositionRoot: CompositionRoot,

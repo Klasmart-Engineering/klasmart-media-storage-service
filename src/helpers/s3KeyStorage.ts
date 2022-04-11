@@ -11,7 +11,7 @@ import s3BodyToBuffer from './s3BodyToBuffer'
 
 const logger = withLogger('S3KeyStorage')
 
-export class S3KeyStorage implements IKeyStorage {
+export default class S3KeyStorage implements IKeyStorage {
   public constructor(
     private readonly bucketName: string,
     private readonly s3Client: S3Client,

@@ -7,15 +7,15 @@ import { withLogger } from 'kidsloop-nodejs-logger'
 import { UserInputError } from 'apollo-server-core'
 import createMediaFileKey from '../helpers/createMediaFileKey'
 import isMimeTypeSupported from '../helpers/isMimeTypeSupported'
-import { ErrorMessage } from '../helpers/errorMessages'
+import ErrorMessage from '../helpers/errorMessages'
 import IUploadValidator from '../interfaces/uploadValidator'
 import IMetadataRepository from '../interfaces/metadataRepository'
-import { IKeyPairProvider } from '../interfaces/keyPairProvider'
+import IKeyPairProvider from '../interfaces/keyPairProvider'
 
 const logger = withLogger('UploadResolver')
 
 @Resolver(RequiredUploadInfo)
-export class UploadResolver {
+export default class UploadResolver {
   public static readonly NoRoomIdKeyName = 'no-room-id'
 
   constructor(

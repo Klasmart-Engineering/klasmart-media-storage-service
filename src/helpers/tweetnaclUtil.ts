@@ -1,5 +1,5 @@
 import { box, randomBytes } from 'tweetnacl'
-import { ErrorMessage } from './errorMessages'
+import ErrorMessage from './errorMessages'
 
 const newNonce = () => randomBytes(box.nonceLength)
 

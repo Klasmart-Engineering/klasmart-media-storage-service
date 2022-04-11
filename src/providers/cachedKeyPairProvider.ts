@@ -1,11 +1,11 @@
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { delay } from '../helpers/delay'
-import { ICacheProvider } from '../interfaces/cacheProvider'
-import { IKeyPairProvider } from '../interfaces/keyPairProvider'
+import delay from '../helpers/delay'
+import ICacheProvider from '../interfaces/cacheProvider'
+import IKeyPairProvider from '../interfaces/keyPairProvider'
 
 const logger = withLogger('CachedKeyPairProvider')
 
-export class CachedKeyPairProvider implements IKeyPairProvider {
+export default class CachedKeyPairProvider implements IKeyPairProvider {
   public static getPublicKeyCacheKey(objectKey: string) {
     return `server-public-key-${objectKey}`
   }

@@ -1,8 +1,8 @@
 import expect from '../../utils/chaiAsPromisedSetup'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
-import { MediaFileStorageChecker } from '../../../src/providers/mediaFileStorageChecker'
+import MediaFileStorageChecker from '../../../src/providers/mediaFileStorageChecker'
 import UploadValidator from '../../../src/providers/uploadValidator'
-import { delay } from '../../../src/helpers/delay'
+import delay from '../../../src/helpers/delay'
 
 describe('UploadValidator.scheduleValidation', () => {
   context('mediaFileStorageChecker.objectExists returns false', () => {

@@ -1,5 +1,5 @@
 import IUploadValidator from '../interfaces/uploadValidator'
-import { MediaFileStorageChecker } from './mediaFileStorageChecker'
+import MediaFileStorageChecker from './mediaFileStorageChecker'
 
 export default class UploadValidator implements IUploadValidator {
   private readonly timers = new Map<string, NodeJS.Timeout>()

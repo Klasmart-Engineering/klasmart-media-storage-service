@@ -1,7 +1,7 @@
 import Substitute from '@fluffy-spoon/substitute'
 import AuthorizationProvider from '../../src/providers/authorizationProvider'
-import { CompositionRoot } from '../../src/initialization/compositionRoot'
-import { IAuthorizationProvider } from '../../src/interfaces/authorizationProvider'
+import CompositionRoot from '../../src/initialization/compositionRoot'
+import IAuthorizationProvider from '../../src/interfaces/authorizationProvider'
 import { ScheduleApi } from '../../src/web/scheduleApi'
 import { PermissionApi } from '../../src/web/permissionApi'
 

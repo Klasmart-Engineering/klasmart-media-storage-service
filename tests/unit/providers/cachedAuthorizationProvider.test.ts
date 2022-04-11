@@ -1,8 +1,8 @@
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import CachedAuthorizationProvider from '../../../src/providers/cachedAuthorizationProvider'
-import { IAuthorizationProvider } from '../../../src/interfaces/authorizationProvider'
-import { ICacheProvider } from '../../../src/interfaces/cacheProvider'
+import IAuthorizationProvider from '../../../src/interfaces/authorizationProvider'
+import ICacheProvider from '../../../src/interfaces/cacheProvider'
 
 describe('cachedAuthorizationProvider', () => {
   describe('isAuthorized', () => {

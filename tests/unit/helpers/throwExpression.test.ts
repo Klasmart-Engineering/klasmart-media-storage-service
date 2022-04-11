@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { throwExpression } from '../../../src/helpers/throwExpression'
+import throwExpression from '../../../src/helpers/throwExpression'
 
 describe('throwExpression', () => {
   it('throws error with specified message', async () => {

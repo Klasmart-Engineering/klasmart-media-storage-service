@@ -2,7 +2,7 @@ import expect from '../../utils/chaiAsPromisedSetup'
 import Substitute from '@fluffy-spoon/substitute'
 import MediaMetadataBuilder from '../../builders/mediaMetadataBuilder'
 import { v4 } from 'uuid'
-import { MetadataResolver } from '../../../src/resolvers/metadataResolver'
+import MetadataResolver from '../../../src/resolvers/metadataResolver'
 import IMetadataRepository from '../../../src/interfaces/metadataRepository'
 
 describe('MetadataResolver', () => {

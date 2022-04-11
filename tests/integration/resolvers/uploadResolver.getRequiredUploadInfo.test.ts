@@ -1,7 +1,7 @@
 import '../../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import { Config } from '../../../src/initialization/config'
+import Config from '../../../src/initialization/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
@@ -17,9 +17,9 @@ import supertest, { SuperTest } from 'supertest'
 import { getRepository } from 'typeorm'
 import { MediaMetadata } from '../../../src/entities/mediaMetadata'
 import UploadValidator from '../../../src/providers/uploadValidator'
-import { MediaFileStorageChecker } from '../../../src/providers/mediaFileStorageChecker'
+import MediaFileStorageChecker from '../../../src/providers/mediaFileStorageChecker'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
-import { delay } from '../../../src/helpers/delay'
+import delay from '../../../src/helpers/delay'
 import { GET_REQUIRED_UPLOAD_INFO } from '../../../helpers/queries'
 
 describe('uploadResolver.getRequiredUploadInfo', () => {

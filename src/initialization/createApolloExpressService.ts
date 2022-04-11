@@ -3,12 +3,12 @@ import cookieParser from 'cookie-parser'
 import express from 'express'
 import { createApolloServer } from './createApolloServer'
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { getCorsOptions } from './getCorsOptions'
-import { Config } from './config'
+import getCorsOptions from './getCorsOptions'
+import Config from './config'
 import { GraphQLSchema } from 'graphql'
 import IMediaStorageService from '../interfaces/mediaStorageService'
 import cors from 'cors'
-import { CompositionRoot } from './compositionRoot'
+import CompositionRoot from './compositionRoot'
 
 const logger = withLogger('createApolloExpressService')
 

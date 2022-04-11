@@ -1,6 +1,6 @@
 import { withLogger } from 'kidsloop-nodejs-logger'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
-import { IKeyPairProvider } from '../interfaces/keyPairProvider'
+import IKeyPairProvider from '../interfaces/keyPairProvider'
 import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
 
 const logger = withLogger('SymmetricKeyProvider')

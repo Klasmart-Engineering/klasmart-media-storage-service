@@ -1,6 +1,6 @@
 import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
-export class MediaFileStorageChecker {
+export default class MediaFileStorageChecker {
   constructor(
     private readonly s3Client: S3Client,
     private readonly bucketName: string,

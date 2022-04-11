@@ -1,5 +1,5 @@
 import { withLogger } from 'kidsloop-nodejs-logger'
-import { ICacheProvider } from '../interfaces/cacheProvider'
+import ICacheProvider from '../interfaces/cacheProvider'
 import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
 
 const logger = withLogger('SymmetricKeyProvider')

@@ -1,4 +1,4 @@
-export class ErrorMessage {
+export default class ErrorMessage {
   static readonly notAuthenticated =
     'Access denied! You need to be authorized to perform this action!'
 

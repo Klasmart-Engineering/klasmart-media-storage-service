@@ -1,7 +1,7 @@
 import { ApolloServer, ExpressContext } from 'apollo-server-express'
 import { expect } from 'chai'
 import buildDefaultSchema from '../../../src/initialization/buildDefaultSchema'
-import { CompositionRoot } from '../../../src/initialization/compositionRoot'
+import CompositionRoot from '../../../src/initialization/compositionRoot'
 import { createApolloServer } from '../../../src/initialization/createApolloServer'
 import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
 
