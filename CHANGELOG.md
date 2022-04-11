@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.22](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.22..v0.1.21) (2022-04-11)
+
+
+### Features
+
+* add error logger to mercurius config ([78d20cc](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/78d20cc023b183c0f1e199d8ba25d50a2dfdf58d))
+
+
+### Performance
+
+* **DAS-329:** add context caching ([9909964](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/9909964487ce21a09e094407385d2a688ec0ed09))
+* execute key pair provider ops concurrently ([093e957](http://bitbucket.org/calmisland/kidsloop-audio-service/commits/093e957562b63d33b626b669dd8f3b75d0509c3e))
+
 ### [0.1.21](http://bitbucket.org/calmisland/kidsloop-audio-service/compare/v0.1.21..v0.1.20) (2022-04-07)
 
 
