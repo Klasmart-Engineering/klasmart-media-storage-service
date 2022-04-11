@@ -15,7 +15,7 @@ function jsonFriendlyErrorReplacer(key: string, value: any) {
       // Explicitly pull Error's non-enumerable properties.
       name: value.name,
       message: value.message,
-      stack: value.stack,
+      stack: process.env.LOG_LEVEL === 'silly' ? value.stack : undefined,
     }
   }
 

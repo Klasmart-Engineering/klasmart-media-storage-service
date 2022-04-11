@@ -20,5 +20,6 @@ declare namespace NodeJS {
     MERCURIUS_LOG_LEVEL?: string
     CACHE?: string
     MOCK_WEB_APIS?: string
+    LOG_LEVEL?: string
   }
 }
