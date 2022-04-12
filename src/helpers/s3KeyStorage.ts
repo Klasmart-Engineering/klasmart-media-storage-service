@@ -6,7 +6,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import IKeyStorage from '../interfaces/keyStorage'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import s3BodyToBuffer from './s3BodyToBuffer'
 
 const logger = withLogger('S3KeyStorage')

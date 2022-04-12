@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { MigrationInterface, QueryRunner } from 'typeorm'
 
 const logger = withLogger('RenameTable1646378108745')

@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import delay from '../helpers/delay'
 import ICacheProvider from '../interfaces/cacheProvider'
 import IKeyPairProvider from '../interfaces/keyPairProvider'

@@ -1,5 +1,5 @@
 import { AxiosStatic, AxiosResponse } from 'axios'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { ScheduleDto } from './scheduleResponse'
 import throwExpression from '../helpers/throwExpression'
 

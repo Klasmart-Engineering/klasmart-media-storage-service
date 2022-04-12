@@ -1,8 +1,8 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import {
   checkAuthenticationToken,
   checkLiveAuthorizationToken,
-} from 'kidsloop-token-validation'
+} from '@kl-engineering/kidsloop-token-validation'
 import ITokenParser, {
   AuthenticationToken,
   LiveAuthorizationToken,

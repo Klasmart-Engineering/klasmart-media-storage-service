@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import ICacheProvider from '../interfaces/cacheProvider'
 import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
 

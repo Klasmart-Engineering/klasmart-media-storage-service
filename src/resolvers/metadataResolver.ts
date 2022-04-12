@@ -1,7 +1,7 @@
 import { Arg, Query, Resolver, UnauthorizedError } from 'type-graphql'
 import { MediaMetadata } from '../entities/mediaMetadata'
 import { UserID } from '../auth/context'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import IMetadataRepository from '../interfaces/metadataRepository'
 
 const logger = withLogger('MetadataResolver')

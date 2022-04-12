@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import cookie from 'cookie'
 import { Context } from '../auth/context'
 import { IncomingHttpHeaders } from 'http'

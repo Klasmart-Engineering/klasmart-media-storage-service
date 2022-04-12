@@ -93,6 +93,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.54.1",
     "@aws-sdk/s3-request-presigner": "^3.54.1",
+    "@kl-engineering/kidsloop-nodejs-logger": "^0.3.2",
+    "@kl-engineering/kidsloop-token-validation": "1.5.2",
     "apollo-server-core": "^3.6.2",
     "apollo-server-express": "^3.6.2",
     "axios": "^0.26.0",
@@ -108,8 +110,6 @@
     "fastify-healthcheck": "^3.1.0",
     "graphql-request": "^4.0.0",
     "ioredis": "^4.28.5",
-    "kidsloop-nodejs-logger": "bitbucket:calmisland/kidsloop-nodejs-logger#v0.2.15",
-    "kidsloop-token-validation": "bitbucket:calmisland/kidsloop-token-validation#v1.4.1",
     "mercurius": "^8.12.1",
     "newrelic": "^8.7.1",
     "pg": "^8.7.1",

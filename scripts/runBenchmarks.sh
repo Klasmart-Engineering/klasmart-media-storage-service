@@ -7,27 +7,28 @@ docker run \
   -e "MINIO_SECRET_KEY=minio123" \
   minio/minio server /data
 
-docker run --add-host host.docker.internal:$BITBUCKET_DOCKER_HOST_INTERNAL \
+echo "Starting container..."
+
+docker run --add-host host.docker.internal:host-gateway \
   -d \
   --name=bench-baseConfig \
   --env-file ./benchmarking/.env.baseConfig \
   -p 8080:8080 \
-  $DOCKER_REPO_NAME && sleep 5 && docker logs bench-baseConfig && docker top bench-baseConfig
+  $ECR_REPOSITORY && sleep 5 && docker logs bench-baseConfig && docker top bench-baseConfig
 
+npm run bench $VERSION_TAG baseConfig
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
-
-npm run bench $VERSION_TAG baseConfig
 docker stop bench-baseConfig
 
-docker run --add-host host.docker.internal:$BITBUCKET_DOCKER_HOST_INTERNAL \
+docker run --add-host host.docker.internal:host-gateway \
   -d \
   --name=bench-noCaching \
   --env-file ./benchmarking/.env.noCaching \
   -p 8080:8080 \
-  $DOCKER_REPO_NAME && sleep 5 && docker logs bench-noCaching && docker top bench-noCaching
+  $ECR_REPOSITORY && sleep 5 && docker logs bench-noCaching && docker top bench-noCaching
 
 npm run bench $VERSION_TAG noCaching
 docker stop bench-noCaching

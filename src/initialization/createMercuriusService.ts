@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import Config from './config'
 import { GraphQLSchema } from 'graphql'
 import Fastify, { FastifyReply, FastifyRequest, LogLevel } from 'fastify'

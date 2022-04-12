@@ -3,7 +3,7 @@ import CompositionRoot from './compositionRoot'
 import createApolloExpressService from './createApolloExpressService'
 import createMercuriusService from './createMercuriusService'
 import IMediaStorageService from '../interfaces/mediaStorageService'
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 
 const logger = withLogger('bootstrap')
 

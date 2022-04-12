@@ -1,4 +1,4 @@
-import { withLogger } from 'kidsloop-nodejs-logger'
+import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import IAuthorizationProvider from '../interfaces/authorizationProvider'
 
 const logger = withLogger('AuthorizationProvider')
