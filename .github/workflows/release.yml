@@ -8,17 +8,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # npm-ci:
-  #   uses: KL-Engineering/github-action-workflows/.github/workflows/npm-ci.yml@v2.1.0
-  #   secrets:
-  #     NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
-
-  # npm-test:
-  #   needs: [npm-ci]
-  #   uses: ./.github/workflows/job-test.yml
+  npm-ci:
+    uses: KL-Engineering/github-action-workflows/.github/workflows/npm-ci.yml@v2.1.0
+    secrets:
+      NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
   
   create-release:
-    # needs: [npm-test]
+    needs: [npm-test]
     uses: ./.github/workflows/job-create-release.yml
     secrets:
       ECR_AWS_ACCESS_KEY_ID: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}

@@ -7,8 +7,6 @@ docker run \
   -e "MINIO_SECRET_KEY=minio123" \
   minio/minio server /data
 
-echo "Starting container..."
-
 docker run --add-host host.docker.internal:host-gateway \
   -d \
   --name=bench-baseConfig \
