@@ -2,6 +2,12 @@ name: Create Release (job)
 
 on:
   workflow_call:
+    inputs:
+      release_as:
+        # https://github.com/conventional-changelog/standard-version#release-as-a-target-type-imperatively-npm-version-like
+        required: true
+        type: string
+        description: auto, major, minor, or patch
     secrets:
       ECR_AWS_ACCESS_KEY_ID:
         required: true
@@ -54,9 +60,16 @@ jobs:
 
       - name: Version bump
         id: version-bump
+        env:
+          RELEASE_AS: ${{ inputs.release_as }}
         run: |
           npm run build
-          npm run release
+          if [[ "$RELEASE_AS" == "auto" ]]
+          then
+            npm run release
+          else
+            npm run release -- --release-as $RELEASE_AS
+          fi
           npm prune --production
           docker build -t $ECR_REPOSITORY .
           export VERSION_TAG=$(git describe --tags --abbrev=0)

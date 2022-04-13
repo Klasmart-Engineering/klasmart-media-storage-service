@@ -4,8 +4,6 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-[TOC]
-
 ---
 
 ## Remarks
@@ -188,5 +186,5 @@ Once you're granted access to the above account, head to the [service task list]
 
 ## Recommended VS Code extensions
 
-- [Jira and Bitbucket](https://marketplace.visualstudio.com/items?itemName=Atlassian.atlascode)
+- [Jira](https://marketplace.visualstudio.com/items?itemName=Atlassian.atlascode)
 - [Mocha Test Explorer](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-mocha-test-adapter)
