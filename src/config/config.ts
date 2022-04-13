@@ -1,5 +1,6 @@
 /* eslint-disable node/no-process-env */
 import { S3Client } from '@aws-sdk/client-s3'
+import { ApplicationError } from '../errors/applicationError'
 import throwExpression from '../helpers/throwExpression'
 
 export default class Config {
@@ -69,7 +70,7 @@ export default class Config {
   static getCache(): 'redis' | 'memory' | undefined {
     const cache = process.env.CACHE
     if (cache !== 'redis' && cache !== 'memory' && cache !== undefined) {
-      throw new Error(
+      throw new ApplicationError(
         "Invalid value for CACHE. Valid options: 'redis', 'memory', or undefined",
       )
     }

@@ -3,7 +3,7 @@ import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import KeyPairProvider from '../../../src/providers/keyPairProvider'
 import IPresignedUrlProvider from '../../../src/interfaces/presignedUrlProvider'
 import UploadResolver from '../../../src/resolvers/uploadResolver'
-import ErrorMessage from '../../../src/helpers/errorMessages'
+import ErrorMessage from '../../../src/errors/errorMessages'
 import IUploadValidator from '../../../src/interfaces/uploadValidator'
 import IMetadataRepository from '../../../src/interfaces/metadataRepository'
 

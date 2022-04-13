@@ -1,5 +1,6 @@
 import { box, randomBytes } from 'tweetnacl'
-import ErrorMessage from './errorMessages'
+import { ApplicationError } from '../errors/applicationError'
+import ErrorMessage from '../errors/errorMessages'
 
 const newNonce = () => randomBytes(box.nonceLength)
 
@@ -32,7 +33,7 @@ export const decrypt = (
   const decrypted = box.open.after(message, nonce, secretOrSharedKey)
 
   if (!decrypted) {
-    throw new Error(ErrorMessage.decryptionFailed)
+    throw new ApplicationError(ErrorMessage.decryptionFailed)
   }
 
   return decrypted

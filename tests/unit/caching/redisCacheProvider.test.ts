@@ -1,7 +1,7 @@
 import expect from '../../utils/chaiAsPromisedSetup'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import { Redis } from 'ioredis'
-import RedisCacheProvider from '../../../src/providers/redisCacheProvider'
+import RedisCacheProvider from '../../../src/caching/redisCacheProvider'
 
 describe('RedisCacheProvider', () => {
   describe('get', () => {

@@ -1,8 +1,8 @@
-import '../utils/globalIntegrationTestHooks'
+import '../../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { TestCompositionRoot } from './testCompositionRoot'
-import bootstrap from '../../src/initialization/bootstrap'
-import { restoreEnvVar, setEnvVar } from '../utils/setAndRestoreEnvVar'
+import { TestCompositionRoot } from '../testCompositionRoot'
+import bootstrap from '../../../src/initialization/bootstrap'
+import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
 
 describe('createApolloExpressService', () => {
   let compositionRoot: TestCompositionRoot

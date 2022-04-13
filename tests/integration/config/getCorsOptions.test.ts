@@ -1,9 +1,9 @@
-import '../utils/globalIntegrationTestHooks'
-import expect from '../utils/chaiAsPromisedSetup'
-import { TestCompositionRoot } from './testCompositionRoot'
-import bootstrap from '../../src/initialization/bootstrap'
+import '../../utils/globalIntegrationTestHooks'
+import expect from '../../utils/chaiAsPromisedSetup'
+import { TestCompositionRoot } from '../testCompositionRoot'
+import bootstrap from '../../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
-import { restoreEnvVar, setEnvVar } from '../utils/setAndRestoreEnvVar'
+import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
 
 describe('cors DOMAIN is set to kidsloop.net', () => {
   let request: SuperTest<supertest.Test>

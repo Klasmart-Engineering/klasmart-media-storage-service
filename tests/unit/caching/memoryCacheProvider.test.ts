@@ -3,7 +3,7 @@ import MemoryCacheProvider, {
   DateClock,
   IClock,
   MemoryCacheRecord,
-} from '../../../src/providers/memoryCacheProvider'
+} from '../../../src/caching/memoryCacheProvider'
 
 describe('MemoryCacheProvider', () => {
   describe('get', () => {

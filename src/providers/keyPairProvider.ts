@@ -1,5 +1,5 @@
 import IKeyStorage from '../interfaces/keyStorage'
-import ErrorMessage from '../helpers/errorMessages'
+import ErrorMessage from '../errors/errorMessages'
 import KeyPair from '../helpers/keyPair'
 import throwExpression from '../helpers/throwExpression'
 import IKeyPairProvider from '../interfaces/keyPairProvider'

@@ -1,4 +1,5 @@
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
+import { ApplicationError } from '../errors/applicationError'
 import delay from '../helpers/delay'
 import ICacheProvider from '../interfaces/cacheProvider'
 import IKeyPairProvider from '../interfaces/keyPairProvider'
@@ -71,7 +72,7 @@ export default class CachedKeyPairProvider implements IKeyPairProvider {
       }
       i += 1
     }
-    throw new Error(
+    throw new ApplicationError(
       `[getPublicKeyOrCreatePair] Unable to obtain the lock to create a key pair for object key (${objectKey}).`,
     )
   }

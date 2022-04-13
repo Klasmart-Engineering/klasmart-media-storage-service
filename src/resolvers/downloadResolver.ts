@@ -2,12 +2,13 @@ import { Arg, Query, Resolver, UnauthorizedError } from 'type-graphql'
 import { AuthenticationToken, UserID } from '../auth/context'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import { RequiredDownloadInfo } from '../graphqlResultTypes/requiredDownloadInfo'
-import ErrorMessage from '../helpers/errorMessages'
+import ErrorMessage from '../errors/errorMessages'
 import IAuthorizationProvider from '../interfaces/authorizationProvider'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import createMediaFileKey from '../helpers/createMediaFileKey'
 import IMetadataRepository from '../interfaces/metadataRepository'
 import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
+import { ApplicationError } from '../errors/applicationError'
 
 const logger = withLogger('DownloadResolver')
 
@@ -46,7 +47,9 @@ export default class DownloadResolver {
     const mediaMetadata = await this.metadataRepository.findById(mediaId)
 
     if (!mediaMetadata) {
-      throw new Error(ErrorMessage.mediaMetadataNotFound(mediaId, endUserId))
+      throw new ApplicationError(
+        ErrorMessage.mediaMetadataNotFound(mediaId, endUserId),
+      )
     }
     const storedRoomId = mediaMetadata.roomId
     if (roomId !== storedRoomId) {
@@ -55,7 +58,7 @@ export default class DownloadResolver {
           `but the metadata room ID doesn't match the provided room ID.\n` +
           `endUserId: ${endUserId}, mediaId: ${mediaId}, metadata.roomId: ${storedRoomId}, roomId: ${roomId}`,
       )
-      throw new Error(ErrorMessage.mismatchingRoomIds)
+      throw new ApplicationError(ErrorMessage.mismatchingRoomIds)
     }
 
     const base64SymmetricKey =

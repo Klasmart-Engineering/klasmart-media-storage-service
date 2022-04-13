@@ -1,7 +1,7 @@
 import '../../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import Config from '../../../src/initialization/config'
+import Config from '../../../src/config/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,

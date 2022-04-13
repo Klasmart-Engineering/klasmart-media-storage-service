@@ -6,17 +6,17 @@ import IKeyStorage from '../interfaces/keyStorage'
 import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import DownloadResolver from '../resolvers/downloadResolver'
 import KeyPairProvider from '../providers/keyPairProvider'
-import S3KeyStorage from '../helpers/s3KeyStorage'
+import S3KeyStorage from '../providers/s3KeyStorage'
 import S3PresignedUrlProvider from '../providers/s3PresignedUrlProvider'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
 import TweetnaclDecryption from '../providers/tweetnaclDecryption'
-import Config from './config'
+import Config from '../config/config'
 import { box } from 'tweetnacl'
 import KeyPair from '../helpers/keyPair'
 import AuthorizationProvider from '../providers/authorizationProvider'
 import { ScheduleApi } from '../web/scheduleApi'
 import { PermissionApi } from '../web/permissionApi'
-import CachedAuthorizationProvider from '../providers/cachedAuthorizationProvider'
+import CachedAuthorizationProvider from '../caching/cachedAuthorizationProvider'
 import IAuthorizationProvider from '../interfaces/authorizationProvider'
 import { connectToMetadataDatabase } from './connectToMetadataDatabase'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
@@ -30,17 +30,18 @@ import MediaFileStorageChecker from '../providers/mediaFileStorageChecker'
 import IMetadataRepository from '../interfaces/metadataRepository'
 import TypeormMetadataRepository from '../providers/typeormMetadataRepository'
 import ICacheProvider from '../interfaces/cacheProvider'
-import MemoryCacheProvider from '../providers/memoryCacheProvider'
-import RedisCacheProvider from '../providers/redisCacheProvider'
+import MemoryCacheProvider from '../caching/memoryCacheProvider'
+import RedisCacheProvider from '../caching/redisCacheProvider'
 import IKeyPairProvider from '../interfaces/keyPairProvider'
-import CachedKeyPairProvider from '../providers/cachedKeyPairProvider'
+import CachedKeyPairProvider from '../caching/cachedKeyPairProvider'
 import MockAuthorizationProvider from '../providers/mockAuthorizationProvider'
-import CachedMetadataRepository from '../providers/cachedMetadataRepository'
+import CachedMetadataRepository from '../caching/cachedMetadataRepository'
 import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
-import CachedSymmetricKeyProvider from '../providers/cachedSymmetricKeyProvider'
+import CachedSymmetricKeyProvider from '../caching/cachedSymmetricKeyProvider'
 import ITokenParser from '../interfaces/tokenParser'
-import TokenParser from './tokenParser'
-import CachedTokenParser from './cachedTokenParser'
+import TokenParser from '../providers/tokenParser'
+import CachedTokenParser from '../caching/cachedTokenParser'
+import { ApplicationError } from '../errors/applicationError'
 
 const logger = withLogger('CompositionRoot')
 
@@ -226,7 +227,9 @@ export default class CompositionRoot {
 
   protected getMetadataRepository(): IMetadataRepository {
     if (!this.typeorm) {
-      throw new Error('typeorm should have been instantiated by now.')
+      throw new ApplicationError(
+        'typeorm should have been instantiated by now.',
+      )
     }
     if (this.metadataRepository != null) {
       return this.metadataRepository

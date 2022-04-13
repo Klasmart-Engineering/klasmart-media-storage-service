@@ -7,6 +7,7 @@ import {
 } from 'typeorm'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import delay from '../helpers/delay'
+import { ApplicationError } from '../errors/applicationError'
 
 const logger = withLogger('connectToMetadataDatabase')
 
@@ -100,12 +101,12 @@ async function tryCreateMetadataDatabase(
         `Failed to create '${databaseName}' database (expected error): ${e.message}`,
       )
     } else if (e.code === INVALID_CATALOG_NAME) {
-      throw new Error(
+      throw new ApplicationError(
         `Failed to create ${databaseName} database: Tried to connect to the default ` +
           `'postgres' database to bootstrap the creation, but it doesn't exist.\n${e.message}`,
       )
     } else {
-      throw new Error(
+      throw new ApplicationError(
         `Failed to create ${databaseName} database (unexpected error): ${e.message}`,
       )
     }

@@ -2,6 +2,7 @@ import { AxiosStatic, AxiosResponse } from 'axios'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import { ScheduleDto } from './scheduleResponse'
 import throwExpression from '../helpers/throwExpression'
+import { ApplicationError } from '../errors/applicationError'
 
 const logger = withLogger('ScheduleApi')
 
@@ -43,11 +44,11 @@ export class ScheduleApi {
 function mapDtoToEntity(dto: ScheduleDto) {
   const teacherIds: string[] = []
   if (dto.class_roster_teacher_ids == null) {
-    throw new Error('schedule.class_roster_teacher_ids is nullish')
+    throw new ApplicationError('schedule.class_roster_teacher_ids is nullish')
   }
   teacherIds.push(...dto.class_roster_teacher_ids)
   if (dto.participant_teacher_ids == null) {
-    throw new Error('schedule.participant_teacher_ids is nullish')
+    throw new ApplicationError('schedule.participant_teacher_ids is nullish')
   }
   teacherIds.push(...dto.participant_teacher_ids)
 

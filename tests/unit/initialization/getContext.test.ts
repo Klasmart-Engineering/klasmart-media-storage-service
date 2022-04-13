@@ -5,7 +5,7 @@ import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
 } from '../../../helpers/generateToken'
-import TokenParser from '../../../src/initialization/tokenParser'
+import TokenParser from '../../../src/providers/tokenParser'
 
 describe('getContext', () => {
   context(

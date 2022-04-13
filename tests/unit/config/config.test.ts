@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import Config from '../../../src/initialization/config'
+import Config from '../../../src/config/config'
 import { setEnvVar, restoreEnvVar } from '../../utils/setAndRestoreEnvVar'
 
 describe('config', () => {

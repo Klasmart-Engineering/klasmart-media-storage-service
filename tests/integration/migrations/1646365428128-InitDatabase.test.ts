@@ -1,9 +1,9 @@
-import '../utils/globalIntegrationTestHooks'
+import '../../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { connectToMetadataDatabase } from '../../src/initialization/connectToMetadataDatabase'
-import Config from '../../src/initialization/config'
+import { connectToMetadataDatabase } from '../../../src/initialization/connectToMetadataDatabase'
+import Config from '../../../src/config/config'
 import { Connection } from 'typeorm'
-import { InitDatabase1646365428128 } from '../../src/migrations/1646365428128-InitDatabase'
+import { InitDatabase1646365428128 } from '../../../src/migrations/1646365428128-InitDatabase'
 
 describe('1646365428128-InitDatabase', () => {
   let connection: Connection

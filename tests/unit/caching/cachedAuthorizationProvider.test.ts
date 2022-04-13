@@ -1,6 +1,6 @@
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
-import CachedAuthorizationProvider from '../../../src/providers/cachedAuthorizationProvider'
+import CachedAuthorizationProvider from '../../../src/caching/cachedAuthorizationProvider'
 import IAuthorizationProvider from '../../../src/interfaces/authorizationProvider'
 import ICacheProvider from '../../../src/interfaces/cacheProvider'
 

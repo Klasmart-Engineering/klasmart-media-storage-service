@@ -2,8 +2,8 @@ import expect from '../../utils/chaiAsPromisedSetup'
 import { Arg, Substitute } from '@fluffy-spoon/substitute'
 import ICacheProvider from '../../../src/interfaces/cacheProvider'
 import IKeyPairProvider from '../../../src/interfaces/keyPairProvider'
-import CachedKeyPairProvider from '../../../src/providers/cachedKeyPairProvider'
-import MemoryCacheProvider from '../../../src/providers/memoryCacheProvider'
+import CachedKeyPairProvider from '../../../src/caching/cachedKeyPairProvider'
+import MemoryCacheProvider from '../../../src/caching/memoryCacheProvider'
 import { TestClock } from './memoryCacheProvider.test'
 
 describe('CachedKeyPairProvider', () => {
