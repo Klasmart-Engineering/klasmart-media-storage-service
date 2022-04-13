@@ -7,13 +7,13 @@ const logger = withLogger('CachedKeyPairProvider')
 
 export default class CachedKeyPairProvider implements IKeyPairProvider {
   public static getPublicKeyCacheKey(objectKey: string) {
-    return `server-public-key-${objectKey}`
+    return `CachedKeyPairProvider.publicKey:${objectKey}`
   }
   public static getPrivateKeyCacheKey(objectKey: string) {
-    return `server-private-key-${objectKey}`
+    return `CachedKeyPairProvider.privateKey:${objectKey}`
   }
   public static getKeyPairCacheKey(objectKey: string) {
-    return `server-key-pair-lock-${objectKey}`
+    return `CachedKeyPairProvider.keyPairLock:${objectKey}`
   }
 
   public constructor(

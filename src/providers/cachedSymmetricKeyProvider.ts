@@ -8,7 +8,7 @@ export default class CachedSymmetricKeyProvider
   implements ISymmetricKeyProvider
 {
   public static getCacheKey(mediaId: string) {
-    return `CachedSymmetricKeyProvider.getBase64SymmetricKey-${mediaId}`
+    return `CachedSymmetricKeyProvider.getBase64SymmetricKey:${mediaId}`
   }
 
   constructor(

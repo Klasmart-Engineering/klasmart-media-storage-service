@@ -5,6 +5,14 @@ import ITokenParser, {
 import ICacheProvider from '../interfaces/cacheProvider'
 
 export default class CachedTokenParser implements ITokenParser {
+  public static getAuthenticationTokenCacheKey(token: string) {
+    return `CachedTokenParser.parseAuthenticationToken:${token}`
+  }
+
+  public static getAuthorizationTokenCacheKey(token: string) {
+    return `CachedTokenParser.parseLiveAuthorizationToken:${token}`
+  }
+
   constructor(
     private readonly tokenParser: ITokenParser,
     private readonly cache: ICacheProvider,
@@ -13,7 +21,10 @@ export default class CachedTokenParser implements ITokenParser {
   public async parseAuthenticationToken(
     encodedAuthenticationToken: string,
   ): Promise<AuthenticationToken> {
-    const tokenJson = await this.cache.get(encodedAuthenticationToken)
+    const cacheKey = CachedTokenParser.getAuthenticationTokenCacheKey(
+      encodedAuthenticationToken,
+    )
+    const tokenJson = await this.cache.get(cacheKey)
     if (tokenJson) {
       return JSON.parse(tokenJson)
     }
@@ -21,11 +32,7 @@ export default class CachedTokenParser implements ITokenParser {
       encodedAuthenticationToken,
     )
     if (token.userId) {
-      await this.cache.set(
-        encodedAuthenticationToken,
-        JSON.stringify(token),
-        60,
-      )
+      await this.cache.set(cacheKey, JSON.stringify(token), 60)
     }
     return token
   }
@@ -33,7 +40,10 @@ export default class CachedTokenParser implements ITokenParser {
   public async parseLiveAuthorizationToken(
     encodedLiveAuthorizationToken: string,
   ): Promise<LiveAuthorizationToken> {
-    const tokenJson = await this.cache.get(encodedLiveAuthorizationToken)
+    const cacheKey = CachedTokenParser.getAuthorizationTokenCacheKey(
+      encodedLiveAuthorizationToken,
+    )
+    const tokenJson = await this.cache.get(cacheKey)
     if (tokenJson) {
       return JSON.parse(tokenJson)
     }
@@ -41,11 +51,7 @@ export default class CachedTokenParser implements ITokenParser {
       encodedLiveAuthorizationToken,
     )
     if (token.userId) {
-      await this.cache.set(
-        encodedLiveAuthorizationToken,
-        JSON.stringify(token),
-        60,
-      )
+      await this.cache.set(cacheKey, JSON.stringify(token), 60)
     }
     return token
   }

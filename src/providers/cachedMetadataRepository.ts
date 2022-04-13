@@ -7,7 +7,7 @@ import IMetadataRepository, {
 
 export default class CachedMetadataRepository implements IMetadataRepository {
   public static getFindByIdCacheKey(mediaId: string) {
-    return `CachedMetadataRepository.findById-${mediaId}`
+    return `CachedMetadataRepository.findById:${mediaId}`
   }
 
   public static getFindCacheKey({
@@ -17,7 +17,7 @@ export default class CachedMetadataRepository implements IMetadataRepository {
     h5pSubId,
     mediaType,
   }: FindInput) {
-    return `CachedMetadataRepository.find-${userId}|${roomId}|${h5pId}|${h5pSubId}|${mediaType}`
+    return `CachedMetadataRepository.find:${userId}|${roomId}|${h5pId}|${h5pSubId}|${mediaType}`
   }
 
   constructor(
