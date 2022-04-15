@@ -42,6 +42,9 @@ import ITokenParser from '../interfaces/tokenParser'
 import TokenParser from '../providers/tokenParser'
 import CachedTokenParser from '../caching/cachedTokenParser'
 import { ApplicationError } from '../errors/applicationError'
+import IDownloadInfoProvider from '../interfaces/downloadInfoProvider'
+import DownloadInfoProvider from '../providers/downloadInfoProvider'
+import CachedDownloadInfoProvider from '../caching/cachedDownloadInfoProvider'
 
 const logger = withLogger('CompositionRoot')
 
@@ -84,9 +87,7 @@ export default class CompositionRoot {
 
   public getDownloadResolver(): DownloadResolver {
     this.downloadResolver ??= new DownloadResolver(
-      this.getMetadataRepository(),
-      this.getSymmetricKeyProvider(),
-      this.getPresignedUrlProvider(),
+      this.getDownloadInfoProvider(),
       this.getAuthorizationProvider(),
     )
     return this.downloadResolver
@@ -107,10 +108,30 @@ export default class CompositionRoot {
     return this.uploadResolver
   }
 
+  public getDownloadInfoProvider(): IDownloadInfoProvider {
+    let downloadInfoProvider: IDownloadInfoProvider = new DownloadInfoProvider(
+      this.getMetadataRepository(),
+      this.getSymmetricKeyProvider(),
+      this.getPresignedUrlProvider(),
+    )
+    if (Config.getCache()) {
+      downloadInfoProvider = new CachedDownloadInfoProvider(
+        downloadInfoProvider,
+        this.getCacheProvider(),
+      )
+    }
+    return downloadInfoProvider
+  }
+
   public getTokenParser(): ITokenParser {
     let tokenParser = new TokenParser()
     if (Config.getCache()) {
-      tokenParser = new CachedTokenParser(tokenParser, this.getCacheProvider())
+      // Use a memory cache because I think the overhead of Redis decreases the benefit of token caching.
+      // Load testing reveals that memory caching is almost twice as fast as Redis.
+      const memoryCache = new MemoryCacheProvider(Date)
+      this.tickerCallbacks.push(() => memoryCache.prune())
+      this.startCachePruneTicker()
+      tokenParser = new CachedTokenParser(tokenParser, memoryCache)
     }
     return tokenParser
   }

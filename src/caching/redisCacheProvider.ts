@@ -8,6 +8,9 @@ export default class RedisCacheProvider implements ICacheProvider {
     return this.redisClient.get(key)
   }
 
+  // nx: Only set the key if it does not already exist.
+  // ex: Set the specified expire time, in seconds.
+  // px: Set the specified expire time, in milliseconds.
   set(key: string, value: string, ttlSeconds: number): Promise<'OK' | null> {
     return this.redisClient.set(key, value, 'ex', ttlSeconds, 'nx')
   }

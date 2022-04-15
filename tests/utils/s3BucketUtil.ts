@@ -4,7 +4,6 @@ import {
   ListBucketsCommand,
   DeleteObjectsCommand,
   CreateBucketCommand,
-  HeadBucketCommand,
 } from '@aws-sdk/client-s3'
 import Config from '../../src/config/config'
 

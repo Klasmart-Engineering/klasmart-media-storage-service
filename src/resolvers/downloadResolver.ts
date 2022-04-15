@@ -1,23 +1,16 @@
 import { Arg, Query, Resolver, UnauthorizedError } from 'type-graphql'
 import { AuthenticationToken, UserID } from '../auth/context'
-import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import { RequiredDownloadInfo } from '../graphqlResultTypes/requiredDownloadInfo'
-import ErrorMessage from '../errors/errorMessages'
 import IAuthorizationProvider from '../interfaces/authorizationProvider'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
-import createMediaFileKey from '../helpers/createMediaFileKey'
-import IMetadataRepository from '../interfaces/metadataRepository'
-import ISymmetricKeyProvider from '../interfaces/symmetricKeyProvider'
-import { ApplicationError } from '../errors/applicationError'
+import IDownloadInfoProvider from '../interfaces/downloadInfoProvider'
 
 const logger = withLogger('DownloadResolver')
 
 @Resolver(RequiredDownloadInfo)
 export default class DownloadResolver {
   constructor(
-    private readonly metadataRepository: IMetadataRepository,
-    private readonly symmetricKeyProvider: ISymmetricKeyProvider,
-    private readonly presignedUrlProvider: IPresignedUrlProvider,
+    private readonly downloadInfoProvider: IDownloadInfoProvider,
     private readonly authorizationProvider: IAuthorizationProvider,
   ) {}
 
@@ -44,35 +37,11 @@ export default class DownloadResolver {
     if (isAuthorized === false || !endUserId) {
       throw new UnauthorizedError()
     }
-    const mediaMetadata = await this.metadataRepository.findById(mediaId)
-
-    if (!mediaMetadata) {
-      throw new ApplicationError(
-        ErrorMessage.mediaMetadataNotFound(mediaId, endUserId),
-      )
-    }
-    const storedRoomId = mediaMetadata.roomId
-    if (roomId !== storedRoomId) {
-      logger.error(
-        `[getRequiredDownloadInfo] media metadata was found for the provided media ID, ` +
-          `but the metadata room ID doesn't match the provided room ID.\n` +
-          `endUserId: ${endUserId}, mediaId: ${mediaId}, metadata.roomId: ${storedRoomId}, roomId: ${roomId}`,
-      )
-      throw new ApplicationError(ErrorMessage.mismatchingRoomIds)
-    }
-
-    const base64SymmetricKey =
-      await this.symmetricKeyProvider.getBase64SymmetricKey(
-        mediaId,
-        roomId,
-        mediaMetadata.base64UserPublicKey,
-        mediaMetadata.base64EncryptedSymmetricKey,
-      )
-
-    const mediaFileKey = createMediaFileKey(mediaId, mediaMetadata.mimeType)
-    const presignedUrl = await this.presignedUrlProvider.getDownloadUrl(
-      mediaFileKey,
+    const result = await this.downloadInfoProvider.getDownloadInfo(
+      mediaId,
+      roomId,
+      endUserId,
     )
-    return { base64SymmetricKey, presignedUrl }
+    return result
   }
 }

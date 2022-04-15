@@ -30,6 +30,6 @@ export default class S3PresignedUrlProvider implements IPresignedUrlProvider {
       Key: objectKey,
     }
     const command = new GetObjectCommand(params)
-    return getSignedUrl(this.s3Client, command, { expiresIn: 60 })
+    return getSignedUrl(this.s3Client, command, { expiresIn: 900 })
   }
 }
