@@ -61,6 +61,9 @@ type Query {
 
   """Returns a base64 encoded server public key."""
   getServerPublicKey: String!
+
+  """Returns a list of image metadata matching the provided arguments."""
+  imageMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [MediaMetadata!]!
 }
 
 """The info required to download a media file."""

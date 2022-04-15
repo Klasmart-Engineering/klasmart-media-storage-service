@@ -37,4 +37,32 @@ export default class MetadataResolver {
     })
     return results
   }
+
+  @Query(() => [MediaMetadata], {
+    description:
+      'Returns a list of image metadata matching the provided arguments.',
+  })
+  public async imageMetadata(
+    @Arg('userId') userId: string,
+    @Arg('roomId') roomId: string,
+    @Arg('h5pId') h5pId: string,
+    @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
+    @UserID() endUserId?: string,
+  ): Promise<MediaMetadata[]> {
+    logger.debug(
+      `[imageMetadata] endUserId: ${endUserId}; userId: ${userId}; roomId: ${roomId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}`,
+    )
+    if (!endUserId) {
+      throw new UnauthorizedError()
+    }
+    h5pSubId ??= null
+    const results = await this.metadataRepository.find({
+      userId,
+      roomId,
+      h5pId,
+      h5pSubId,
+      mediaType: 'image',
+    })
+    return results
+  }
 }
