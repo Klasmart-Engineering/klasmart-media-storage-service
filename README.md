@@ -30,9 +30,7 @@
 
 #### Configuration
 
-Copy/paste `.env.example` in the root directory, rename it to `.env`, and modify as necessary.
-
-Copy/paste `.env.test.example` in the root directory, rename it to `.env.test`, and modify as necessary.
+Copy/paste `.env.example` in the `localDev` directory, rename it to `.env`, and modify as necessary.
 
 Create Postgres container
 
@@ -60,7 +58,7 @@ docker run \
 
 MinIO config
 
-1. In your `.env` and `.env.test` files, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY equal to the values of MINIO_ROOT_USER and MINIO_ROOT_PASSWORD from the previous step.
+1. In your `.env` files, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY equal to the values of MINIO_ROOT_USER and MINIO_ROOT_PASSWORD from the previous step.
 2. Open your browser to http://localhost:9001.
 3. Create 3 buckets for PUBLIC_KEY_BUCKET, PRIVATE_KEY_BUCKET, MEDIA_FILE_BUCKET in your `.env` file.
 

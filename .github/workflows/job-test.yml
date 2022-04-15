@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-                
+
       - name: Find node_modules cache
         id: cache-node_modules
         uses: actions/cache@v3
@@ -48,4 +48,4 @@ jobs:
             minio/minio server /data
 
       - name: Run tests
-        run: npm run test:ci
+        run: npm run test

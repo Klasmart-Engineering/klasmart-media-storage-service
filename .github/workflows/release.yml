@@ -23,7 +23,7 @@ jobs:
     uses: KL-Engineering/github-action-workflows/.github/workflows/npm-ci.yml@v2.1.0
     secrets:
       NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
-  
+
   create-release:
     needs: [npm-ci]
     uses: ./.github/workflows/job-create-release.yml
@@ -32,7 +32,7 @@ jobs:
     secrets:
       ECR_AWS_ACCESS_KEY_ID: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
       ECR_AWS_SECRET_ACCESS_KEY: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
-  
+
   deploy-alpha:
     needs: [create-release]
     uses: ./.github/workflows/job-deploy-alpha.yml

@@ -2,6 +2,6 @@
 /.husky
 /dist
 /node_modules
-/test-results
+/coverage
 /tsconfig.json
 /package-lock.json

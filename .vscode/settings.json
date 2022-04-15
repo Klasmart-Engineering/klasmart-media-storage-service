@@ -1,7 +1,7 @@
 {
   "editor.tabSize": 2,
   "editor.formatOnSave": false,
-  "[typescript][javascript][json]": {
+  "[typescript][javascript][json][dockercompose][yaml]": {
     "editor.formatOnSave": true
   }
 }
