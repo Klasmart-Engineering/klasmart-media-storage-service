@@ -4,7 +4,7 @@ export default function error2Json(
   if (error == null) {
     return undefined
   }
-  return JSON.stringify(error, jsonFriendlyErrorReplacer, 2)
+  return JSON.stringify(error, jsonFriendlyErrorReplacer)
 }
 
 function jsonFriendlyErrorReplacer(key: string, value: any) {
