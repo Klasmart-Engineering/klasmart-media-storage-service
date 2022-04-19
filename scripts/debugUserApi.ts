@@ -1,4 +1,8 @@
-import { gql, GraphQLClient, ClientError } from 'graphql-request'
+import { GraphQLClient, ClientError } from 'graphql-request'
+import {
+  GET_HAS_ORG_PERMISSION,
+  GET_HAS_SCHOOL_PERMISSION,
+} from '../src/web/permissionApi'
 
 const graphQLClient = new GraphQLClient(
   'https://api.alpha.kidsloop.net/user/graphql',
@@ -11,28 +15,6 @@ const headers = {
 const organizationId = '49fbe89a-87bc-4159-8a8d-48bf151ba062'
 const classId = '4f84e979-327d-446e-8b9e-e6f33a3d5080' // not henrik's class: 03ecb0dd-f765-4c76-9778-272f575c21f6
 const permissionId = 'view_completed_assessments_414'
-
-export const GET_HAS_ORG_PERMISSION = gql`
-  query Query($organizationId: ID!, $classId: ID!, $permissionId: String!) {
-    myUser {
-      hasPermissionsInOrganization(
-        organizationId: $organizationId
-        permissionIds: [$permissionId]
-      ) {
-        allowed
-      }
-    }
-    classNode(id: $classId) {
-      schoolsConnection {
-        edges {
-          node {
-            id
-          }
-        }
-      }
-    }
-  }
-`
 
 async function debug() {
   const response = await graphQLClient.request(
