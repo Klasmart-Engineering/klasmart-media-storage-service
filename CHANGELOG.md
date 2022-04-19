@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.1.25 (2022-04-19)
+
+
+### Features
+
+* order metadata by createdAt column ([9803736](https://github.com/KL-Engineering/kidsloop-media-storage-service/commit/98037365a62942f989d9314916febbf132ab67e5))
+
 ### 0.1.24 (2022-04-15)
 
 
