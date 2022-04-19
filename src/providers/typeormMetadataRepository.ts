@@ -31,11 +31,16 @@ export default class TypeormMetadataRepository implements IMetadataRepository {
     mediaType,
   }: FindInput): Promise<MediaMetadata[]> {
     return this.typeormRepo.find({
-      userId,
-      roomId,
-      h5pId,
-      h5pSubId,
-      mimeType: Like(`${mediaType}/%`),
+      where: {
+        userId,
+        roomId,
+        h5pId,
+        h5pSubId,
+        mimeType: Like(`${mediaType}/%`),
+      },
+      order: {
+        createdAt: 'ASC',
+      },
     })
   }
 
