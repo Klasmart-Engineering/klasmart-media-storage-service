@@ -11,10 +11,10 @@
 **Branching model**
 
 - `feature/fix/etc` -> `main`
-- The main branch pipeline has a manual _version bump_ step.
-- That step will build/push the docker image to ECR, and deploy to alpha.
+- The main branch pipeline has a manual _release_ workflow.
+- That workflow will build/push the docker image to ECR, and deploy to alpha.
 
-📢 Follow the specification covered in [CONTRIBUTING.md](CONTRIBUTING.md) 📢
+📢 Follow the specification covered in [CONTRIBUTING.md](docs/CONTRIBUTING.md) 📢
 
 ---
 
@@ -26,41 +26,17 @@
 
 - Node v16.x.x
 - Npm v6.x.x
-- Docker (for Postgres and MinIO)
+- Docker (for Postgres, MinIO, and Redis)
 
 #### Configuration
 
 Copy/paste `.env.example` in the `localDev` directory, rename it to `.env`, and modify as necessary.
 
-Create Postgres container
+Run Docker Compose
 
 ```
-docker run -d --name=postgres -p 5432:5432 -e POSTGRES_PASSWORD=kidsloop -e POSTGRES_DB=media_db postgres
+docker compose -f localDev/docker-compose.yml --project-name media up
 ```
-
-OR if you already have a Postgres container that you'd like to reuse, just add a new database
-
-```
-docker container exec -it postgres psql -U postgres -c "create database media_db;"
-```
-
-Create MinIO container
-
-```
-docker run \
-  -d \
-  -p 9000:9000 \
-  -p 9001:9001 \
-  -e "MINIO_ROOT_USER=minio" \
-  -e "MINIO_ROOT_PASSWORD=minio123" \
-  minio/minio server /data --console-address ":9001"
-```
-
-MinIO config
-
-1. In your `.env` files, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY equal to the values of MINIO_ROOT_USER and MINIO_ROOT_PASSWORD from the previous step.
-2. Open your browser to http://localhost:9001.
-3. Create 3 buckets for PUBLIC_KEY_BUCKET, PRIVATE_KEY_BUCKET, MEDIA_FILE_BUCKET in your `.env` file.
 
 ### Running
 
@@ -68,12 +44,6 @@ Ensure all dependencies are installed
 
 ```
 npm install
-```
-
-Ensure Postgres is running
-
-```
-docker start postgres
 ```
 
 Run
@@ -94,14 +64,16 @@ npm run dev
 2. Select `index.ts` from the dropdown
 3. Click the green arrow debug button
 
+When debugging tests, select `Mocha Current File` instead of `index.ts`, and make sure the target test file is the active tab.
+
 ### Testing
 
 _Postgres database and MinIO buckets, dedicated to integration tests, will be created automatically._
 
-Ensure Postgres and MinIO are running
+Run Docker Compose (only needed for integration tests)
 
 ```
-docker start postgres minio
+docker compose up -f localDev/docker-compose.yml
 ```
 
 Run unit tests
@@ -122,7 +94,7 @@ Run both unit and integration tests
 npm test
 ```
 
-Run both unit and integration tests, and generate a local coverage report. Results can be viewed at `/test-results/coverage.lcov/lcov-report/index.html`. Useful for finding lines/branches that aren't covered.
+Run both unit and integration tests, and generate a local coverage report. Results can be viewed at `./coverage/lcov-report/index.html`. Useful for finding lines/branches that aren't covered.
 
 ```
 npm run test:coverage
@@ -173,16 +145,9 @@ npm run typeorm migration:revert -- --config ormConfig.json
 
 - Account name: Kidsloop Dev
 - Cluster: kidsloop-alpha
-- Service: kl-alpha-h5p-audio
+- Service: kl-alpha-h5p-audio (this service used to only handle audio)
 - Region: ap-northeast-2
 
 _Where can I find the environment variable values for the alpha environment?_
 
 Once you're granted access to the above account, head to the [service task list](https://ap-northeast-2.console.aws.amazon.com/ecs/home?region=ap-northeast-2#/clusters/kidsloop-alpha/services/kl-alpha-h5p-audio/tasks), and you'll find the values specified in the latest task definition.
-
----
-
-## Recommended VS Code extensions
-
-- [Jira](https://marketplace.visualstudio.com/items?itemName=Atlassian.atlascode)
-- [Mocha Test Explorer](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-mocha-test-adapter)
