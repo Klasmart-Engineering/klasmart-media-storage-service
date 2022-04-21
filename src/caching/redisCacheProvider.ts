@@ -14,4 +14,8 @@ export default class RedisCacheProvider implements ICacheProvider {
   set(key: string, value: string, ttlSeconds: number): Promise<'OK' | null> {
     return this.redisClient.set(key, value, 'ex', ttlSeconds, 'nx')
   }
+
+  async delete(key: string): Promise<void> {
+    await this.redisClient.del(key)
+  }
 }

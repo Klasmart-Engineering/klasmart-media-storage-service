@@ -71,7 +71,7 @@ export default class TypeormMetadataRepository implements IMetadataRepository {
     await this.typeormRepo.insert(entity)
   }
 
-  public async delete(mediaId: string): Promise<void> {
+  public async delete(mediaId: string, findInput: FindInput): Promise<void> {
     await this.typeormRepo.delete(mediaId)
   }
 }

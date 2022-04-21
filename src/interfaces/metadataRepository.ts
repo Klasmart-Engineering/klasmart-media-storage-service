@@ -24,7 +24,7 @@ export default interface IMetadataRepository {
     description: string
   }): Promise<void>
 
-  delete(mediaId: string): Promise<void>
+  delete(mediaId: string, findInput: FindInput): Promise<void>
 }
 
 export type FindInput = {

@@ -94,14 +94,23 @@ export default class UploadResolver {
     this.uploadValidator.scheduleValidation(
       mediaFileKey,
       mediaId,
-      (mediaId) => {
+      {
+        h5pId,
+        h5pSubId,
+        mediaType: mimeType.substring(0, mimeType.indexOf('/')) as
+          | 'audio'
+          | 'image',
+        roomId: roomId || UploadResolver.NoRoomIdKeyName,
+        userId,
+      },
+      (mediaId, findInput) => {
         logger.debug(
           `[uploadValidator] Expected to find media (${mediaId}) in storage but it's not there. ` +
             `This means the client-side upload, via presigned URL, must have failed. ` +
             `Removing the entry from the database... ` +
             `endUserId: ${endUserId}; roomId: ${roomId}; mediaId: ${mediaId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}; mimeType: ${mimeType}`,
         )
-        return this.metadataRepository.delete(mediaId)
+        return this.metadataRepository.delete(mediaId, findInput)
       },
     )
 

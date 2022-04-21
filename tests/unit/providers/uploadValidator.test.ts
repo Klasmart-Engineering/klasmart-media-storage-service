@@ -27,7 +27,18 @@ describe('UploadValidator.scheduleValidation', () => {
 
       // Act
       const expected = true
-      sut.scheduleValidation(objectKey, mediaId, failCallback)
+      sut.scheduleValidation(
+        objectKey,
+        mediaId,
+        {
+          h5pId: 'h5p1',
+          h5pSubId: null,
+          mediaType: 'audio',
+          roomId: 'room1',
+          userId: 'user1',
+        },
+        failCallback,
+      )
       await delay(2)
 
       // Assert
@@ -57,7 +68,18 @@ describe('UploadValidator.scheduleValidation', () => {
 
       // Act
       const expected = false
-      sut.scheduleValidation(objectKey, mediaId, failCallback)
+      sut.scheduleValidation(
+        objectKey,
+        mediaId,
+        {
+          h5pId: 'h5p1',
+          h5pSubId: null,
+          mediaType: 'audio',
+          roomId: 'room1',
+          userId: 'user1',
+        },
+        failCallback,
+      )
       await delay(2)
 
       // Assert
@@ -87,7 +109,18 @@ describe('UploadValidator.scheduleValidation', () => {
 
       // Act
       const expected = false
-      sut.scheduleValidation(objectKey, mediaId, failCallback)
+      sut.scheduleValidation(
+        objectKey,
+        mediaId,
+        {
+          h5pId: 'h5p1',
+          h5pSubId: null,
+          mediaType: 'audio',
+          roomId: 'room1',
+          userId: 'user1',
+        },
+        failCallback,
+      )
       await delay(2)
 
       // Assert

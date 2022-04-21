@@ -75,7 +75,14 @@ export default class CachedMetadataRepository implements IMetadataRepository {
     return this.repo.create(input)
   }
 
-  public delete(mediaId: string): Promise<void> {
-    return this.repo.delete(mediaId)
+  public async delete(mediaId: string, findInput: FindInput): Promise<void> {
+    const findCacheKey = CachedMetadataRepository.getFindCacheKey(findInput)
+    const findByIdCacheKey =
+      CachedMetadataRepository.getFindByIdCacheKey(mediaId)
+    await Promise.allSettled([
+      this.repo.delete(mediaId, findInput),
+      this.cache.delete(findCacheKey),
+      this.cache.delete(findByIdCacheKey),
+    ])
   }
 }

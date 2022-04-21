@@ -31,7 +31,13 @@ describe('typeormMetadataRepository', () => {
         const sut = new TypeormMetadataRepository(typeormRepo)
 
         // Act
-        await sut.delete(mediaId)
+        await sut.delete(mediaId, {
+          h5pId: 'h5p1',
+          h5pSubId: null,
+          mediaType: 'audio',
+          roomId: 'room1',
+          userId: 'user1',
+        })
 
         // Assert
         typeormRepo.received(1).delete(mediaId)

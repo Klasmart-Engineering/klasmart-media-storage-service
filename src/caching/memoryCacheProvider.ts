@@ -31,6 +31,11 @@ export default class MemoryCacheProvider implements ICacheProvider {
     return Promise.resolve('OK')
   }
 
+  delete(key: string): Promise<void> {
+    this.cache.delete(key)
+    return Promise.resolve()
+  }
+
   prune() {
     for (const [key, record] of this.cache) {
       if (record.expirationMs && record.expirationMs < this.clock.now()) {

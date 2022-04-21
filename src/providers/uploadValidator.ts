@@ -1,3 +1,4 @@
+import { FindInput } from '../interfaces/metadataRepository'
 import IUploadValidator from '../interfaces/uploadValidator'
 import MediaFileStorageChecker from './mediaFileStorageChecker'
 
@@ -12,7 +13,8 @@ export default class UploadValidator implements IUploadValidator {
   public scheduleValidation(
     objectKey: string,
     mediaId: string,
-    failCallback: (mediaId: string) => Promise<unknown>,
+    findInput: FindInput,
+    failCallback: (mediaId: string, findInput: FindInput) => Promise<unknown>,
   ): void {
     const timer = setTimeout(async () => {
       const exists = await this.mediaFileStorageChecker.objectExists(objectKey)
@@ -21,7 +23,7 @@ export default class UploadValidator implements IUploadValidator {
       if (exists === true || exists === undefined) {
         return
       }
-      await failCallback(mediaId)
+      await failCallback(mediaId, findInput)
     }, this.fileValidationDelayMs)
     this.timers.set(objectKey, timer)
   }
