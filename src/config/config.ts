@@ -64,7 +64,7 @@ export default class Config {
   }
 
   static getFileValidationDelayMs(): number {
-    return 60000
+    return 30000
   }
 
   static getCache(): 'redis' | 'memory' | undefined {
