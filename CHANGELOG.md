@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.1.26 (2022-04-21)
+
+
+### Features
+
+* reduce upload validation delay to 30s ([f247037](https://github.com/KL-Engineering/kidsloop-media-storage-service/commit/f24703783033a8b6f781ffce991987c1c905b059))
+
 ### 0.1.25 (2022-04-19)
 
 
