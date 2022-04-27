@@ -3,5 +3,7 @@
 /dist
 /node_modules
 /coverage
+/coverage_unit
+/coverage_integration
 /tsconfig.json
 /package-lock.json
