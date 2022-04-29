@@ -1,6 +1,6 @@
 # KidsLoop Media Storage Service
 
-[![codecov](https://codecov.io/bb/calmisland/kidsloop-audio-service/branch/main/graph/badge.svg?token=6DVLZB3HSY)](https://codecov.io/bb/calmisland/kidsloop-audio-service)
+[![codecov](https://codecov.io/gh/KL-Engineering/kidsloop-media-storage-service/branch/main/graph/badge.svg?token=VH7J9PO13A)](https://codecov.io/gh/KL-Engineering/kidsloop-media-storage-service)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
@@ -10,7 +10,7 @@
 
 **Branching model**
 
-- `feature/fix/etc` -> `main`
+- `feature/fix/etc` -> squash or rebase into `main`
 - The main branch pipeline has a manual _release_ workflow.
 - That workflow will build/push the docker image to ECR, and deploy to alpha.
 
@@ -76,28 +76,22 @@ Run Docker Compose (only needed for integration tests)
 docker compose up -f localDev/docker-compose.yml
 ```
 
-Run unit tests
+Run unit tests and generate coverage report (`./coverage_unit/lcov-report/index.html`)
 
 ```
-npm run test:unit
+npm run coverage:unit
 ```
 
-Run integration tests
+Run integration tests and generate coverage report (`./coverage_integration/lcov-report/index.html`)
 
 ```
-npm run test:integration
+npm run coverage:integration
 ```
 
-Run both unit and integration tests
+Run all tests and generate coverage report (`./coverage/lcov-report/index.html`)
 
 ```
 npm test
-```
-
-Run both unit and integration tests, and generate a local coverage report. Results can be viewed at `./coverage/lcov-report/index.html`. Useful for finding lines/branches that aren't covered.
-
-```
-npm run test:coverage
 ```
 
 _Tip: when debugging or focusing on a particular test or group of tests, append `.only` to `describe`, `context`, or `it` to only execute that scope of tests. But of course, make sure to undo it before making a commit._
@@ -143,7 +137,7 @@ npm run typeorm migration:revert -- --config ormConfig.json
 
 ### Alpha info
 
-- Account name: Kidsloop Dev
+- Account name: kl-alpha-dev
 - Cluster: kidsloop-alpha
 - Service: kl-alpha-h5p-audio (this service used to only handle audio)
 - Region: ap-northeast-2
