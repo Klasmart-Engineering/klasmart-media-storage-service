@@ -7,22 +7,17 @@
     "start": "cross-env DOTENV_CONFIG_PATH=./localDev/.env ts-node -r dotenv/config src/index.ts",
     "start:dist": "cross-env DOTENV_CONFIG_PATH=./localDev/.env node -r dotenv/config dist/index.js",
     "dev": "cross-env DOTENV_CONFIG_PATH=./localDev/.env ts-node-dev --respawn --transpile-only --watch src/**/*.ts -r dotenv/config src/index.ts",
-    "debug:userApi": "cross-env NEW_RELIC_HOME=localDev ts-node scripts/debugUserApi.ts",
-    "debug:cmsApi": "cross-env NEW_RELIC_HOME=localDev ts-node scripts/debugCmsApi.ts",
     "build": "tsc -p tsconfig-build.json",
     "test": "npm run coverage:unit && npm run coverage:integration && nyc report",
     "coverage:unit": "nyc --report-dir ./coverage_unit npm run test:unit",
     "coverage:integration": "nyc --no-clean --report-dir ./coverage_integration npm run test:integration",
     "test:unit": "cross-env NEW_RELIC_HOME=localDev LOG_STYLE=SILENT mocha --require ts-node/register 'tests/unit/**/*.test.ts'",
     "test:integration": "cross-env DOTENV_CONFIG_PATH=./localDev/.env.test mocha --require ts-node/register -r dotenv/config 'tests/integration/**/*.test.ts' --timeout 8000",
-    "lint": "eslint \"{src,tests}/**/*.ts\" --ext .ts",
-    "lint-and-fix": "eslint \"{src,tests}/**/*.ts\" --ext .ts --fix",
-    "format:check": "prettier --check \"{src,tests}/**/*.ts\" \"*.json\"",
     "format": "prettier --write \"{src,tests}/**/*.ts\" \"*.json\"",
-    "type-check": "tsc --noEmit",
     "prepare": "husky install",
-    "pre-commit": "lint-staged",
     "release": "standard-version",
+    "debug:userApi": "cross-env NEW_RELIC_HOME=localDev ts-node scripts/debugUserApi.ts",
+    "debug:cmsApi": "cross-env NEW_RELIC_HOME=localDev ts-node scripts/debugCmsApi.ts",
     "generate-orm-config": "ts-node scripts/generateOrmConfig.ts",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "bench": "cross-env DOTENV_CONFIG_PATH=./benchmarking/.env.baseConfig ts-node -r dotenv/config benchmarking/index.ts"
@@ -33,7 +28,7 @@
     }
   },
   "lint-staged": {
-    "*.ts": [
+    "*.{ts,json}": [
       "eslint",
       "prettier --check"
     ]
