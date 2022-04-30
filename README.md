@@ -30,7 +30,7 @@
 
 #### Configuration
 
-Copy/paste `.env.example` in the `localDev` directory, rename it to `.env`, and modify as necessary.
+env files are located in the `localDev` directory. View the [dotenv-flow](https://www.npmjs.com/package/dotenv-flow) docs for examples of how to customize environment variables.
 
 Run Docker Compose
 
@@ -44,6 +44,12 @@ Ensure all dependencies are installed
 
 ```
 npm install
+```
+
+Ensure services are running
+
+```
+docker compose -p media start
 ```
 
 Run
@@ -70,10 +76,10 @@ When debugging tests, select `Mocha Current File` instead of `index.ts`, and mak
 
 _Postgres database and MinIO buckets, dedicated to integration tests, will be created automatically._
 
-Run Docker Compose (only needed for integration tests)
+Ensure services are running (only needed for integration tests)
 
 ```
-docker compose up -f localDev/docker-compose.yml
+docker compose -p media start
 ```
 
 Run unit tests and generate coverage report (`./coverage_unit/lcov-report/index.html`)
