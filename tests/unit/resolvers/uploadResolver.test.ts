@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import expect from '../../utils/chaiAsPromisedSetup'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import KeyPairProvider from '../../../src/providers/keyPairProvider'

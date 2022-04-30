@@ -37,7 +37,7 @@ describe('DownloadInfoProvider', () => {
           .withBase64EncryptedSymmetricKey(base64EncryptedSymmetricKey)
           .build()
 
-        const mediaFileKey = createMediaFileKey(mediaId, metadata.mimeType)
+        const { mediaFileKey } = createMediaFileKey(mediaId, metadata.mimeType)
         presignedUrlProvider.getDownloadUrl(mediaFileKey).resolves(presignedUrl)
         symmetricKeyProvider
           .getBase64SymmetricKey(

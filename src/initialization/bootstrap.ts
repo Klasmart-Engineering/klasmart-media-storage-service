@@ -4,6 +4,7 @@ import createApolloExpressService from './createApolloExpressService'
 import createMercuriusService from './createMercuriusService'
 import IMediaStorageService from '../interfaces/mediaStorageService'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
+import error2Json from '../errors/error2Json'
 
 const logger = withLogger('bootstrap')
 
@@ -20,5 +21,27 @@ export default async function bootstrap(compositionRoot?: CompositionRoot) {
     logger.info('Using Fastify + Mercurius')
     service = await createMercuriusService(schema, compositionRoot)
   }
+
+  exitEvents.forEach((event) =>
+    process.on(event, async () => {
+      logger.debug(`Received ${event} event.`)
+      await exitHandler(compositionRoot)
+    }),
+  )
+
   return service
 }
+
+async function exitHandler(compositionRoot: CompositionRoot | undefined) {
+  if (!compositionRoot) {
+    process.exit(0)
+  }
+  try {
+    await compositionRoot.shutDown()
+  } catch (error) {
+    logger.error('EXIT HANDLER ERROR', error2Json(error))
+  }
+  process.exit(0)
+}
+
+const exitEvents = ['beforeExit', 'SIGINT', 'SIGTERM']

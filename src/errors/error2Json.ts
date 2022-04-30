@@ -1,5 +1,5 @@
 export default function error2Json(
-  error: Error | null | undefined,
+  error: Error | unknown | null | undefined,
 ): string | undefined {
   if (error == null) {
     return undefined

@@ -45,6 +45,8 @@ import { ApplicationError } from '../errors/applicationError'
 import IDownloadInfoProvider from '../interfaces/downloadInfoProvider'
 import DownloadInfoProvider from '../providers/downloadInfoProvider'
 import CachedDownloadInfoProvider from '../caching/cachedDownloadInfoProvider'
+import { StatsInput, StatsProvider } from '../providers/statsProvider'
+import error2Json from '../errors/error2Json'
 
 const logger = withLogger('CompositionRoot')
 
@@ -66,8 +68,9 @@ export default class CompositionRoot {
   protected metadataRepository?: IMetadataRepository
   protected authorizationProvider?: IAuthorizationProvider
   protected symmetricKeyProvider?: ISymmetricKeyProvider
-  protected cachePruneTicker?: NodeJS.Timer
-  protected tickerCallbacks: (() => void)[] = []
+  protected periodicScheduler?: NodeJS.Timer
+  protected schedulerCallbacks: (() => void)[] = []
+  protected statsProvider?: StatsProvider
 
   /**
    * Call this method at service startup to instantiate the GraphQL resolvers.
@@ -79,6 +82,7 @@ export default class CompositionRoot {
     this.downloadResolver = this.getDownloadResolver()
     this.metadataResolver = this.getMetadataResolver()
     this.uploadResolver = this.getUploadResolver()
+    this.initStatsProvider()
   }
 
   protected connectToDb() {
@@ -129,11 +133,42 @@ export default class CompositionRoot {
       // Use a memory cache because I think the overhead of Redis decreases the benefit of token caching.
       // Load testing reveals that memory caching is almost twice as fast as Redis.
       const memoryCache = new MemoryCacheProvider(Date)
-      this.tickerCallbacks.push(() => memoryCache.prune())
-      this.startCachePruneTicker()
+      this.schedulerCallbacks.push(() => memoryCache.prune())
+      this.startPeriodicScheduler()
       tokenParser = new CachedTokenParser(tokenParser, memoryCache)
     }
     return tokenParser
+  }
+
+  protected initStatsProvider(): void {
+    // TODO: Consider also supporting non-redis stat provider.
+    if (this.statsProvider || Config.getCache() !== 'redis') {
+      return
+    }
+    this.statsProvider = new StatsProvider(this.getRedisClient())
+    this.schedulerCallbacks.push(async () => {
+      try {
+        const input = this.getStatsInput()
+        const output = await this.statsProvider?.calculateTotals(input)
+        logger.info('DAILY STATS SUMMARY: ' + JSON.stringify(output))
+      } catch (error) {
+        const appError = new ApplicationError(
+          '[initStatsProvider] Failed to log stats.',
+          error,
+        )
+        logger.error(error2Json(appError))
+      }
+    })
+    this.startPeriodicScheduler()
+  }
+
+  protected getStatsInput(): StatsInput {
+    return Object.assign(
+      {},
+      this.getUploadResolver().getStats(),
+      this.getMetadataResolver().getStats(),
+      this.getDownloadResolver().getStats(),
+    )
   }
 
   protected getKeyPairProvider(): IKeyPairProvider {
@@ -188,8 +223,8 @@ export default class CompositionRoot {
       return new RedisCacheProvider(this.getRedisClient())
     }
     const memoryCache = new MemoryCacheProvider(Date)
-    this.tickerCallbacks.push(() => memoryCache.prune())
-    this.startCachePruneTicker()
+    this.schedulerCallbacks.push(() => memoryCache.prune())
+    this.startPeriodicScheduler()
     return memoryCache
   }
 
@@ -282,19 +317,46 @@ export default class CompositionRoot {
     )
   }
 
-  protected startCachePruneTicker() {
-    this.cachePruneTicker ??= setInterval(() => {
-      this.tickerCallbacks.forEach((cb) => cb())
-    }, 24 * 60 * 60 * 1000)
+  protected startPeriodicScheduler() {
+    const nextStartDate = new Date().setHours(24, 0, 0, 0)
+    const currentDate = Date.now()
+    const offset = nextStartDate - currentDate
+    this.periodicScheduler ??= setTimeout(() => {
+      this.schedulerCallbacks.forEach((cb) => cb())
+      this.periodicScheduler = setInterval(() => {
+        this.schedulerCallbacks.forEach((cb) => cb())
+      }, 24 * 60 * 60 * 1000)
+    }, offset)
+  }
+
+  public async shutDown(): Promise<void> {
+    if (!this.statsProvider) {
+      return
+    }
+    try {
+      const input = this.getStatsInput()
+      await this.statsProvider.appendToSharedStorage(input)
+      logger.debug('[shutDown] Stats successfully saved to shared storage.')
+    } catch (error) {
+      const appError = new ApplicationError(
+        '[shutDown] Failed to save stats to shared storage.',
+        error,
+      )
+      logger.error(error2Json(appError))
+    }
+    await this.cleanUp()
   }
 
   public async cleanUp() {
-    logger.debug('[cleanUp] disconnecting from redis and typeorm...')
-    await this.redis?.quit()
-    await this.typeorm?.close()
+    logger.debug(
+      '[cleanUp] Closing open connections and cleaning up resources...',
+    )
+    await Promise.allSettled([this.redis?.quit(), this.typeorm?.close()])
+    this.redis = undefined
+    this.typeorm = undefined
     this.uploadValidator?.cleanUp()
-    if (this.cachePruneTicker) {
-      clearTimeout(this.cachePruneTicker)
+    if (this.periodicScheduler) {
+      clearTimeout(this.periodicScheduler)
     }
   }
 }

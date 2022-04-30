@@ -4,19 +4,18 @@ import IPresignedUrlProvider from '../interfaces/presignedUrlProvider'
 import { v4 } from 'uuid'
 import { RequiredUploadInfo } from '../graphqlResultTypes/requiredUploadInfo'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
-import { UserInputError } from 'apollo-server-core'
 import createMediaFileKey from '../helpers/createMediaFileKey'
-import isMimeTypeSupported from '../helpers/isMimeTypeSupported'
-import ErrorMessage from '../errors/errorMessages'
 import IUploadValidator from '../interfaces/uploadValidator'
 import IMetadataRepository from '../interfaces/metadataRepository'
 import IKeyPairProvider from '../interfaces/keyPairProvider'
+import { ResolverStatsInput, StatsInput } from '../providers/statsProvider'
 
 const logger = withLogger('UploadResolver')
 
 @Resolver(RequiredUploadInfo)
 export default class UploadResolver {
   public static readonly NoRoomIdKeyName = 'no-room-id'
+  private readonly stats = new StatsCollector()
 
   constructor(
     private readonly keyPairProvider: IKeyPairProvider,
@@ -35,8 +34,12 @@ export default class UploadResolver {
     logger.debug(
       `[getServerPublicKey] endUserId: ${endUserId}; roomId: ${roomId}`,
     )
+    this.stats.getServerPublicKey.counts.callCount += 1
     if (!endUserId) {
       throw new UnauthorizedError()
+    }
+    if (!roomId) {
+      this.stats.getServerPublicKey.counts.noRoomCount += 1
     }
     const keyPairKey = roomId || UploadResolver.NoRoomIdKeyName
     const base64ServerPublicKey =
@@ -63,16 +66,22 @@ export default class UploadResolver {
     logger.debug(
       `[getRequiredUploadInfo] endUserId: ${endUserId}; roomId: ${roomId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}; mimeType: ${mimeType}`,
     )
+    this.stats.getRequiredUploadInfo.counts.callCount += 1
     if (!endUserId) {
       throw new UnauthorizedError()
     }
-    if (!isMimeTypeSupported(mimeType)) {
-      throw new UserInputError(ErrorMessage.unsupportedMimeType(mimeType))
+    if (!roomId) {
+      this.stats.getRequiredUploadInfo.counts.noRoomCount += 1
     }
     const mediaId = v4()
+    const { mediaFileKey, mediaType } = createMediaFileKey(mediaId, mimeType)
     // TODO: Consider doing UUID validation.
     userId ??= endUserId
-    const mediaFileKey = createMediaFileKey(mediaId, mimeType)
+    this.stats.getRequiredUploadInfo.sets.user.add(userId)
+    this.stats.getRequiredUploadInfo.sets.room.add(
+      roomId || UploadResolver.NoRoomIdKeyName,
+    )
+    //this.stats.getRequiredUploadInfo.counts.audioCount += 1
     const presignedUrl = await this.presignedUrlProvider.getUploadUrl(
       mediaFileKey,
       mimeType,
@@ -97,9 +106,7 @@ export default class UploadResolver {
       {
         h5pId,
         h5pSubId,
-        mediaType: mimeType.substring(0, mimeType.indexOf('/')) as
-          | 'audio'
-          | 'image',
+        mediaType,
         roomId: roomId || UploadResolver.NoRoomIdKeyName,
         userId,
       },
@@ -110,10 +117,49 @@ export default class UploadResolver {
             `Removing the entry from the database... ` +
             `endUserId: ${endUserId}; roomId: ${roomId}; mediaId: ${mediaId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}; mimeType: ${mimeType}`,
         )
+        this.stats.getRequiredUploadInfo.counts.failedUploadCount += 1
         return this.metadataRepository.delete(mediaId, findInput)
       },
     )
 
     return { mediaId, presignedUrl }
+  }
+
+  public getStats(): StatsInput {
+    return this.stats.toStatsInput()
+  }
+}
+
+class StatsCollector {
+  public getServerPublicKey = new GetServerPublicKeyStats()
+  public getRequiredUploadInfo = new GetRequiredUploadInfoStats()
+
+  public toStatsInput(): StatsInput {
+    return {
+      getServerPublicKey: this.getServerPublicKey,
+      getRequiredUploadInfo: this.getRequiredUploadInfo,
+    }
+  }
+}
+
+class GetServerPublicKeyStats implements ResolverStatsInput {
+  public counts = {
+    callCount: 0,
+    noRoomCount: 0,
+  }
+  public sets = {}
+}
+
+class GetRequiredUploadInfoStats implements ResolverStatsInput {
+  public counts = {
+    callCount: 0,
+    noRoomCount: 0,
+    audioCount: 0,
+    imageCount: 0,
+    failedUploadCount: 0,
+  }
+  public sets = {
+    user: new Set<string>(),
+    room: new Set<string>(),
   }
 }

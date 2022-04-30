@@ -35,6 +35,7 @@ export class TestCompositionRoot extends CompositionRoot {
     this.symmetricKeyProvider = undefined
     this.uploadValidator?.cleanUp()
     this.uploadValidator = undefined
+    this.statsProvider = undefined
     // Don't set typeorm or redis to undefined.
     // Those have open connections that will be closed
     // when cleanUp() is called.

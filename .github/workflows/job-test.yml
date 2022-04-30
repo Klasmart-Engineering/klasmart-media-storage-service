@@ -49,6 +49,10 @@ jobs:
             -e "MINIO_ACCESS_KEY=minio" \
             -e "MINIO_SECRET_KEY=minio123" \
             minio/minio server /data
+          docker run \
+            -d \
+            -p 6379:6379 \
+            redis:alpine
 
       - name: Unit tests
         run: npm run coverage:unit

@@ -1,4 +1,4 @@
 export default interface IPresignedUrlProvider {
-  getUploadUrl(mediaId: string, mimeType: string): Promise<string>
-  getDownloadUrl(mediaId: string): Promise<string>
+  getUploadUrl(objectKey: string, mimeType: string): Promise<string>
+  getDownloadUrl(objectKey: string): Promise<string>
 }
