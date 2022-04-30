@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.1.27 (2022-04-30)
+
+
+### Features
+
+* **DAS-346:** add daily count summary logs for easy access to insights ([#5](https://github.com/KL-Engineering/kidsloop-media-storage-service/issues/5)) ([d83e532](https://github.com/KL-Engineering/kidsloop-media-storage-service/commit/d83e53204fbaac9160c957e72fc959a2306e98c8))
+
 ### 0.1.26 (2022-04-21)
 
 

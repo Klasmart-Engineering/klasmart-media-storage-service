@@ -14,6 +14,7 @@ query getRequiredDownloadInfo($mediaId: String!, $roomId: String!) {
 
 | version | requests/sec | latency | throughput |
 | ------- | ------------ | ------- | ---------- |
+| v0.1.27 | 3908         | 2.13    | 2997248    |
 | v0.1.26 | 4463.82      | 1.58    | 3422859.64 |
 | v0.1.25 | 4259.46      | 1.64    | 3266466.91 |
 | v0.1.24 | 4908.91      | 1.35    | 3765248    |
