@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.1.28 (2022-05-02)
+
+
+### Features
+
+* **DAS-357:** add version endpoint ([1ee0646](https://github.com/KL-Engineering/kidsloop-media-storage-service/commit/1ee0646a9b360506dfa02b9b9444df2e9c331d41))
+
 ### 0.1.27 (2022-04-30)
 
 
