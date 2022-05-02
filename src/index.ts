@@ -2,7 +2,7 @@ import 'newrelic'
 import 'reflect-metadata'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import bootstrap from './initialization/bootstrap'
-import error2Json from './errors/error2Json'
+import { error2Obj } from './errors/errorUtil'
 
 const logger = withLogger('index')
 
@@ -16,7 +16,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  const errorJson = error2Json(error)
-  logger.error(`Error initializing application: ${errorJson}`)
+  logger.error('Error initializing application.', { error: error2Obj(error) })
   process.exit(-1)
 })

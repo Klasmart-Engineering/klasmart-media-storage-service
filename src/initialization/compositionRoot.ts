@@ -46,7 +46,7 @@ import IDownloadInfoProvider from '../interfaces/downloadInfoProvider'
 import DownloadInfoProvider from '../providers/downloadInfoProvider'
 import CachedDownloadInfoProvider from '../caching/cachedDownloadInfoProvider'
 import { StatsInput, StatsProvider } from '../providers/statsProvider'
-import error2Json from '../errors/error2Json'
+import { error2Obj } from '../errors/errorUtil'
 
 const logger = withLogger('CompositionRoot')
 
@@ -149,17 +149,12 @@ export default class CompositionRoot {
     this.schedulerCallbacks.push(async () => {
       try {
         const input = this.getStatsInput()
-        const output = await this.statsProvider?.calculateTotals(input)
-        logger.info(
-          'DAILY STATS SUMMARY (across all instances): ' +
-            JSON.stringify(output),
-        )
+        const stats = await this.statsProvider?.calculateTotals(input)
+        logger.info('DAILY STATS SUMMARY (across all instances):', { stats })
       } catch (error) {
-        const appError = new ApplicationError(
-          '[initStatsProvider] Failed to log stats.',
-          error,
-        )
-        logger.error(error2Json(appError))
+        logger.error('[initStatsProvider] Failed to log stats.', {
+          error: error2Obj(error),
+        })
       }
     })
     this.startPeriodicScheduler()
@@ -339,16 +334,11 @@ export default class CompositionRoot {
     try {
       const input = this.getStatsInput()
       await this.statsProvider.appendToSharedStorage(input)
-      const statsJson = JSON.stringify(input)
-      logger.debug(
-        `[shutDown] Stats successfully saved to shared storage: ${statsJson}`,
-      )
+      logger.debug(`[shutDown] Stats successfully saved to shared storage.`)
     } catch (error) {
-      const appError = new ApplicationError(
-        '[shutDown] Failed to save stats to shared storage.',
-        error,
-      )
-      logger.error(error2Json(appError))
+      logger.error('[shutDown] Failed to save stats to shared storage.', {
+        error: error2Obj(error),
+      })
     }
     await this.cleanUp()
   }

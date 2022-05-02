@@ -4,7 +4,7 @@ import createApolloExpressService from './createApolloExpressService'
 import createMercuriusService from './createMercuriusService'
 import IMediaStorageService from '../interfaces/mediaStorageService'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
-import error2Json from '../errors/error2Json'
+import { error2Obj } from '../errors/errorUtil'
 
 const logger = withLogger('bootstrap')
 
@@ -39,7 +39,7 @@ async function exitHandler(compositionRoot: CompositionRoot | undefined) {
   try {
     await compositionRoot.shutDown()
   } catch (error) {
-    logger.error('EXIT HANDLER ERROR', error2Json(error))
+    logger.error('EXIT HANDLER ERROR', { error: error2Obj(error) })
   }
   process.exit(0)
 }

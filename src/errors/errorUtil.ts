@@ -1,4 +1,4 @@
-export default function error2Json(
+export function error2Json(
   error: Error | unknown | null | undefined,
 ): string | undefined {
   if (error == null) {
@@ -7,7 +7,17 @@ export default function error2Json(
   return JSON.stringify(error, jsonFriendlyErrorReplacer)
 }
 
-function jsonFriendlyErrorReplacer(key: string, value: any) {
+export function error2Obj(
+  error: Error | unknown | null | undefined,
+): string | undefined {
+  const json = error2Json(error)
+  if (json == null) {
+    return undefined
+  }
+  return JSON.parse(json)
+}
+
+function jsonFriendlyErrorReplacer(key: string, value: unknown) {
   if (value instanceof Error) {
     return {
       // Pull all enumerable properties, supporting properties on custom Errors.

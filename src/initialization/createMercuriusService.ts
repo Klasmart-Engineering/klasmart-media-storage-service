@@ -10,7 +10,7 @@ import IMediaStorageService from '../interfaces/mediaStorageService'
 import { posix } from 'path'
 import getContext from './getContext'
 import getCorsOptions from '../config/getCorsOptions'
-import error2Json from '../errors/error2Json'
+import { error2Obj } from '../errors/errorUtil'
 import CompositionRoot from './compositionRoot'
 
 const logger = withLogger('createMercuriusService')
@@ -46,10 +46,8 @@ export default async function createMercuriusService(
     },
     errorFormatter: (error, ...args) => {
       if (error.errors) {
-        const stringifiedErrors = error.errors.map((x) =>
-          error2Json(x.originalError),
-        )
-        logger.error(stringifiedErrors)
+        const parsedErrors = error.errors.map((x) => error2Obj(x.originalError))
+        logger.error(parsedErrors)
       }
       const formattedError = mercurius.defaultErrorFormatter(error, ...args)
       return formattedError

@@ -34,19 +34,21 @@ export class PermissionApi {
         if (orgPermissionResponse?.myUser) {
           logger.debug(
             `[hasSchoolOrOrganizationPermission] class either doesn't exist or user doesn't ` +
-              `have permission to access it. endUserId: ${endUserId}; classId: ${classId};`,
+              'have permission to access it.',
+            { endUserId, classId },
           )
         } else {
-          errorText = JSON.stringify(error.response.errors)
+          errorText = error.response.errors
         }
       } else if (error instanceof Error) {
         errorText = error.message
       } else {
-        errorText = JSON.stringify(error)
+        errorText = error
       }
       if (errorText) {
         logger.error(
-          `[hasSchoolOrOrganizationPermission] organization permission check:\n${errorText}`,
+          '[hasSchoolOrOrganizationPermission] organization permission denied.',
+          { error: errorText },
         )
       }
     }
@@ -73,14 +75,15 @@ export class PermissionApi {
     } catch (error) {
       let errorText: unknown
       if (error instanceof ClientError) {
-        errorText = JSON.stringify(error.response.errors)
+        errorText = error.response.errors
       } else if (error instanceof Error) {
         errorText = error.message
       } else {
-        errorText = JSON.stringify(error)
+        errorText = error
       }
       logger.error(
-        `[hasSchoolOrOrganizationPermission] school permission check:\n${errorText}`,
+        '[hasSchoolOrOrganizationPermission] school permission denied.',
+        { error: errorText },
       )
     }
 
@@ -105,9 +108,11 @@ function extractSchoolId(
   let school: { node?: { id?: string } }
   if (schools.length > 1) {
     logger.debug(
-      `[extractSchoolId] more than one school associated with class: ${schools.length}\n` +
-        `schools: ${schools.join(',')}` +
-        `class: ${classId}`,
+      `[extractSchoolId] more than one school associated with class: ${schools.length}`,
+      {
+        schools: schools.join(','),
+        classId,
+      },
     )
     school = schools[0]
   } else {
