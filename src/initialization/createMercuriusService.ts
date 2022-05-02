@@ -28,6 +28,9 @@ export default async function createMercuriusService(
   app.register(healthcheck)
   app.register(compression)
   app.register(cors, getCorsOptions(domain))
+  app.get('/version', function (request, reply) {
+    reply.send({ version: process.env.npm_package_version })
+  })
 
   const tokenParser = compositionRoot.getTokenParser()
 

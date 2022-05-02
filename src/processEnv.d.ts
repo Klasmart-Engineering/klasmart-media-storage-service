@@ -3,6 +3,7 @@
 declare namespace NodeJS {
   export type ProcessEnv = {
     NODE_ENV?: string
+    npm_package_version?: string
     SERVER_IMPL?: string
     PORT?: string
     ROUTE_PREFIX?: string
