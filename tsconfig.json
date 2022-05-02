@@ -1,5 +1,5 @@
 {
-  "include": ["src", "tests", "benchmarking"],
+  "include": ["src", "tests", "loadTesting"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
     /* Basic Options */

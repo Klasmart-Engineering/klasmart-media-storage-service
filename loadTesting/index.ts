@@ -14,10 +14,10 @@ import {
 } from '../helpers/generateToken'
 import markdownTable from 'markdown-table'
 import { getSampleEncryptedData } from '../helpers/getSampleEncryptionData'
-import getRequiredDownloadInfo from './benchmarks/getRequiredDownloadInfo'
-import getServerPublicKey from './benchmarks/getServerPublicKey'
-import getRequiredUploadInfo from './benchmarks/getRequiredUploadInfo'
-import audioMetadata from './benchmarks/audioMetadata'
+import getRequiredDownloadInfo from './requests/getRequiredDownloadInfo'
+import getServerPublicKey from './requests/getServerPublicKey'
+import getRequiredUploadInfo from './requests/getRequiredUploadInfo'
+import audioMetadata from './requests/audioMetadata'
 import { getRepository } from 'typeorm'
 import { MediaMetadata } from '../src/entities/mediaMetadata'
 import { v4 } from 'uuid'
@@ -44,7 +44,7 @@ if (!fs.existsSync(versionHistoryDirectory)) {
   fs.mkdirSync(versionHistoryDirectory, { recursive: true })
 }
 
-export type BenchRequest = {
+export type LoadTestRequest = {
   title: string
   query: string
   method: Request['method']
@@ -61,7 +61,7 @@ type CustomResult = {
 
 const writeResult = async (
   version: string,
-  benchName: string,
+  queryName: string,
   rawResult: Result,
 ) => {
   const result = {
@@ -71,19 +71,19 @@ const writeResult = async (
     throughput: rawResult.throughput.mean,
   }
   let results: CustomResult[] = []
-  if (fs.existsSync(join(resultsDirectory, `${benchName}.json`))) {
-    const file = await import(`./rawResults/${category}/${benchName}.json`)
+  if (fs.existsSync(join(resultsDirectory, `${queryName}.json`))) {
+    const file = await import(`./rawResults/${category}/${queryName}.json`)
     results = file.default
   }
   results.unshift(result)
-  const dest = path.join(resultsDirectory, `${benchName}.json`)
+  const dest = path.join(resultsDirectory, `${queryName}.json`)
   await writeFile(dest, JSON.stringify(results, null, 2))
   return results
 }
 
-async function updateMarkdownTable(benchName: string, query: string) {
+async function updateMarkdownTable(queryName: string, query: string) {
   const { default: results } = await import(
-    `./rawResults/${category}/${benchName}.json`
+    `./rawResults/${category}/${queryName}.json`
   )
   const rows: string[][] = results.map((x: CustomResult) => [
     x.version,
@@ -96,8 +96,8 @@ async function updateMarkdownTable(benchName: string, query: string) {
     ...rows,
   ])
   const queryCodeBlock = '```gql' + query + '```'
-  const md = `# ${benchName}: ${category}\n\n${queryCodeBlock}\n\n${table}`
-  const dest = path.join(versionHistoryDirectory, `${benchName}.md`)
+  const md = `# ${queryName}: ${category}\n\n${queryCodeBlock}\n\n${table}`
+  const dest = path.join(versionHistoryDirectory, `${queryName}.md`)
   await writeFile(dest, md)
 }
 
@@ -202,7 +202,7 @@ async function generateData() {
       Body: serverPublicKey,
     }),
   )
-  const benchmarks = [
+  const queries = [
     audioMetadata(userId, roomId, h5pId, h5pSubId, authenticationToken),
     getRequiredDownloadInfo(mediaId, roomId, authenticationToken),
     getServerPublicKey(authenticationToken, liveAuthorizationToken),
@@ -218,7 +218,7 @@ async function generateData() {
       liveAuthorizationToken,
     ),
   ]
-  return benchmarks
+  return queries
 }
 
 function validateResult(result: Result) {
@@ -227,26 +227,26 @@ function validateResult(result: Result) {
   }
 }
 
-async function runBenchmarks() {
+async function runLoadTests() {
   const version = process.argv[2]
   if (!version) {
     throw new Error('version must be passed as the first argument.')
   }
-  const benchmarks = await generateData()
-  for (const bench of benchmarks) {
+  const queries = await generateData()
+  for (const query of queries) {
     console.log('starting warmup...')
-    const warmupResults = await run({ ...bench, url, duration: 5 })
+    const warmupResults = await run({ ...query, url, duration: 5 })
     validateResult(warmupResults)
     console.log('starting actual...')
-    const result = await run({ ...bench, url })
-    const results = await writeResult(version, bench.title, result)
-    await updateMarkdownTable(bench.title, bench.query)
+    const result = await run({ ...query, url })
+    const results = await writeResult(version, query.title, result)
+    await updateMarkdownTable(query.title, query.query)
     const prevResult = results.length > 1 ? results[1].requests : 'N/A'
     const newResult = results[0].requests
     console.log(
-      `${category}/${bench.title} requests/sec: ${prevResult} -> ${newResult}`,
+      `${category}/${query.title} requests/sec: ${prevResult} -> ${newResult}`,
     )
   }
 }
 
-runBenchmarks().then(() => console.log('benchmarks complete!'))
+runLoadTests().then(() => console.log('load tests complete!'))

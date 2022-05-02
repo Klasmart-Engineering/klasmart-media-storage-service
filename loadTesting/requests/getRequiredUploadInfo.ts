@@ -1,4 +1,4 @@
-import { BenchRequest } from '..'
+import { LoadTestRequest } from '..'
 import { GET_REQUIRED_UPLOAD_INFO } from '../../helpers/queries'
 
 export default function getRequiredUploadInfo(
@@ -10,7 +10,7 @@ export default function getRequiredUploadInfo(
   description: string,
   authenticationToken: string,
   liveAuthorizationToken: string,
-): BenchRequest {
+): LoadTestRequest {
   return {
     title: 'getRequiredUploadInfo',
     query: GET_REQUIRED_UPLOAD_INFO,

@@ -1,4 +1,4 @@
-import { BenchRequest } from '..'
+import { LoadTestRequest } from '..'
 import { AUDIO_METADATA } from '../../helpers/queries'
 
 export default function audioMetadata(
@@ -7,7 +7,7 @@ export default function audioMetadata(
   h5pId: string,
   h5pSubId: string,
   authenticationToken: string,
-): BenchRequest {
+): LoadTestRequest {
   return {
     title: 'audioMetadata',
     query: AUDIO_METADATA,

@@ -1,10 +1,10 @@
 import { GET_SERVER_PUBLIC_KEY } from '../../helpers/queries'
-import { BenchRequest } from '..'
+import { LoadTestRequest } from '..'
 
 export default function getServerPublicKey(
   authenticationToken: string,
   liveAuthorizationToken: string,
-): BenchRequest {
+): LoadTestRequest {
   return {
     title: 'getServerPublicKey',
     query: GET_SERVER_PUBLIC_KEY,

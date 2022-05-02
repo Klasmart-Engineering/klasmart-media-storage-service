@@ -1,11 +1,11 @@
-import { BenchRequest } from '..'
+import { LoadTestRequest } from '..'
 import { GET_REQUIRED_DOWNLOAD_INFO } from '../../helpers/queries'
 
 export default function getRequiredDownloadInfo(
   mediaId: string,
   roomId: string,
   authenticationToken: string,
-): BenchRequest {
+): LoadTestRequest {
   return {
     title: 'getRequiredDownloadInfo',
     query: GET_REQUIRED_DOWNLOAD_INFO,
