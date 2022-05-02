@@ -41,8 +41,8 @@ export default class DownloadResolver {
     if (isAuthorized === false || !endUserId) {
       throw new UnauthorizedError()
     }
-    this.stats.getRequiredDownloadInfo.sets.user.add(endUserId)
-    this.stats.getRequiredDownloadInfo.sets.room.add(roomId)
+    this.stats.getRequiredDownloadInfo.sets.users.add(endUserId)
+    this.stats.getRequiredDownloadInfo.sets.rooms.add(roomId)
     const result = await this.downloadInfoProvider.getDownloadInfo(
       mediaId,
       roomId,
@@ -60,10 +60,9 @@ class StatsCollector {
   public getRequiredDownloadInfo = new GetRequiredDownloadInfoStats()
 
   public toStatsInput(): StatsInput {
-    return Object.assign(
-      {},
-      { getRequiredDownloadInfo: this.getRequiredDownloadInfo },
-    )
+    return {
+      getRequiredDownloadInfo: this.getRequiredDownloadInfo,
+    }
   }
 }
 
@@ -72,7 +71,7 @@ class GetRequiredDownloadInfoStats implements ResolverStatsInput {
     callCount: 0,
   }
   public sets = {
-    user: new Set<string>(),
-    room: new Set<string>(),
+    users: new Set<string>(),
+    rooms: new Set<string>(),
   }
 }

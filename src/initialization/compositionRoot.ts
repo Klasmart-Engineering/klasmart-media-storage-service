@@ -150,7 +150,10 @@ export default class CompositionRoot {
       try {
         const input = this.getStatsInput()
         const output = await this.statsProvider?.calculateTotals(input)
-        logger.info('DAILY STATS SUMMARY: ' + JSON.stringify(output))
+        logger.info(
+          'DAILY STATS SUMMARY (across all instances): ' +
+            JSON.stringify(output),
+        )
       } catch (error) {
         const appError = new ApplicationError(
           '[initStatsProvider] Failed to log stats.',
@@ -336,7 +339,10 @@ export default class CompositionRoot {
     try {
       const input = this.getStatsInput()
       await this.statsProvider.appendToSharedStorage(input)
-      logger.debug('[shutDown] Stats successfully saved to shared storage.')
+      const statsJson = JSON.stringify(input)
+      logger.debug(
+        `[shutDown] Stats successfully saved to shared storage: ${statsJson}`,
+      )
     } catch (error) {
       const appError = new ApplicationError(
         '[shutDown] Failed to save stats to shared storage.',

@@ -31,8 +31,8 @@ export default class MetadataResolver {
     if (!endUserId) {
       throw new UnauthorizedError()
     }
-    this.stats.imageMetadata.sets.user.add(endUserId)
-    this.stats.imageMetadata.sets.room.add(roomId)
+    this.stats.imageMetadata.sets.users.add(endUserId)
+    this.stats.imageMetadata.sets.rooms.add(roomId)
 
     h5pSubId ??= null
     const results = await this.metadataRepository.find({
@@ -63,8 +63,8 @@ export default class MetadataResolver {
     if (!endUserId) {
       throw new UnauthorizedError()
     }
-    this.stats.imageMetadata.sets.user.add(endUserId)
-    this.stats.imageMetadata.sets.room.add(roomId)
+    this.stats.imageMetadata.sets.users.add(endUserId)
+    this.stats.imageMetadata.sets.rooms.add(roomId)
 
     h5pSubId ??= null
     const results = await this.metadataRepository.find({
@@ -87,13 +87,10 @@ class StatsCollector {
   public imageMetadata = new MetadataStats()
 
   public toStatsInput(): StatsInput {
-    return Object.assign(
-      {},
-      {
-        audioMetadata: this.audioMetadata,
-        imageMetadata: this.imageMetadata,
-      },
-    )
+    return {
+      audioMetadata: this.audioMetadata,
+      imageMetadata: this.imageMetadata,
+    }
   }
 }
 
@@ -102,7 +99,7 @@ class MetadataStats implements ResolverStatsInput {
     callCount: 0,
   }
   public sets = {
-    user: new Set<string>(),
-    room: new Set<string>(),
+    users: new Set<string>(),
+    rooms: new Set<string>(),
   }
 }

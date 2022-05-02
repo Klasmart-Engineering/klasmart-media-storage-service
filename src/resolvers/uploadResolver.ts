@@ -77,11 +77,13 @@ export default class UploadResolver {
     const { mediaFileKey, mediaType } = createMediaFileKey(mediaId, mimeType)
     // TODO: Consider doing UUID validation.
     userId ??= endUserId
-    this.stats.getRequiredUploadInfo.sets.user.add(userId)
-    this.stats.getRequiredUploadInfo.sets.room.add(
+
+    this.stats.getRequiredUploadInfo.sets.users.add(userId)
+    this.stats.getRequiredUploadInfo.sets.rooms.add(
       roomId || UploadResolver.NoRoomIdKeyName,
     )
-    //this.stats.getRequiredUploadInfo.counts.audioCount += 1
+    this.stats.getRequiredUploadInfo.counts[mediaType + 'Count'] += 1
+
     const presignedUrl = await this.presignedUrlProvider.getUploadUrl(
       mediaFileKey,
       mimeType,
@@ -151,7 +153,14 @@ class GetServerPublicKeyStats implements ResolverStatsInput {
 }
 
 class GetRequiredUploadInfoStats implements ResolverStatsInput {
-  public counts = {
+  public counts: {
+    callCount: number
+    noRoomCount: number
+    audioCount: number
+    imageCount: number
+    failedUploadCount: number
+    [key: string]: number
+  } = {
     callCount: 0,
     noRoomCount: 0,
     audioCount: 0,
@@ -159,7 +168,7 @@ class GetRequiredUploadInfoStats implements ResolverStatsInput {
     failedUploadCount: 0,
   }
   public sets = {
-    user: new Set<string>(),
-    room: new Set<string>(),
+    users: new Set<string>(),
+    rooms: new Set<string>(),
   }
 }
