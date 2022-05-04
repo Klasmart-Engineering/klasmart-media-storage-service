@@ -44,6 +44,11 @@ const category = process.argv[3]
 if (!category) {
   throw new Error('category must be passed as the second argument.')
 }
+let duration = Number(process.argv[4])
+if (!duration) {
+  duration = 10
+}
+console.log('duration', duration)
 
 const transientResultsFilePath = getTransientResultsFilePath(category)
 
@@ -211,7 +216,7 @@ async function runLoadTests() {
     const warmupResults = await run({ ...request, url, duration: 5 })
     validateResult(warmupResults)
     console.log('starting actual...')
-    const rawResult = await run({ ...request, url })
+    const rawResult = await run({ ...request, url, duration })
     const result = mapToCustomResult(version, rawResult, request.query)
     versionResult[request.title] = result
     console.log(`${category}/${request.title} requests/sec: ${result.requests}`)

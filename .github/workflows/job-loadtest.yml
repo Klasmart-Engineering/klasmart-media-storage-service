@@ -6,6 +6,19 @@ on:
       ecr_repository:
         required: true
         type: string
+      commit_results:
+        required: false
+        default: true
+        type: string
+      iterations:
+        required: false
+        default: 1
+        type: string
+      duration:
+        required: false
+        default: 30
+        type: string
+        description: seconds per iteration
     secrets:
       ECR_AWS_ACCESS_KEY_ID:
         required: true
@@ -49,6 +62,8 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          ITERATIONS: ${{ inputs.iterations }}
+          DURATION: ${{ inputs.duration }}
         run: |
           git fetch --tags && git pull
           export CURR_VERSION_TAG=$(git describe --tags --abbrev=0)
@@ -57,10 +72,11 @@ jobs:
           export ECR_REGISTRY_PLUS_REPO=$ECR_REGISTRY/$ECR_REPOSITORY
           docker pull $ECR_REGISTRY_PLUS_REPO:$PREV_VERSION_TAG
           docker pull $ECR_REGISTRY_PLUS_REPO:$CURR_VERSION_TAG
-          /bin/sh ./scripts/runLoadTests.sh
+          /bin/sh ./scripts/runLoadTests.sh $ITERATIONS $DURATION
           echo "::set-output name=CURR_VERSION_TAG::$CURR_VERSION_TAG"
 
       - name: Commit changes
+        if: ${{ inputs.commit_results == 'true' }}
         env:
           VERSION_TAG: ${{ steps.run-loadtest.outputs.CURR_VERSION_TAG }}
         run: |

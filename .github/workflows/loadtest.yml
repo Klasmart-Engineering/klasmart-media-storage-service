@@ -1,0 +1,33 @@
+name: Run Load Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_results:
+        required: false
+        default: true
+        type: boolean
+        description: If you want to commit the results to git
+      iterations:
+        required: false
+        default: '1'
+        type: string
+        description: number of iterations
+      duration:
+        required: false
+        default: '30'
+        type: string
+        description: seconds per iteration
+
+jobs:
+  loadtest:
+    uses: ./.github/workflows/job-loadtest.yml
+    with:
+      ecr_repository: audio-storage
+      commit_results: ${{ github.event.inputs.commit_results }}
+      iterations: ${{ github.event.inputs.iterations }}
+      duration: ${{ github.event.inputs.duration }}
+    secrets:
+      ECR_AWS_ACCESS_KEY_ID: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
+      ECR_AWS_SECRET_ACCESS_KEY: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
+      NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}

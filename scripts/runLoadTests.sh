@@ -5,6 +5,21 @@
 # PREV_VERSION_TAG
 # CURR_VERSION_TAG
 
+# Even though these are defined in the .env files, it won't use those because
+# they're already defined by by an earlier step when pulling the ECR images.
+export AWS_REGION=ap-northeast-2
+export AWS_ACCESS_KEY_ID=minio
+export AWS_SECRET_ACCESS_KEY=minio123
+
+iterations=$1
+if [ -z "$1" ]; then
+    iterations=1
+fi
+duration=$2
+if [ -z "$2" ]; then
+    duration=30
+fi
+
 exit_if_failed() {
   if [ $1 -ne 0 ]; then
     exit $1
@@ -17,10 +32,10 @@ run_load_test() {
   env_file_path=$3
 
   if [ -d "./node_modules_$version_tag" ]; then
-    git checkout $version_tag
+    git checkout _$version_tag
     mv ./node_modules_$version_tag ./node_modules
   else
-    git checkout tags/$version_tag -b $version_tag
+    git checkout tags/$version_tag -b _$version_tag
     npm ci
   fi
 
@@ -32,25 +47,24 @@ run_load_test() {
     $ECR_REGISTRY_PLUS_REPO:$version_tag && sleep 5 && docker logs loadtest && docker top loadtest
 
   exit_if_failed $?
-  npm run loadtest $version_tag $config_name
+  npm run loadtest $version_tag $config_name $duration
   exit_if_failed $?
   docker stop loadtest
   docker rm loadtest
   mv ./node_modules ./node_modules_$version_tag
 }
 
-export AWS_REGION=ap-northeast-2
-export AWS_ACCESS_KEY_ID=minio
-export AWS_SECRET_ACCESS_KEY=minio123
-
 # =========================================================
 # BASE CONFIG
 # =========================================================
 
-run_load_test $PREV_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
-run_load_test $CURR_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
-run_load_test $PREV_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
-run_load_test $CURR_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
+i=1
+while [ "$i" -le $iterations ]; do
+  run_load_test $PREV_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
+  run_load_test $CURR_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
+  i=$(( i + 1 ))
+done
+mv ./node_modules_$CURR_VERSION_TAG ./node_modules
 npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG baseConfig
 
 # =========================================================
@@ -59,4 +73,5 @@ npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG baseConfig
 
 run_load_test $PREV_VERSION_TAG noCaching ./loadTesting/.env.noCaching
 run_load_test $CURR_VERSION_TAG noCaching ./loadTesting/.env.noCaching
+mv ./node_modules_$CURR_VERSION_TAG ./node_modules
 npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG noCaching
