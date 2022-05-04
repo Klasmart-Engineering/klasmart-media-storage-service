@@ -16,8 +16,8 @@ run_load_test() {
   config_name=$2
   env_file_path=$3
 
-  git checkout tags/$version_tag -b $version_tag
-  npm install
+  #git checkout tags/$version_tag -b $version_tag
+  #npm install
 
   docker run --add-host host.docker.internal:host-gateway \
     -d \
@@ -36,8 +36,12 @@ run_load_test() {
 # =========================================================
 # BASE CONFIG
 # =========================================================
-# TODO: change back to loadTesting
-run_load_test $PREV_VERSION_TAG baseConfig ./benchmarking/.env.baseConfig
+
+npm ci
+export AWS_REGION=ap-northeast-2
+export AWS_ACCESS_KEY_ID=minio
+export AWS_SECRET_ACCESS_KEY=minio123
+run_load_test $PREV_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
 run_load_test $CURR_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
 npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG baseConfig
 
@@ -45,6 +49,6 @@ npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG baseConfig
 # NO CACHING CONFIG
 # =========================================================
 
-run_load_test $PREV_VERSION_TAG noCaching ./benchmarking/.env.noCaching
+run_load_test $PREV_VERSION_TAG noCaching ./loadTesting/.env.noCaching
 run_load_test $CURR_VERSION_TAG noCaching ./loadTesting/.env.noCaching
 npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG noCaching

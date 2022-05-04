@@ -157,6 +157,7 @@ async function getRequests() {
   } catch (error) {
     // Ignore error because buckets already exist.
   }
+  console.log('AWS_ACCESS_KEY_ID: ' + (process.env as any).AWS_ACCESS_KEY_ID)
   // We have to put the private key in the bucket, otherwise getRequiredDownloadInfo will fail.
   await s3Client.send(
     new PutObjectCommand({
