@@ -4,7 +4,8 @@ import { promisify } from 'util'
 import { join } from 'path'
 import markdownTable from 'markdown-table'
 import {
-  CustomResult,
+  ProcessedResult,
+  UnprocessedResult,
   readJsonFile,
   getTransientResultsFilePath,
   TransientResult,
@@ -37,29 +38,83 @@ if (!fs.existsSync(versionHistoryDirectory)) {
 const transientResultsFilePath = getTransientResultsFilePath(category)
 
 async function mapToRelativeResults(
-  previousVersion: Record<string, CustomResult>,
-  currentVersion: Record<string, CustomResult>,
+  previousVersionResults: Record<string, UnprocessedResult>[],
+  currentVersionResults: Record<string, UnprocessedResult>[],
 ) {
   const keys = new Set([
-    ...Object.keys(previousVersion),
-    ...Object.keys(currentVersion),
+    ...Object.keys(previousVersionResults[0]),
+    ...Object.keys(currentVersionResults[0]),
   ])
 
-  const results = new Map<string, CustomResult>()
-  for (const queryName of keys) {
-    const previousResult = previousVersion[queryName]
-    const currentResult = currentVersion[queryName]
+  const previousVersion: Record<string, UnprocessedResult> = {}
+  for (let index = 0; index < previousVersionResults.length; index++) {
+    const element = previousVersionResults[index]
+    for (const queryName of Object.keys(previousVersionResults[0])) {
+      if (!previousVersion[queryName]) {
+        previousVersion[queryName] = element[queryName]
+        continue
+      }
+      previousVersion[queryName].requests += element[queryName].requests
+      previousVersion[queryName].latency += element[queryName].latency
+      previousVersion[queryName].throughput += element[queryName].throughput
+    }
+  }
+  for (const queryName of Object.keys(previousVersion)) {
+    previousVersion[queryName].requests /= previousVersionResults.length
+    previousVersion[queryName].latency /= previousVersionResults.length
+    previousVersion[queryName].throughput /= previousVersionResults.length
+  }
 
-    const result: CustomResult = {
-      version: currentResult.version,
-      requests: getDiff(previousResult.requests, currentResult.requests, 0),
-      latency: getDiff(previousResult.latency, currentResult.latency, 2),
-      throughput: getDiff(
-        previousResult.throughput,
-        currentResult.throughput,
-        0,
-      ),
-      query: currentResult.query,
+  const currentVersion: Record<string, UnprocessedResult> = {}
+  for (let index = 0; index < currentVersionResults.length; index++) {
+    const element = currentVersionResults[index]
+    for (const queryName of Object.keys(currentVersionResults[0])) {
+      if (!currentVersion[queryName]) {
+        currentVersion[queryName] = element[queryName]
+        continue
+      }
+      currentVersion[queryName].requests += element[queryName].requests
+      currentVersion[queryName].latency += element[queryName].latency
+      currentVersion[queryName].throughput += element[queryName].throughput
+    }
+  }
+  for (const queryName of Object.keys(currentVersion)) {
+    currentVersion[queryName].requests /= currentVersionResults.length
+    currentVersion[queryName].latency /= currentVersionResults.length
+    currentVersion[queryName].throughput /= currentVersionResults.length
+  }
+
+  const results = new Map<string, ProcessedResult>()
+  for (const queryName of keys) {
+    const previousResult: UnprocessedResult | undefined =
+      previousVersion[queryName]
+    const currentResult: UnprocessedResult | undefined =
+      currentVersion[queryName]
+    if (!currentResult) {
+      continue
+    }
+
+    let result: ProcessedResult
+    if (previousResult) {
+      result = {
+        version: currentResult.version,
+        requests: getDiff(previousResult.requests, currentResult.requests, 0),
+        latency: getDiff(previousResult.latency, currentResult.latency, 2),
+        throughput: getDiff(
+          previousResult.throughput,
+          currentResult.throughput,
+          0,
+        ),
+        query: currentResult.query,
+      }
+    } else {
+      result = {
+        version: currentResult.version,
+        requests: currentResult.requests.toFixed(0),
+        latency: currentResult.latency.toFixed(2),
+        throughput: currentResult.throughput.toFixed(0),
+        query: currentResult.query,
+      }
     }
     console.log(`${category}/${queryName} requests/sec: ${result.requests}`)
     results.set(queryName, result)
@@ -67,19 +122,19 @@ async function mapToRelativeResults(
   return results
 }
 
-function getDiff(previous: string, current: string, fractionDigits: number) {
-  const previousNum = Number(previous).toFixed(fractionDigits)
-  const currentNum = Number(current).toFixed(fractionDigits)
-  let diff = Number(current) - Number(previous)
+function getDiff(previous: number, current: number, fractionDigits: number) {
+  const previousNum = previous.toFixed(fractionDigits)
+  const currentNum = current.toFixed(fractionDigits)
+  let diff = current - previous
   diff = Number(diff.toFixed(fractionDigits))
   const prefix = diff >= 0 ? '+' : ''
   const result = `${prefix}${diff} (${previousNum} -> ${currentNum})`
   return result
 }
 
-async function updateJson(results: ReadonlyMap<string, CustomResult>) {
+async function updateJson(results: ReadonlyMap<string, ProcessedResult>) {
   for (const [queryName, result] of results) {
-    let resultHistory: CustomResult[] = []
+    let resultHistory: ProcessedResult[] = []
     if (fs.existsSync(join(resultsDirectory, `${queryName}.json`))) {
       const file = await import(`./rawResults/${category}/${queryName}.json`)
       resultHistory = file.default
@@ -91,13 +146,13 @@ async function updateJson(results: ReadonlyMap<string, CustomResult>) {
 }
 
 async function updateMarkdownTables(
-  results: ReadonlyMap<string, CustomResult>,
+  results: ReadonlyMap<string, ProcessedResult>,
 ) {
   for (const [queryName, result] of results) {
     const { default: resultHistory } = await import(
       `./rawResults/${category}/${queryName}.json`
     )
-    const rows: string[][] = resultHistory.map((x: CustomResult) => [
+    const rows: string[][] = resultHistory.map((x: UnprocessedResult) => [
       x.version,
       x.requests,
       x.latency,

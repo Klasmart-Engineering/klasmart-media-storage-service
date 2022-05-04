@@ -16,8 +16,13 @@ run_load_test() {
   config_name=$2
   env_file_path=$3
 
-  #git checkout tags/$version_tag -b $version_tag
-  #npm install
+  if [ -d "./node_modules_$version_tag" ]; then
+    git checkout $version_tag
+    mv ./node_modules_$version_tag ./node_modules
+  else
+    git checkout tags/$version_tag -b $version_tag
+    npm ci
+  fi
 
   docker run --add-host host.docker.internal:host-gateway \
     -d \
@@ -31,16 +36,19 @@ run_load_test() {
   exit_if_failed $?
   docker stop loadtest
   docker rm loadtest
+  mv ./node_modules ./node_modules_$version_tag
 }
+
+export AWS_REGION=ap-northeast-2
+export AWS_ACCESS_KEY_ID=minio
+export AWS_SECRET_ACCESS_KEY=minio123
 
 # =========================================================
 # BASE CONFIG
 # =========================================================
 
-npm ci
-export AWS_REGION=ap-northeast-2
-export AWS_ACCESS_KEY_ID=minio
-export AWS_SECRET_ACCESS_KEY=minio123
+run_load_test $PREV_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
+run_load_test $CURR_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
 run_load_test $PREV_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
 run_load_test $CURR_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
 npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG baseConfig

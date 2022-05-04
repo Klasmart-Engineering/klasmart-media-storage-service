@@ -15,7 +15,15 @@ export function getTransientResultsFilePath(category: string) {
   return transientResultsFilePath
 }
 
-export type CustomResult = {
+export type UnprocessedResult = {
+  version: string
+  requests: number
+  latency: number
+  throughput: number
+  query: string
+}
+
+export type ProcessedResult = {
   version: string
   requests: string
   latency: string
@@ -24,7 +32,7 @@ export type CustomResult = {
 }
 
 export type TransientResult = {
-  [version: string]: { [version: string]: CustomResult }
+  [version: string]: { [queryName: string]: UnprocessedResult }[]
 }
 
 export async function readJsonFile<T>(transientResultsFilePath: string) {

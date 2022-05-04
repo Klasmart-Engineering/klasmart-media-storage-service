@@ -2,7 +2,7 @@ import fs from 'fs'
 import { promisify } from 'util'
 import { run } from './run'
 import {
-  CustomResult,
+  UnprocessedResult,
   readJsonFile,
   getTransientResultsFilePath,
   TransientResult,
@@ -57,15 +57,14 @@ export type LoadTestRequest = {
 
 function mapToCustomResult(
   version: string,
-  queryName: string,
   rawResult: Result,
   query: string,
-): CustomResult {
+): UnprocessedResult {
   const result = {
     version,
-    requests: rawResult.requests.mean.toString(),
-    latency: rawResult.latency.mean.toString(),
-    throughput: rawResult.throughput.mean.toString(),
+    requests: rawResult.requests.mean,
+    latency: rawResult.latency.mean,
+    throughput: rawResult.throughput.mean,
     query: query,
   }
   return result
@@ -99,7 +98,7 @@ async function getRequests() {
   await getRepository(MediaMetadata).clear()
   const entries: QueryDeepPartialEntity<MediaMetadata>[] = []
   // Create 100,000 entries.
-  for (let index = 0; index < 10; index++) {
+  for (let index = 0; index < 1000; index++) {
     const roomId = v4()
     for (let index = 0; index < 10; index++) {
       const userId = v4()
@@ -157,7 +156,6 @@ async function getRequests() {
   } catch (error) {
     // Ignore error because buckets already exist.
   }
-  console.log('AWS_ACCESS_KEY_ID: ' + (process.env as any).AWS_ACCESS_KEY_ID)
   // We have to put the private key in the bucket, otherwise getRequiredDownloadInfo will fail.
   await s3Client.send(
     new PutObjectCommand({
@@ -200,22 +198,22 @@ function validateResult(result: Result) {
 
 async function runLoadTests() {
   const requests = await getRequests()
+
   const transientResults =
     (await readJsonFile<TransientResult>(transientResultsFilePath)) ?? {}
+  transientResults[version] ??= []
+  const versionResults = transientResults[version]
+  const versionResult: { [key: string]: UnprocessedResult } = {}
+  versionResults.push(versionResult)
+
   for (const request of requests) {
     console.log('starting warmup...')
     const warmupResults = await run({ ...request, url, duration: 5 })
     validateResult(warmupResults)
     console.log('starting actual...')
     const rawResult = await run({ ...request, url })
-    const result = mapToCustomResult(
-      version,
-      request.title,
-      rawResult,
-      request.query,
-    )
-    transientResults[version] ??= {}
-    transientResults[version][request.title] = result
+    const result = mapToCustomResult(version, rawResult, request.query)
+    versionResult[request.title] = result
     console.log(`${category}/${request.title} requests/sec: ${result.requests}`)
   }
   await writeFile(
