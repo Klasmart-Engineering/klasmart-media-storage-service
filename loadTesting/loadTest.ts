@@ -1,8 +1,12 @@
 import fs from 'fs'
-import path from 'path'
 import { promisify } from 'util'
-import { join } from 'path'
 import { run } from './run'
+import {
+  CustomResult,
+  readJsonFile,
+  getTransientResultsFilePath,
+  TransientResult,
+} from './common'
 import {
   S3Client,
   PutObjectCommand,
@@ -12,7 +16,6 @@ import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
 } from '../helpers/generateToken'
-import markdownTable from 'markdown-table'
 import { getSampleEncryptedData } from '../helpers/getSampleEncryptionData'
 import getRequiredDownloadInfo from './requests/getRequiredDownloadInfo'
 import getServerPublicKey from './requests/getServerPublicKey'
@@ -26,23 +29,23 @@ import { Request, Result } from 'autocannon'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 
 const writeFile = promisify(fs.writeFile)
+const readFile = promisify(fs.readFile)
 
 // TODO: Get route prefix from process.env
 const url = 'http://localhost:8080/media-storage/graphql'
 //const url = 'http://localhost:8080/media-storage/hello'
+
+const version = process.argv[2]
+if (!version) {
+  throw new Error('version must be passed as the first argument.')
+}
 // Examples: caching, noCaching, loggingEnabled, etc.
 const category = process.argv[3]
 if (!category) {
   throw new Error('category must be passed as the second argument.')
 }
-const resultsDirectory = join(__dirname, 'rawResults', category)
-if (!fs.existsSync(resultsDirectory)) {
-  fs.mkdirSync(resultsDirectory, { recursive: true })
-}
-const versionHistoryDirectory = join(__dirname, 'versionHistory', category)
-if (!fs.existsSync(versionHistoryDirectory)) {
-  fs.mkdirSync(versionHistoryDirectory, { recursive: true })
-}
+
+const transientResultsFilePath = getTransientResultsFilePath(category)
 
 export type LoadTestRequest = {
   title: string
@@ -52,56 +55,23 @@ export type LoadTestRequest = {
   headers: Request['headers']
 }
 
-type CustomResult = {
-  version: string
-  requests: number
-  latency: number
-  throughput: number
-}
-
-const writeResult = async (
+function mapToCustomResult(
   version: string,
   queryName: string,
   rawResult: Result,
-) => {
+  query: string,
+): CustomResult {
   const result = {
     version,
-    requests: rawResult.requests.mean,
-    latency: rawResult.latency.mean,
-    throughput: rawResult.throughput.mean,
+    requests: rawResult.requests.mean.toString(),
+    latency: rawResult.latency.mean.toString(),
+    throughput: rawResult.throughput.mean.toString(),
+    query: query,
   }
-  let results: CustomResult[] = []
-  if (fs.existsSync(join(resultsDirectory, `${queryName}.json`))) {
-    const file = await import(`./rawResults/${category}/${queryName}.json`)
-    results = file.default
-  }
-  results.unshift(result)
-  const dest = path.join(resultsDirectory, `${queryName}.json`)
-  await writeFile(dest, JSON.stringify(results, null, 2))
-  return results
+  return result
 }
 
-async function updateMarkdownTable(queryName: string, query: string) {
-  const { default: results } = await import(
-    `./rawResults/${category}/${queryName}.json`
-  )
-  const rows: string[][] = results.map((x: CustomResult) => [
-    x.version,
-    x.requests,
-    x.latency,
-    x.throughput,
-  ])
-  const table = markdownTable([
-    ['version', 'requests/sec', 'latency', 'throughput'],
-    ...rows,
-  ])
-  const queryCodeBlock = '```gql' + query + '```'
-  const md = `# ${queryName}: ${category}\n\n${queryCodeBlock}\n\n${table}`
-  const dest = path.join(versionHistoryDirectory, `${queryName}.md`)
-  await writeFile(dest, md)
-}
-
-async function generateData() {
+async function getRequests() {
   const {
     serverPrivateKey,
     serverPublicKey,
@@ -129,7 +99,7 @@ async function generateData() {
   await getRepository(MediaMetadata).clear()
   const entries: QueryDeepPartialEntity<MediaMetadata>[] = []
   // Create 100,000 entries.
-  for (let index = 0; index < 1000; index++) {
+  for (let index = 0; index < 10; index++) {
     const roomId = v4()
     for (let index = 0; index < 10; index++) {
       const userId = v4()
@@ -228,25 +198,29 @@ function validateResult(result: Result) {
 }
 
 async function runLoadTests() {
-  const version = process.argv[2]
-  if (!version) {
-    throw new Error('version must be passed as the first argument.')
-  }
-  const queries = await generateData()
-  for (const query of queries) {
+  const requests = await getRequests()
+  const transientResults =
+    (await readJsonFile<TransientResult>(transientResultsFilePath)) ?? {}
+  for (const request of requests) {
     console.log('starting warmup...')
-    const warmupResults = await run({ ...query, url, duration: 5 })
+    const warmupResults = await run({ ...request, url, duration: 5 })
     validateResult(warmupResults)
     console.log('starting actual...')
-    const result = await run({ ...query, url })
-    const results = await writeResult(version, query.title, result)
-    await updateMarkdownTable(query.title, query.query)
-    const prevResult = results.length > 1 ? results[1].requests : 'N/A'
-    const newResult = results[0].requests
-    console.log(
-      `${category}/${query.title} requests/sec: ${prevResult} -> ${newResult}`,
+    const rawResult = await run({ ...request, url })
+    const result = mapToCustomResult(
+      version,
+      request.title,
+      rawResult,
+      request.query,
     )
+    transientResults[version] ??= {}
+    transientResults[version][request.title] = result
+    console.log(`${category}/${request.title} requests/sec: ${result.requests}`)
   }
+  await writeFile(
+    transientResultsFilePath,
+    JSON.stringify(transientResults, null, 2),
+  )
 }
 
 runLoadTests().then(() => console.log('load tests complete!'))

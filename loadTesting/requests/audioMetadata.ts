@@ -1,4 +1,4 @@
-import { LoadTestRequest } from '..'
+import { LoadTestRequest } from '../loadTest'
 import { AUDIO_METADATA } from '../../helpers/queries'
 
 export default function audioMetadata(

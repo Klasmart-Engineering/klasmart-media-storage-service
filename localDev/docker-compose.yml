@@ -4,7 +4,7 @@ services:
   postgres:
     image: postgres:latest
     ports:
-      - '5432:5432'
+      - 5432:5432
     environment:
       - POSTGRES_PASSWORD=kidsloop
       - POSTGRES_DB=media_db
@@ -15,17 +15,18 @@ services:
     ports:
       # Port is set to 80 because of an S3/MinIO bug. Otherwise, the presigned URL fetch tests fail.
       # Details: https://github.com/minio/minio/issues/10361#issuecomment-721345732
-      - '80:9000'
-      - '9001:9001'
+      - 80:9000
+      - 9000:9000
+      - 9001:9001
     command: server /data --console-address ":9001"
     environment:
       - MINIO_ROOT_USER=minio
       - MINIO_ROOT_PASSWORD=minio123
   redis:
-    image: 'redis:alpine'
-    command: 'redis-server --appendonly yes'
+    image: redis:alpine
+    command: redis-server --appendonly yes
     ports:
-      - '6379:6379'
+      - 6379:6379
     # volumes:
     #     - redis_data:/data
   # Creates buckets for S3

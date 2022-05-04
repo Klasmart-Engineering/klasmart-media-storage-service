@@ -1,0 +1,71 @@
+name: Run Load Tests (job)
+
+on:
+  workflow_call:
+    inputs:
+      ecr_repository:
+        required: true
+        type: string
+    secrets:
+      ECR_AWS_ACCESS_KEY_ID:
+        required: true
+      ECR_AWS_SECRET_ACCESS_KEY:
+        required: true
+      NODE_AUTH_TOKEN:
+        required: true
+
+env:
+  ECR_REPOSITORY: ${{ inputs.ecr_repository }}
+
+jobs:
+  loadtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          registry-url: https://npm.pkg.github.com/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Run docker compose
+        run: |
+          docker compose -f localDev/docker-compose.yml --project-name media up -d
+
+      - name: Run load testing
+        id: run-loadtest
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+        run: |
+          git fetch --unshallow --tags
+          export CURR_VERSION_TAG=$(git describe --tags --abbrev=0)
+          export PREV_VERSION_TAG=$(git describe --tags --abbrev=0 $CURR_VERSION_TAG^)
+          echo "::set-output name=PREV_VERSION_TAG::$PREV_VERSION_TAG"
+          export ECR_REGISTRY_PLUS_REPO=$ECR_REGISTRY/$ECR_REPOSITORY
+          docker pull $ECR_REGISTRY_PLUS_REPO:$PREV_VERSION_TAG
+          docker pull $ECR_REGISTRY_PLUS_REPO:$CURR_VERSION_TAG
+          /bin/sh ./scripts/runLoadTests.sh
+          echo "::set-output name=CURR_VERSION_TAG::$CURR_VERSION_TAG"
+
+      - name: Commit changes
+        env:
+          VERSION_TAG: ${{ steps.run-loadtest.outputs.CURR_VERSION_TAG }}
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          git add ./loadTesting
+          git commit -m "chore(loadtest): ${VERSION_TAG:1} [skip ci]"
+          git push origin main

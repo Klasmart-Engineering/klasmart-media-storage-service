@@ -8,6 +8,9 @@ on:
         required: true
         type: string
         description: auto, major, minor, or patch
+      ecr_repository:
+        required: true
+        type: string
     secrets:
       ECR_AWS_ACCESS_KEY_ID:
         required: true
@@ -15,28 +18,11 @@ on:
         required: true
 
 env:
-  ECR_REPOSITORY: audio-storage
+  ECR_REPOSITORY: ${{ inputs.ecr_repository }}
 
 jobs:
   create-release:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: test_media_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: kidsloop
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     outputs:
       VERSION_TAG: ${{ steps.version-bump.outputs.VERSION_TAG }}
     steps:
@@ -75,13 +61,6 @@ jobs:
           export VERSION_TAG=$(git describe --tags --abbrev=0)
           echo "::set-output name=VERSION_TAG::$VERSION_TAG"
 
-      - name: Run load testing
-        env:
-          VERSION_TAG: ${{ steps.version-bump.outputs.VERSION_TAG }}
-        run: |
-          npm install
-          /bin/sh ./scripts/runBenchmarks.sh
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -93,7 +72,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Tag and push image to Amazon ECR
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -112,9 +91,5 @@ jobs:
         env:
           VERSION_TAG: ${{ steps.version-bump.outputs.VERSION_TAG }}
         run: |
-          git add ./benchmarking
-          git commit --amend --no-edit
-          git tag -d $VERSION_TAG
-          git tag $VERSION_TAG
-          git push origin main
           git push origin $VERSION_TAG
+          git push origin main

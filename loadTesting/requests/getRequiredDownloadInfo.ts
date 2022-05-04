@@ -1,4 +1,4 @@
-import { LoadTestRequest } from '..'
+import { LoadTestRequest } from '../loadTest'
 import { GET_REQUIRED_DOWNLOAD_INFO } from '../../helpers/queries'
 
 export default function getRequiredDownloadInfo(

@@ -1,5 +1,5 @@
 import { GET_SERVER_PUBLIC_KEY } from '../../helpers/queries'
-import { LoadTestRequest } from '..'
+import { LoadTestRequest } from '../loadTest'
 
 export default function getServerPublicKey(
   authenticationToken: string,

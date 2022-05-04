@@ -1,32 +1,50 @@
 #!/bin/sh
 
-docker run \
-  -d \
-  -p 9000:9000 \
-  -e "MINIO_ACCESS_KEY=minio" \
-  -e "MINIO_SECRET_KEY=minio123" \
-  minio/minio server /data
+# *** REQUIRED ENVIRONMENT VARIABLES ***
+# ECR_REGISTRY_PLUS_REPO
+# PREV_VERSION_TAG
+# CURR_VERSION_TAG
 
-docker run --add-host host.docker.internal:host-gateway \
-  -d \
-  --name=loadtest-baseConfig \
-  --env-file ./loadTesting/.env.baseConfig \
-  -p 8080:8080 \
-  $ECR_REPOSITORY && sleep 5 && docker logs loadtest-baseConfig && docker top loadtest-baseConfig
+exit_if_failed() {
+  if [ $1 -ne 0 ]; then
+    exit $1
+  fi
+}
 
-npm run loadtest $VERSION_TAG baseConfig
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  exit $exit_status
-fi
-docker stop loadtest-baseConfig
+run_load_test() {
+  version_tag=$1
+  config_name=$2
+  env_file_path=$3
 
-docker run --add-host host.docker.internal:host-gateway \
-  -d \
-  --name=loadtest-noCaching \
-  --env-file ./loadTesting/.env.noCaching \
-  -p 8080:8080 \
-  $ECR_REPOSITORY && sleep 5 && docker logs loadtest-noCaching && docker top loadtest-noCaching
+  git checkout tags/$version_tag -b $version_tag
+  npm install
 
-npm run loadtest $VERSION_TAG noCaching
-docker stop loadtest-noCaching
+  docker run --add-host host.docker.internal:host-gateway \
+    -d \
+    --name=loadtest \
+    --env-file $env_file_path \
+    -p 8080:8080 \
+    $ECR_REGISTRY_PLUS_REPO:$version_tag && sleep 5 && docker logs loadtest && docker top loadtest
+
+  exit_if_failed $?
+  npm run loadtest $version_tag $config_name
+  exit_if_failed $?
+  docker stop loadtest
+  docker rm loadtest
+}
+
+# =========================================================
+# BASE CONFIG
+# =========================================================
+# TODO: change back to loadTesting
+run_load_test $PREV_VERSION_TAG baseConfig ./benchmarking/.env.baseConfig
+run_load_test $CURR_VERSION_TAG baseConfig ./loadTesting/.env.baseConfig
+npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG baseConfig
+
+# =========================================================
+# NO CACHING CONFIG
+# =========================================================
+
+run_load_test $PREV_VERSION_TAG noCaching ./benchmarking/.env.noCaching
+run_load_test $CURR_VERSION_TAG noCaching ./loadTesting/.env.noCaching
+npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG noCaching

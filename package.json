@@ -20,7 +20,8 @@
     "debug:cmsApi": "cross-env NEW_RELIC_HOME=localDev ts-node scripts/debugCmsApi.ts",
     "generate-orm-config": "ts-node scripts/generateOrmConfig.ts",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
-    "loadtest": "cross-env DOTENV_CONFIG_PATH=./loadTesting/.env.baseConfig ts-node -r dotenv/config loadTesting/index.ts"
+    "loadtest": "cross-env DOTENV_CONFIG_PATH=./loadTesting/.env.baseConfig ts-node -r dotenv/config loadTesting/loadTest.ts",
+    "loadtest:compare": "cross-env DOTENV_CONFIG_PATH=./loadTesting/.env.baseConfig ts-node -r dotenv/config loadTesting/writeResults.ts"
   },
   "config": {
     "commitizen": {
