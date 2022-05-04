@@ -1,5 +1,12 @@
 [
   {
+    "version": "v0.1.29",
+    "requests": "+373 (4603 -> 4976)",
+    "latency": "-0.23 (1.61 -> 1.38)",
+    "throughput": "+204521 (2521879 -> 2726400)",
+    "query": "\n  query audioMetadata(\n    $userId: String!\n    $roomId: String!\n    $h5pId: String!\n    $h5pSubId: String\n  ) {\n    audioMetadata(\n      userId: $userId\n      roomId: $roomId\n      h5pId: $h5pId\n      h5pSubId: $h5pSubId\n    ) {\n      id\n      userId\n      roomId\n      h5pId\n      h5pSubId\n      createdAt\n    }\n  }\n"
+  },
+  {
     "version": "v0.1.28",
     "requests": 5379.2,
     "latency": 1.35,

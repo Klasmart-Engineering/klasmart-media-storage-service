@@ -1,5 +1,12 @@
 [
   {
+    "version": "v0.1.29",
+    "requests": "+6 (217 -> 222)",
+    "latency": "-1.25 (45.61 -> 44.36)",
+    "throughput": "+4493 (164966 -> 169459)",
+    "query": "\nquery getRequiredDownloadInfo($mediaId: String!, $roomId: String!) {\n  getRequiredDownloadInfo(\n    mediaId: $mediaId,\n    roomId: $roomId,\n  ) {\n    base64SymmetricKey\n    presignedUrl\n  }\n}\n"
+  },
+  {
     "version": "v0.1.28",
     "requests": 240.8,
     "latency": 40.96,

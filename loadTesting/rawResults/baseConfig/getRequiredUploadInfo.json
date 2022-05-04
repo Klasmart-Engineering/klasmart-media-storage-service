@@ -1,5 +1,12 @@
 [
   {
+    "version": "v0.1.29",
+    "requests": "+18 (810 -> 828)",
+    "latency": "-0.27 (11.82 -> 11.55)",
+    "throughput": "+13312 (599334 -> 612646)",
+    "query": "\nquery getRequiredUploadInfo(\n    $base64UserPublicKey: String!,\n    $base64EncryptedSymmetricKey: String!,\n    $mimeType: String!,\n    $h5pId: String!,\n    $h5pSubId: String,\n    $description: String!,\n    $userId: String) {\n  getRequiredUploadInfo(\n    base64UserPublicKey: $base64UserPublicKey,\n    base64EncryptedSymmetricKey: $base64EncryptedSymmetricKey,\n    mimeType: $mimeType,\n    h5pId: $h5pId,\n    h5pSubId: $h5pSubId\n    description: $description\n    userId: $userId\n  ) {\n    mediaId\n    presignedUrl\n  }\n}\n"
+  },
+  {
     "version": "v0.1.28",
     "requests": 923.6,
     "latency": 10.3,

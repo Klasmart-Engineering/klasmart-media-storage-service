@@ -1,5 +1,12 @@
 [
   {
+    "version": "v0.1.29",
+    "requests": "+2 (561 -> 562)",
+    "latency": "-0.06 (17.32 -> 17.26)",
+    "throughput": "+538 (178803 -> 179341)",
+    "query": "\nquery getServerPublicKey {\n  getServerPublicKey\n}\n"
+  },
+  {
     "version": "v0.1.28",
     "requests": 626.71,
     "latency": 15.43,
