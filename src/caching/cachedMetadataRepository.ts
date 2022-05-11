@@ -29,7 +29,13 @@ export default class CachedMetadataRepository implements IMetadataRepository {
     const cacheKey = CachedMetadataRepository.getFindByIdCacheKey(mediaId)
     const cached = await this.cache.get(cacheKey)
     if (cached) {
-      return JSON.parse(cached)
+      return JSON.parse(cached, (key, value) => {
+        // JSON.stringify turns Date type into an iso string so we have to convert it back.
+        if (key === 'createdAt' || key === 'updatedAt') {
+          return new Date(value)
+        }
+        return value
+      })
     }
     const metadata = await this.repo.findById(mediaId)
     await this.cache.set(cacheKey, JSON.stringify(metadata), 60 * 60)
@@ -54,7 +60,7 @@ export default class CachedMetadataRepository implements IMetadataRepository {
     if (cached) {
       return JSON.parse(cached, (key, value) => {
         // JSON.stringify turns Date type into an iso string so we have to convert it back.
-        if (key === 'createdAt') {
+        if (key === 'createdAt' || key === 'updatedAt') {
           return new Date(value)
         }
         return value

@@ -7,6 +7,7 @@ import UploadResolver from '../../../src/resolvers/uploadResolver'
 import ErrorMessage from '../../../src/errors/errorMessages'
 import IUploadValidator from '../../../src/interfaces/uploadValidator'
 import IMetadataRepository from '../../../src/interfaces/metadataRepository'
+import IKeyPairProvider from '../../../src/interfaces/keyPairProvider'
 
 describe('UploadResolver', () => {
   describe('getRequiredUploadInfo', () => {
@@ -504,6 +505,33 @@ describe('UploadResolver', () => {
 
         // Assert
         expect(actual).to.equal(base64ServerPublicKey)
+      })
+    })
+  })
+
+  describe('getStatsAndReset', () => {
+    context('no operations executed', () => {
+      it('has getServerPublicKey and getRequiredUploadInfo keys', async () => {
+        // Arrange
+        const keyPairProvider = Substitute.for<IKeyPairProvider>()
+        const presignedUrlProvider = Substitute.for<IPresignedUrlProvider>()
+        const metadataRepository = Substitute.for<IMetadataRepository>()
+        const uploadValidator = Substitute.for<IUploadValidator>()
+        const sut = new UploadResolver(
+          keyPairProvider,
+          presignedUrlProvider,
+          metadataRepository,
+          uploadValidator,
+        )
+
+        // Act
+        const actual = sut.getStatsAndReset()
+
+        // Assert
+        expect(actual).to.have.keys(
+          'getServerPublicKey',
+          'getRequiredUploadInfo',
+        )
       })
     })
   })

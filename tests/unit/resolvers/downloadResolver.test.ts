@@ -2,9 +2,9 @@ import expect from '../../utils/chaiAsPromisedSetup'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import DownloadResolver from '../../../src/resolvers/downloadResolver'
 import { v4 } from 'uuid'
-import AuthorizationProvider from '../../../src/providers/authorizationProvider'
 import IDownloadInfoProvider from '../../../src/interfaces/downloadInfoProvider'
 import ErrorMessage from '../../../src/errors/errorMessages'
+import IAuthorizationProvider from '../../../src/interfaces/authorizationProvider'
 
 describe('DownloadResolver', () => {
   describe('getRequiredDownloadInfo', () => {
@@ -12,7 +12,7 @@ describe('DownloadResolver', () => {
       it('returns expected download info', async () => {
         // Arrange
         const downloadInfoProvider = Substitute.for<IDownloadInfoProvider>()
-        const authorizationProvider = Substitute.for<AuthorizationProvider>()
+        const authorizationProvider = Substitute.for<IAuthorizationProvider>()
 
         const roomId = 'room1'
         const authenticationToken = 'auth-token'
@@ -52,7 +52,7 @@ describe('DownloadResolver', () => {
       it('throws UnauthorizedError', async () => {
         // Arrange
         const downloadInfoProvider = Substitute.for<IDownloadInfoProvider>()
-        const authorizationProvider = Substitute.for<AuthorizationProvider>()
+        const authorizationProvider = Substitute.for<IAuthorizationProvider>()
 
         const roomId = 'my-room'
         const authenticationToken = 'auth-token'
@@ -78,6 +78,26 @@ describe('DownloadResolver', () => {
 
         // Assert
         await expect(fn()).to.be.rejectedWith(ErrorMessage.notAuthenticated)
+      })
+    })
+  })
+
+  describe('getStatsAndReset', () => {
+    context('no operations executed', () => {
+      it('has getRequiredDownloadInfo key', async () => {
+        // Arrange
+        const downloadInfoProvider = Substitute.for<IDownloadInfoProvider>()
+        const authorizationProvider = Substitute.for<IAuthorizationProvider>()
+        const sut = new DownloadResolver(
+          downloadInfoProvider,
+          authorizationProvider,
+        )
+
+        // Act
+        const actual = sut.getStatsAndReset()
+
+        // Assert
+        expect(actual).to.have.keys('getRequiredDownloadInfo')
       })
     })
   })

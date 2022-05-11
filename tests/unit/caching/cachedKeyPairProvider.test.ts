@@ -101,5 +101,35 @@ describe('CachedKeyPairProvider', () => {
         keyPairProvider.didNotReceive().getPublicKeyOrCreatePair(Arg.all())
       })
     })
+
+    context('private key not cached, but exists in storage', () => {
+      it('returns matching private key', async () => {
+        // Arrange
+        const keyPairProvider = Substitute.for<IKeyPairProvider>()
+        const cache = Substitute.for<ICacheProvider>()
+        const ttlSeconds = 1
+        const sut = new CachedKeyPairProvider(
+          keyPairProvider,
+          cache,
+          ttlSeconds,
+        )
+
+        const objectKey = 'room1'
+        const cacheKey = CachedKeyPairProvider.getPrivateKeyCacheKey(objectKey)
+        const privateKey = Buffer.from([4, 5, 6])
+        keyPairProvider.getPrivateKeyOrThrow(objectKey).resolves(privateKey)
+        cache.get(cacheKey).resolves(null)
+
+        // Act
+        const actual = await sut.getPrivateKeyOrThrow(objectKey)
+
+        // Assert
+        const expected = privateKey
+        expect(actual).to.deep.equal(expected)
+        keyPairProvider.received(1).getPrivateKeyOrThrow(objectKey)
+        const base64PrivateKey = Buffer.from(privateKey).toString('base64')
+        cache.received(1).set(cacheKey, base64PrivateKey, ttlSeconds)
+      })
+    })
   })
 })

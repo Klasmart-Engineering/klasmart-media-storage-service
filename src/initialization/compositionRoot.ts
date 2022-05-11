@@ -163,9 +163,9 @@ export default class CompositionRoot {
   protected getStatsInput(): StatsInput {
     return Object.assign(
       {},
-      this.getUploadResolver().getStats(),
-      this.getMetadataResolver().getStats(),
-      this.getDownloadResolver().getStats(),
+      this.getUploadResolver().getStatsAndReset(),
+      this.getMetadataResolver().getStatsAndReset(),
+      this.getDownloadResolver().getStatsAndReset(),
     )
   }
 
@@ -328,17 +328,16 @@ export default class CompositionRoot {
   }
 
   public async shutDown(): Promise<void> {
-    if (!this.statsProvider) {
-      return
-    }
-    try {
-      const input = this.getStatsInput()
-      await this.statsProvider.appendToSharedStorage(input)
-      logger.debug(`[shutDown] Stats successfully saved to shared storage.`)
-    } catch (error) {
-      logger.error('[shutDown] Failed to save stats to shared storage.', {
-        error: error2Obj(error),
-      })
+    if (this.statsProvider) {
+      try {
+        const input = this.getStatsInput()
+        await this.statsProvider.appendToSharedStorage(input)
+        logger.debug(`[shutDown] Stats successfully saved to shared storage.`)
+      } catch (error) {
+        logger.error('[shutDown] Failed to save stats to shared storage.', {
+          error: error2Obj(error),
+        })
+      }
     }
     await this.cleanUp()
   }

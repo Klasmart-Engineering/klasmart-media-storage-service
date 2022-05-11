@@ -31,9 +31,7 @@ export default class CachedTokenParser implements ITokenParser {
     const token = await this.tokenParser.parseAuthenticationToken(
       encodedAuthenticationToken,
     )
-    if (token.userId) {
-      await this.cache.set(cacheKey, JSON.stringify(token), 60)
-    }
+    await this.cache.set(cacheKey, JSON.stringify(token), 60)
     return token
   }
 
@@ -50,9 +48,7 @@ export default class CachedTokenParser implements ITokenParser {
     const token = await this.tokenParser.parseLiveAuthorizationToken(
       encodedLiveAuthorizationToken,
     )
-    if (token.userId) {
-      await this.cache.set(cacheKey, JSON.stringify(token), 60)
-    }
+    await this.cache.set(cacheKey, JSON.stringify(token), 60)
     return token
   }
 }

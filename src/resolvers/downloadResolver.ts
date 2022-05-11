@@ -51,18 +51,28 @@ export default class DownloadResolver {
     return result
   }
 
-  public getStats(): StatsInput {
-    return this.stats.toStatsInput()
+  public getStatsAndReset(): StatsInput {
+    const result = this.stats.toStatsInput()
+    this.stats.reset()
+    return result
   }
 }
 
 class StatsCollector {
-  public getRequiredDownloadInfo = new GetRequiredDownloadInfoStats()
+  private _getRequiredDownloadInfo = new GetRequiredDownloadInfoStats()
+
+  public get getRequiredDownloadInfo() {
+    return this._getRequiredDownloadInfo
+  }
 
   public toStatsInput(): StatsInput {
     return {
       getRequiredDownloadInfo: this.getRequiredDownloadInfo,
     }
+  }
+
+  public reset() {
+    this._getRequiredDownloadInfo = new GetRequiredDownloadInfoStats()
   }
 }
 

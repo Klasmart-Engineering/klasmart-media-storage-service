@@ -77,20 +77,35 @@ export default class MetadataResolver {
     return results
   }
 
-  public getStats(): StatsInput {
-    return this.stats.toStatsInput()
+  public getStatsAndReset(): StatsInput {
+    const result = this.stats.toStatsInput()
+    this.stats.reset()
+    return result
   }
 }
 
 class StatsCollector {
-  public audioMetadata = new MetadataStats()
-  public imageMetadata = new MetadataStats()
+  public _audioMetadata = new MetadataStats()
+  public _imageMetadata = new MetadataStats()
+
+  public get audioMetadata() {
+    return this._audioMetadata
+  }
+
+  public get imageMetadata() {
+    return this._imageMetadata
+  }
 
   public toStatsInput(): StatsInput {
     return {
       audioMetadata: this.audioMetadata,
       imageMetadata: this.imageMetadata,
     }
+  }
+
+  public reset() {
+    this._audioMetadata = new MetadataStats()
+    this._imageMetadata = new MetadataStats()
   }
 }
 

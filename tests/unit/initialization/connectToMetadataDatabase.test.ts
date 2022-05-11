@@ -10,6 +10,7 @@ import {
   UNIQUE_VIOLATION,
 } from '../../../src/initialization/connectToMetadataDatabase'
 import Substitute from '@fluffy-spoon/substitute'
+import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
 
 describe('connectToMetadataDatabase', () => {
   context('database does not exist', () => {
@@ -240,5 +241,53 @@ describe('connectToMetadataDatabase', () => {
         })
       },
     )
+  })
+
+  describe('getMetadataDatabaseConnectionOptions', () => {
+    context("DATABASE_LOGGING = 'all'", () => {
+      let original: string | undefined
+
+      before(() => {
+        original = setEnvVar('DATABASE_LOGGING', 'all')
+      })
+
+      after(() => {
+        restoreEnvVar('DATABASE_LOGGING', original)
+      })
+
+      it("options.logging = 'all'", async () => {
+        // Arrange
+        const url = 'postgres://postgres:kidsloop@localhost:5432/media_db'
+
+        // Act
+        const options = getMetadataDatabaseConnectionOptions(url)
+
+        // Assert
+        expect(options.logging).to.equal('all')
+      })
+    })
+
+    context("DATABASE_LOGGING = 'error migration'", () => {
+      let original: string | undefined
+
+      before(() => {
+        original = setEnvVar('DATABASE_LOGGING', 'error migration')
+      })
+
+      after(() => {
+        restoreEnvVar('DATABASE_LOGGING', original)
+      })
+
+      it("options.logging = ['error', 'migration']", async () => {
+        // Arrange
+        const url = 'postgres://postgres:kidsloop@localhost:5432/media_db'
+
+        // Act
+        const options = getMetadataDatabaseConnectionOptions(url)
+
+        // Assert
+        expect(options.logging).to.deep.equal(['error', 'migration'])
+      })
+    })
   })
 })

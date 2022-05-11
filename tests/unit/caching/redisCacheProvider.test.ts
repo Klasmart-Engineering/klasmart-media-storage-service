@@ -70,4 +70,22 @@ describe('RedisCacheProvider', () => {
       })
     })
   })
+
+  describe('delete', () => {
+    context('key does not exist in redis', () => {
+      it('redisClient.del is called once', async () => {
+        // Arrange
+        const redisClient = Substitute.for<Redis>()
+        const cacheKey = 'key1'
+
+        const sut = new RedisCacheProvider(redisClient)
+
+        // Act
+        await sut.delete(cacheKey)
+
+        // Assert
+        redisClient.received(1).del(cacheKey)
+      })
+    })
+  })
 })

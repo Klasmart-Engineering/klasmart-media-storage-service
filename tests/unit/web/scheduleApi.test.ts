@@ -190,6 +190,38 @@ describe('scheduleApi', () => {
         )
       })
     })
+
+    context('ScheduleDto.participant_teacher_ids is nullish', () => {
+      it('throws error', async () => {
+        // Arrange
+        const roomId = 'my-room'
+        const authenticationToken = 'auth-token'
+        const baseUrl = 'https://dummy.kidsloop.live'
+        const axiosClient = Substitute.for<AxiosStatic>()
+        const sut = new ScheduleApi(axiosClient, baseUrl)
+        const dto: ScheduleDto = {
+          ...scheduleDto,
+          participant_teacher_ids: undefined,
+        }
+
+        const response: AxiosResponse = {
+          status: 200,
+          data: dto,
+          statusText: Arg.any(),
+          config: Arg.any(),
+          headers: Arg.any(),
+        }
+        axiosClient.get(Arg.all()).resolves(response)
+
+        // Act
+        const fn = () => sut.getRoomInfo(roomId, authenticationToken)
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(
+          'schedule.participant_teacher_ids is nullish',
+        )
+      })
+    })
   })
 })
 

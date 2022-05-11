@@ -127,20 +127,35 @@ export default class UploadResolver {
     return { mediaId, presignedUrl }
   }
 
-  public getStats(): StatsInput {
-    return this.stats.toStatsInput()
+  public getStatsAndReset(): StatsInput {
+    const result = this.stats.toStatsInput()
+    this.stats.reset()
+    return result
   }
 }
 
 class StatsCollector {
-  public getServerPublicKey = new GetServerPublicKeyStats()
-  public getRequiredUploadInfo = new GetRequiredUploadInfoStats()
+  public _getServerPublicKey = new GetServerPublicKeyStats()
+  public _getRequiredUploadInfo = new GetRequiredUploadInfoStats()
+
+  public get getServerPublicKey() {
+    return this._getServerPublicKey
+  }
+
+  public get getRequiredUploadInfo() {
+    return this._getRequiredUploadInfo
+  }
 
   public toStatsInput(): StatsInput {
     return {
       getServerPublicKey: this.getServerPublicKey,
       getRequiredUploadInfo: this.getRequiredUploadInfo,
     }
+  }
+
+  public reset() {
+    this._getServerPublicKey = new GetServerPublicKeyStats()
+    this._getRequiredUploadInfo = new GetRequiredUploadInfoStats()
   }
 }
 
@@ -156,15 +171,11 @@ class GetRequiredUploadInfoStats implements ResolverStatsInput {
   public counts: {
     callCount: number
     noRoomCount: number
-    audioCount: number
-    imageCount: number
     failedUploadCount: number
     [key: string]: number
   } = {
     callCount: 0,
     noRoomCount: 0,
-    audioCount: 0,
-    imageCount: 0,
     failedUploadCount: 0,
   }
   public sets = {

@@ -8,8 +8,7 @@ import { error2Obj } from '../errors/errorUtil'
 
 const logger = withLogger('bootstrap')
 
-export default async function bootstrap(compositionRoot?: CompositionRoot) {
-  compositionRoot ??= new CompositionRoot()
+export default async function bootstrap(compositionRoot: CompositionRoot) {
   await compositionRoot.buildObjectGraph()
   const schema = await buildDefaultSchema(compositionRoot)
 
@@ -32,10 +31,7 @@ export default async function bootstrap(compositionRoot?: CompositionRoot) {
   return service
 }
 
-async function exitHandler(compositionRoot: CompositionRoot | undefined) {
-  if (!compositionRoot) {
-    process.exit(0)
-  }
+async function exitHandler(compositionRoot: CompositionRoot) {
   try {
     await compositionRoot.shutDown()
   } catch (error) {

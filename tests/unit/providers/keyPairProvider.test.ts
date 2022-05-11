@@ -6,7 +6,7 @@ import KeyPair from '../../../src/helpers/keyPair'
 import ErrorMessage from '../../../src/errors/errorMessages'
 
 describe('KeyPairProvider', () => {
-  describe('getPublicKey', () => {
+  describe('getPublicKeyOrCreatePair', () => {
     context('matching public and private keys exist in storage', () => {
       it('returns matching public key', async () => {
         // Arrange
@@ -210,5 +210,116 @@ describe('KeyPairProvider', () => {
         })
       },
     )
+
+    context('publicKeyStorage.getKey throws an unhelpful error', () => {
+      it('throws a public key storage error', async () => {
+        // Arrange
+        const publicKeyStorage = Substitute.for<IKeyStorage>()
+        const privateKeyStorage = Substitute.for<IKeyStorage>()
+        const publicKey = Uint8Array.from([1, 2, 3])
+        const privateKey = Uint8Array.from([4, 5, 6])
+        const keyPairFactory = () => new KeyPair(publicKey, privateKey)
+        const awsError = 'some AWS error'
+        const sut = new KeyPairProvider(
+          publicKeyStorage,
+          privateKeyStorage,
+          keyPairFactory,
+        )
+
+        const objectKey = 'room1'
+
+        publicKeyStorage.getKey(objectKey).rejects(awsError)
+        privateKeyStorage.getKey(objectKey).resolves(undefined)
+
+        // Act
+        const fn = () => sut.getPublicKeyOrCreatePair(objectKey)
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(ErrorMessage.publicKeyGetFailed)
+      })
+    })
+
+    context('privateKeyStorage.getKey throws an unhelpful error', () => {
+      it('throws a private key storage error', async () => {
+        // Arrange
+        const publicKeyStorage = Substitute.for<IKeyStorage>()
+        const privateKeyStorage = Substitute.for<IKeyStorage>()
+        const publicKey = Uint8Array.from([1, 2, 3])
+        const privateKey = Uint8Array.from([4, 5, 6])
+        const keyPairFactory = () => new KeyPair(publicKey, privateKey)
+        const awsError = 'some AWS error'
+        const sut = new KeyPairProvider(
+          publicKeyStorage,
+          privateKeyStorage,
+          keyPairFactory,
+        )
+
+        const objectKey = 'room1'
+
+        publicKeyStorage.getKey(objectKey).resolves(undefined)
+        privateKeyStorage.getKey(objectKey).rejects(awsError)
+
+        // Act
+        const fn = () => sut.getPublicKeyOrCreatePair(objectKey)
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(ErrorMessage.privateKeyGetFailed)
+      })
+    })
+  })
+
+  describe('getPrivateKeyOrThrow', () => {
+    context('matching private key exists in storage', () => {
+      it('returns matching private key', async () => {
+        // Arrange
+        const publicKeyStorage = Substitute.for<IKeyStorage>()
+        const privateKeyStorage = Substitute.for<IKeyStorage>()
+        const keyPairFactory = () =>
+          new KeyPair(Uint8Array.from([10]), Uint8Array.from([100]))
+        const sut = new KeyPairProvider(
+          publicKeyStorage,
+          privateKeyStorage,
+          keyPairFactory,
+        )
+
+        const objectKey = 'room1'
+        const privateKey = Uint8Array.from([4, 5, 6])
+        privateKeyStorage.getKey(objectKey).resolves(privateKey)
+
+        // Act
+        const expected = privateKey
+        const actual = await sut.getPrivateKeyOrThrow(objectKey)
+
+        // Assert
+        expect(actual).equal(expected)
+        privateKeyStorage.received(1).getKey(objectKey)
+      })
+    })
+
+    context('matching private key does not exist in storage', () => {
+      it('throws "key does not exist" error', async () => {
+        // Arrange
+        const publicKeyStorage = Substitute.for<IKeyStorage>()
+        const privateKeyStorage = Substitute.for<IKeyStorage>()
+        const keyPairFactory = () =>
+          new KeyPair(Uint8Array.from([10]), Uint8Array.from([100]))
+        const sut = new KeyPairProvider(
+          publicKeyStorage,
+          privateKeyStorage,
+          keyPairFactory,
+        )
+
+        const objectKey = 'room1'
+        privateKeyStorage.getKey(objectKey).resolves(undefined)
+
+        // Act
+        const fn = () => sut.getPrivateKeyOrThrow(objectKey)
+
+        // Assert
+        await expect(fn()).to.be.rejectedWith(
+          `Server private key doesn't exist: ${objectKey}`,
+        )
+      })
+    })
   })
 })

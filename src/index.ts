@@ -3,11 +3,12 @@ import 'reflect-metadata'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import bootstrap from './initialization/bootstrap'
 import { error2Obj } from './errors/errorUtil'
+import CompositionRoot from './initialization/compositionRoot'
 
 const logger = withLogger('index')
 
 async function main() {
-  const service = await bootstrap()
+  const service = await bootstrap(new CompositionRoot())
 
   const port = process.env.PORT || 8080
   await service.listen(Number(port), () => {

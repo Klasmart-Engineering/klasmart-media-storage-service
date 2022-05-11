@@ -69,4 +69,108 @@ describe('config', () => {
       })
     }
   })
+
+  describe('getCache', () => {
+    context(`CACHE is set to invalid value`, () => {
+      let original: string | undefined
+
+      before(() => {
+        original = setEnvVar('CACHE', 'custom')
+      })
+
+      after(() => {
+        restoreEnvVar('CACHE', original)
+      })
+
+      it('throws "invalid value" error', async () => {
+        // Act
+        const fn = () => Config.getCache()
+
+        // Assert
+        expect(fn).to.throw(
+          "Invalid value for CACHE. Valid options: 'redis', 'memory', or undefined",
+        )
+      })
+    })
+  })
+
+  describe('getRedisHost', () => {
+    context(`CACHE is set to 'redis' but REDIS_HOST is not set`, () => {
+      let cacheOriginal: string | undefined
+      let hostOriginal: string | undefined
+      let portOriginal: string | undefined
+
+      before(() => {
+        cacheOriginal = setEnvVar('CACHE', 'redis')
+        hostOriginal = setEnvVar('REDIS_HOST', undefined)
+        portOriginal = setEnvVar('REDIS_PORT', '6379')
+      })
+
+      after(() => {
+        restoreEnvVar('CACHE', cacheOriginal)
+        restoreEnvVar('REDIS_HOST', hostOriginal)
+        restoreEnvVar('REDIS_PORT', portOriginal)
+      })
+
+      it('throws "required" error', async () => {
+        // Act
+        const fn = () => Config.getRedisHost()
+
+        // Assert
+        expect(fn).to.throw(
+          "REDIS_HOST must be defined if CACHE is set to 'redis'",
+        )
+      })
+    })
+  })
+
+  describe('getRedisPort', () => {
+    context(`CACHE is set to 'redis' but REDIS_PORT is not set`, () => {
+      let cacheOriginal: string | undefined
+      let hostOriginal: string | undefined
+      let portOriginal: string | undefined
+
+      before(() => {
+        cacheOriginal = setEnvVar('CACHE', 'redis')
+        hostOriginal = setEnvVar('REDIS_HOST', 'localhost')
+        portOriginal = setEnvVar('REDIS_PORT', undefined)
+      })
+
+      after(() => {
+        restoreEnvVar('CACHE', cacheOriginal)
+        restoreEnvVar('REDIS_HOST', hostOriginal)
+        restoreEnvVar('REDIS_PORT', portOriginal)
+      })
+
+      it('throws "required" error', async () => {
+        // Act
+        const fn = () => Config.getRedisPort()
+
+        // Assert
+        expect(fn).to.throw(
+          "REDIS_PORT must be defined if CACHE is set to 'redis'",
+        )
+      })
+    })
+
+    context(`REDIS_PORT is set to invalid value`, () => {
+      let original: string | undefined
+
+      before(() => {
+        original = setEnvVar('REDIS_PORT', 'custom')
+      })
+
+      after(() => {
+        restoreEnvVar('REDIS_PORT', original)
+      })
+
+      it('throws "NaN" error', async () => {
+        // Act
+        const fn = () => Config.getRedisPort()
+
+        // Assert
+        expect(fn).to.throw('REDIS_PORT is NaN')
+      })
+    })
+  })
 })

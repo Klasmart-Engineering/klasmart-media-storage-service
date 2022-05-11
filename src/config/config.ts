@@ -78,10 +78,20 @@ export default class Config {
   }
 
   static getRedisHost(): string | undefined {
+    if (process.env.CACHE === 'redis' && !process.env.REDIS_HOST) {
+      throwExpression("REDIS_HOST must be defined if CACHE is set to 'redis'")
+    }
     return process.env.REDIS_HOST
   }
 
-  static getRedisPort(): number | undefined {
-    return process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : undefined
+  static getRedisPort(): number {
+    if (process.env.CACHE === 'redis' && !process.env.REDIS_PORT) {
+      throwExpression("REDIS_PORT must be defined if CACHE is set to 'redis'")
+    }
+    const port = Number(process.env.REDIS_PORT)
+    if (isNaN(port)) {
+      throwExpression('REDIS_PORT is NaN')
+    }
+    return port
   }
 }
