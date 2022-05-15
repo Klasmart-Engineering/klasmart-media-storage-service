@@ -6,15 +6,16 @@ import {
   StatsOutput,
   StatsProvider,
 } from '../../../src/providers/statsProvider'
-import Config from '../../../src/config/config'
+import AppConfig from '../../../src/config/config'
 
 describe('StatsProvider', () => {
   let redis: Redis
 
   before(async () => {
+    // TODO: Move this to config like s3Client?
     redis = new RedisClient({
-      port: Config.getRedisPort(),
-      host: Config.getRedisHost(),
+      port: AppConfig.default.redisPort,
+      host: AppConfig.default.redisHost,
       keyPrefix: 'media:',
     })
     await redis.flushall()

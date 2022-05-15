@@ -5,30 +5,30 @@ import {
   DeleteObjectsCommand,
   CreateBucketCommand,
 } from '@aws-sdk/client-s3'
-import Config from '../../src/config/config'
+import AppConfig from '../../src/config/config'
 
 const removeNulls = <S>(value: S | undefined): value is S => value != null
 
 export async function createS3BucketsIfTheyDontExist(): Promise<void> {
-  const s3Client = Config.getS3Client()
+  const s3Client = AppConfig.default.s3Client
   const listBuckets = new ListBucketsCommand({})
   const bucketListResult = await s3Client.send(listBuckets)
   const buckets = (bucketListResult.Buckets ?? [])
     .map((x) => x.Name)
     .filter(removeNulls)
-  if (!buckets.includes(Config.getPublicKeyBucket())) {
+  if (!buckets.includes(AppConfig.default.publicKeyBucket)) {
     await s3Client.send(
-      new CreateBucketCommand({ Bucket: Config.getPublicKeyBucket() }),
+      new CreateBucketCommand({ Bucket: AppConfig.default.publicKeyBucket }),
     )
   }
-  if (!buckets.includes(Config.getPrivateKeyBucket())) {
+  if (!buckets.includes(AppConfig.default.privateKeyBucket)) {
     await s3Client.send(
-      new CreateBucketCommand({ Bucket: Config.getPrivateKeyBucket() }),
+      new CreateBucketCommand({ Bucket: AppConfig.default.privateKeyBucket }),
     )
   }
-  if (!buckets.includes(Config.getMediaFileBucket())) {
+  if (!buckets.includes(AppConfig.default.mediaFileBucket)) {
     await s3Client.send(
-      new CreateBucketCommand({ Bucket: Config.getMediaFileBucket() }),
+      new CreateBucketCommand({ Bucket: AppConfig.default.mediaFileBucket }),
     )
   }
 }

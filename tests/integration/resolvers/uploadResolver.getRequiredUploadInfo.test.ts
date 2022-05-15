@@ -1,7 +1,7 @@
 import '../../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import Config from '../../../src/config/config'
+import AppConfig from '../../../src/config/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
@@ -41,7 +41,7 @@ describe('uploadResolver.getRequiredUploadInfo', () => {
     const service = await bootstrap(compositionRoot)
     request = supertest(service.server)
     requestPath = service.path
-    s3Client = Config.getS3Client()
+    s3Client = AppConfig.default.s3Client
   })
 
   after(async () => {

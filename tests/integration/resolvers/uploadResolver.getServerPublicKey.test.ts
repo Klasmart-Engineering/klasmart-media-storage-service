@@ -1,6 +1,6 @@
 import '../../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import Config from '../../../src/config/config'
+import AppConfig from '../../../src/config/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
@@ -31,7 +31,7 @@ describe('uploadResolver.getServerPublicKey', () => {
     const service = await bootstrap(compositionRoot)
     request = supertest(service.server)
     requestPath = service.path
-    s3Client = Config.getS3Client()
+    s3Client = AppConfig.default.s3Client
   })
 
   after(async () => {
@@ -74,7 +74,7 @@ describe('uploadResolver.getServerPublicKey', () => {
 
     it('server public key is saved in S3 bucket', async () => {
       const publicKeyBucket = await s3Client.send(
-        new ListObjectsCommand({ Bucket: Config.getPublicKeyBucket() }),
+        new ListObjectsCommand({ Bucket: AppConfig.default.publicKeyBucket }),
       )
       expect(publicKeyBucket.Contents == null).to.be.false
       expect(publicKeyBucket.Contents).to.have.lengthOf(1)
@@ -84,7 +84,7 @@ describe('uploadResolver.getServerPublicKey', () => {
 
     it('server private key is saved in S3 bucket', async () => {
       const privateKeyBucket = await s3Client.send(
-        new ListObjectsCommand({ Bucket: Config.getPrivateKeyBucket() }),
+        new ListObjectsCommand({ Bucket: AppConfig.default.privateKeyBucket }),
       )
       expect(privateKeyBucket.Contents == null).to.be.false
       expect(privateKeyBucket.Contents).to.have.lengthOf(1)
@@ -109,14 +109,14 @@ describe('uploadResolver.getServerPublicKey', () => {
 
       await s3Client.send(
         new PutObjectCommand({
-          Bucket: Config.getPublicKeyBucket(),
+          Bucket: AppConfig.default.publicKeyBucket,
           Key: roomId,
           Body: Buffer.from(serverKeyPair.publicKey),
         }),
       )
       await s3Client.send(
         new PutObjectCommand({
-          Bucket: Config.getPrivateKeyBucket(),
+          Bucket: AppConfig.default.privateKeyBucket,
           Key: roomId,
           Body: Buffer.from(serverKeyPair.secretKey),
         }),
@@ -151,11 +151,11 @@ describe('uploadResolver.getServerPublicKey', () => {
 
     it('server public key is still saved in S3 bucket', async () => {
       const publicKeyBucket = await s3Client.send(
-        new ListObjectsCommand({ Bucket: Config.getPublicKeyBucket() }),
+        new ListObjectsCommand({ Bucket: AppConfig.default.publicKeyBucket }),
       )
       const publicKeyInBucket = await s3Client.send(
         new GetObjectCommand({
-          Bucket: Config.getPublicKeyBucket(),
+          Bucket: AppConfig.default.publicKeyBucket,
           Key: roomId,
         }),
       )
@@ -168,11 +168,11 @@ describe('uploadResolver.getServerPublicKey', () => {
 
     it('server private key is still saved in S3 bucket', async () => {
       const privateKeyBucket = await s3Client.send(
-        new ListObjectsCommand({ Bucket: Config.getPrivateKeyBucket() }),
+        new ListObjectsCommand({ Bucket: AppConfig.default.privateKeyBucket }),
       )
       const privateKeyInBucket = await s3Client.send(
         new GetObjectCommand({
-          Bucket: Config.getPrivateKeyBucket(),
+          Bucket: AppConfig.default.privateKeyBucket,
           Key: roomId,
         }),
       )

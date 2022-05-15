@@ -1,17 +1,17 @@
 import { expect } from 'chai'
-import Config from '../../../src/config/config'
+import AppConfig from '../../../src/config/config'
 import { setEnvVar, restoreEnvVar } from '../../utils/setAndRestoreEnvVar'
 
 describe('config', () => {
   describe('error should be thrown when required environment variables are not defined', () => {
     const testCases: { [key in keyof NodeJS.ProcessEnv]: () => string } = {
-      DOMAIN: () => Config.getCorsDomain(),
-      METADATA_DATABASE_URL: () => Config.getMetadataDatabaseUrl(),
-      PUBLIC_KEY_BUCKET: () => Config.getPublicKeyBucket(),
-      PRIVATE_KEY_BUCKET: () => Config.getPrivateKeyBucket(),
-      MEDIA_FILE_BUCKET: () => Config.getMediaFileBucket(),
-      CMS_API_URL: () => Config.getCmsApiUrl(),
-      USER_SERVICE_ENDPOINT: () => Config.getUserServiceEndpoint(),
+      DOMAIN: () => AppConfig.default.corsDomain,
+      METADATA_DATABASE_URL: () => AppConfig.default.metadataDatabaseUrl,
+      PUBLIC_KEY_BUCKET: () => AppConfig.default.publicKeyBucket,
+      PRIVATE_KEY_BUCKET: () => AppConfig.default.privateKeyBucket,
+      MEDIA_FILE_BUCKET: () => AppConfig.default.mediaFileBucket,
+      CMS_API_URL: () => AppConfig.default.cmsApiUrl,
+      USER_SERVICE_ENDPOINT: () => AppConfig.default.userServiceEndpoint,
     }
     for (const [envVar, fn] of Object.entries(testCases)) {
       context(`${envVar} is not defined`, () => {
@@ -32,17 +32,17 @@ describe('config', () => {
     } = {
       CMS_API_URL: {
         expected: 'https://dummy-cms-service.net',
-        fn: () => Config.getCmsApiUrl(),
+        fn: () => AppConfig.default.cmsApiUrl,
       },
       USER_SERVICE_ENDPOINT: {
         expected: 'https://dummy-user-service.net',
-        fn: () => Config.getUserServiceEndpoint(),
+        fn: () => AppConfig.default.userServiceEndpoint,
       },
       REDIS_HOST: {
         expected: 'dummy-redis-host',
-        fn: () => Config.getRedisHost(),
+        fn: () => AppConfig.default.redisHost,
       },
-      REDIS_PORT: { expected: 6379, fn: () => Config.getRedisPort() },
+      REDIS_PORT: { expected: 6379, fn: () => AppConfig.default.redisPort },
     }
 
     for (const [key, value] of Object.entries(testCases)) {
@@ -84,7 +84,7 @@ describe('config', () => {
 
       it('throws "invalid value" error', async () => {
         // Act
-        const fn = () => Config.getCache()
+        const fn = () => AppConfig.default.cache
 
         // Assert
         expect(fn).to.throw(
@@ -114,7 +114,7 @@ describe('config', () => {
 
       it('throws "required" error', async () => {
         // Act
-        const fn = () => Config.getRedisHost()
+        const fn = () => AppConfig.default.redisHost
 
         // Assert
         expect(fn).to.throw(
@@ -144,7 +144,7 @@ describe('config', () => {
 
       it('throws "required" error', async () => {
         // Act
-        const fn = () => Config.getRedisPort()
+        const fn = () => AppConfig.default.redisPort
 
         // Assert
         expect(fn).to.throw(
@@ -166,7 +166,7 @@ describe('config', () => {
 
       it('throws "NaN" error', async () => {
         // Act
-        const fn = () => Config.getRedisPort()
+        const fn = () => AppConfig.default.redisPort
 
         // Assert
         expect(fn).to.throw('REDIS_PORT is NaN')

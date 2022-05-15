@@ -75,6 +75,9 @@ export class StatsProvider {
     for (let i = 0; i < keys.length; i++) {
       keys[i] = keys[i].substring('media:'.length)
     }
+    if (keys.length > 0) {
+      return
+    }
     await this.redisClient.del(keys)
   }
 }

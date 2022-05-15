@@ -1,7 +1,7 @@
 import '../../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
 import { connectToMetadataDatabase } from '../../../src/initialization/connectToMetadataDatabase'
-import Config from '../../../src/config/config'
+import AppConfig from '../../../src/config/config'
 import { Connection } from 'typeorm'
 import { InitDatabase1646365428128 } from '../../../src/migrations/1646365428128-InitDatabase'
 
@@ -10,7 +10,7 @@ describe('1646365428128-InitDatabase', () => {
 
   before(async () => {
     connection = await connectToMetadataDatabase(
-      Config.getMetadataDatabaseUrl(),
+      AppConfig.default.metadataDatabaseUrl,
     )
   })
 

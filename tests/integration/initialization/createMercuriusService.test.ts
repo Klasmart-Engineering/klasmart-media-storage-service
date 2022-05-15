@@ -1,43 +1,16 @@
-import '../../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import { TestCompositionRoot } from '../testCompositionRoot'
-import bootstrap from '../../../src/initialization/bootstrap'
-import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
-import buildDefaultSchema from '../../../src/initialization/buildDefaultSchema'
-import createApolloExpressService from '../../../src/initialization/createApolloExpressService'
 import supertest from 'supertest'
-import { version } from '../../../package.json'
+import buildDefaultSchema from '../../../src/initialization/buildDefaultSchema'
+import CompositionRoot from '../../../src/initialization/compositionRoot'
+import createMercuriusService from '../../../src/initialization/createMercuriusService'
 import IMediaStorageService from '../../../src/interfaces/mediaStorageService'
+import { TestCompositionRoot } from '../testCompositionRoot'
+import { version } from '../../../package.json'
+import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
 
-describe('createApolloExpressService', () => {
-  let originalServerImpl: string | undefined
-
-  before(async () => {
-    originalServerImpl = setEnvVar('SERVER_IMPL', 'apollo-express')
-  })
-
-  after(async () => {
-    restoreEnvVar('SERVER_IMPL', originalServerImpl)
-  })
-
-  context('SERVER_IMPL is set to apollo-express', () => {
-    let compositionRoot: TestCompositionRoot
-
-    after(async () => {
-      await compositionRoot?.cleanUp()
-    })
-
-    it('result is not nullish', async () => {
-      compositionRoot = new TestCompositionRoot()
-      const service = await bootstrap(compositionRoot)
-      expect(service == null).to.be.false
-      expect(service.path == null).to.be.false
-      expect(service.server == null).to.be.false
-    })
-  })
-
+describe('createMercuriusService', () => {
   context('call service.listen and service.close', () => {
-    let compositionRoot: TestCompositionRoot
+    let compositionRoot: CompositionRoot
     let service: IMediaStorageService
 
     after(async () => {
@@ -49,7 +22,7 @@ describe('createApolloExpressService', () => {
       // Arrange
       compositionRoot = new TestCompositionRoot()
       const schema = await buildDefaultSchema(compositionRoot)
-      service = await createApolloExpressService(schema, compositionRoot)
+      service = await createMercuriusService(schema, compositionRoot)
 
       // Act
       let callbackInvoked = false
@@ -63,7 +36,7 @@ describe('createApolloExpressService', () => {
   })
 
   context('call version endpoint', () => {
-    let compositionRoot: TestCompositionRoot
+    let compositionRoot: CompositionRoot
 
     after(async () => {
       await compositionRoot.cleanUp()
@@ -73,7 +46,7 @@ describe('createApolloExpressService', () => {
       // Arrange
       compositionRoot = new TestCompositionRoot()
       const schema = await buildDefaultSchema(compositionRoot)
-      const service = await createApolloExpressService(schema, compositionRoot)
+      const service = await createMercuriusService(schema, compositionRoot)
       const request = supertest(service.server)
 
       // Act
@@ -85,7 +58,7 @@ describe('createApolloExpressService', () => {
   })
 
   context('call health endpoint', () => {
-    let compositionRoot: TestCompositionRoot
+    let compositionRoot: CompositionRoot
 
     after(async () => {
       await compositionRoot.cleanUp()
@@ -95,7 +68,7 @@ describe('createApolloExpressService', () => {
       // Arrange
       compositionRoot = new TestCompositionRoot()
       const schema = await buildDefaultSchema(compositionRoot)
-      const service = await createApolloExpressService(schema, compositionRoot)
+      const service = await createMercuriusService(schema, compositionRoot)
       const request = supertest(service.server)
 
       // Act & Assert
@@ -103,8 +76,34 @@ describe('createApolloExpressService', () => {
     })
   })
 
+  context("ROUTE_PREFIX = '/my-service'", () => {
+    let compositionRoot: CompositionRoot
+    let originalPrefix: string | undefined
+
+    before(() => {
+      originalPrefix = setEnvVar('ROUTE_PREFIX', '/my-service')
+    })
+
+    after(async () => {
+      restoreEnvVar('ROUTE_PREFIX', originalPrefix)
+      await compositionRoot.cleanUp()
+    })
+
+    it("graphql path equals '/my-service/graphql'", async () => {
+      // Arrange
+      compositionRoot = new TestCompositionRoot()
+      const schema = await buildDefaultSchema(compositionRoot)
+
+      // Act
+      const service = await createMercuriusService(schema, compositionRoot)
+
+      // Assert
+      expect(service.path).to.equal('/my-service/graphql')
+    })
+  })
+
   context('ROUTE_PREFIX not defined', () => {
-    let compositionRoot: TestCompositionRoot
+    let compositionRoot: CompositionRoot
     let originalPrefix: string | undefined
 
     before(() => {
@@ -122,7 +121,7 @@ describe('createApolloExpressService', () => {
       const schema = await buildDefaultSchema(compositionRoot)
 
       // Act
-      const service = await createApolloExpressService(schema, compositionRoot)
+      const service = await createMercuriusService(schema, compositionRoot)
 
       // Assert
       expect(service.path).to.equal('/graphql')

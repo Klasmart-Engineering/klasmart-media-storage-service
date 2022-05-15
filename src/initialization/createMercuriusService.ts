@@ -1,5 +1,5 @@
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
-import Config from '../config/config'
+import AppConfig from '../config/config'
 import { GraphQLSchema } from 'graphql'
 import Fastify, { FastifyReply, FastifyRequest, LogLevel } from 'fastify'
 import mercurius from 'mercurius'
@@ -15,13 +15,12 @@ import CompositionRoot from './compositionRoot'
 
 const logger = withLogger('createMercuriusService')
 
-const routePrefix = process.env.ROUTE_PREFIX || ''
-
 export default async function createMercuriusService(
   schema: GraphQLSchema,
   compositionRoot: CompositionRoot,
 ): Promise<IMediaStorageService> {
-  const domain = Config.getCorsDomain()
+  const domain = AppConfig.default.corsDomain
+  const routePrefix = process.env.ROUTE_PREFIX || ''
 
   const app = Fastify({ bodyLimit: 1048576 }) // (1MiB)
 
@@ -63,5 +62,6 @@ export default async function createMercuriusService(
       await app.listen(port, '0.0.0.0')
       callback()
     },
+    close: () => app.close(),
   }
 }

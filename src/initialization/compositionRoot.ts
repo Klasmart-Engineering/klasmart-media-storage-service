@@ -10,7 +10,7 @@ import S3KeyStorage from '../providers/s3KeyStorage'
 import S3PresignedUrlProvider from '../providers/s3PresignedUrlProvider'
 import IDecryptionProvider from '../interfaces/decryptionProvider'
 import TweetnaclDecryption from '../providers/tweetnaclDecryption'
-import Config from '../config/config'
+import AppConfig from '../config/config'
 import { box } from 'tweetnacl'
 import KeyPair from '../helpers/keyPair'
 import AuthorizationProvider from '../providers/authorizationProvider'
@@ -72,6 +72,8 @@ export default class CompositionRoot {
   protected schedulerCallbacks: (() => void)[] = []
   protected statsProvider?: StatsProvider
 
+  constructor(private readonly config = AppConfig.default) {}
+
   /**
    * Call this method at service startup to instantiate the GraphQL resolvers.
    * Useful to validate configuration asap. Otherwise, the resolvers are lazily
@@ -86,7 +88,7 @@ export default class CompositionRoot {
   }
 
   protected connectToDb() {
-    return connectToMetadataDatabase(Config.getMetadataDatabaseUrl())
+    return connectToMetadataDatabase(this.config.metadataDatabaseUrl)
   }
 
   public getDownloadResolver(): DownloadResolver {
@@ -118,7 +120,7 @@ export default class CompositionRoot {
       this.getSymmetricKeyProvider(),
       this.getPresignedUrlProvider(),
     )
-    if (Config.getCache()) {
+    if (this.config.cache) {
       downloadInfoProvider = new CachedDownloadInfoProvider(
         downloadInfoProvider,
         this.getCacheProvider(),
@@ -129,7 +131,7 @@ export default class CompositionRoot {
 
   public getTokenParser(): ITokenParser {
     let tokenParser = new TokenParser()
-    if (Config.getCache()) {
+    if (this.config.cache) {
       // Use a memory cache because I think the overhead of Redis decreases the benefit of token caching.
       // Load testing reveals that memory caching is almost twice as fast as Redis.
       const memoryCache = new MemoryCacheProvider(Date)
@@ -141,11 +143,7 @@ export default class CompositionRoot {
   }
 
   protected initStatsProvider(): void {
-    // TODO: Consider also supporting non-redis stat provider.
-    if (this.statsProvider || Config.getCache() !== 'redis') {
-      return
-    }
-    this.statsProvider = new StatsProvider(this.getRedisClient())
+    this.statsProvider = this.getStatsProvider()
     this.schedulerCallbacks.push(async () => {
       try {
         const input = this.getStatsInput()
@@ -158,6 +156,15 @@ export default class CompositionRoot {
       }
     })
     this.startPeriodicScheduler()
+  }
+
+  protected getStatsProvider(): StatsProvider | undefined {
+    // TODO: Consider also supporting non-redis stat provider.
+    if (this.config.cache !== 'redis') {
+      return
+    }
+    this.statsProvider ??= new StatsProvider(this.getRedisClient())
+    return this.statsProvider
   }
 
   protected getStatsInput(): StatsInput {
@@ -178,7 +185,7 @@ export default class CompositionRoot {
       this.getPrivateKeyStorage(),
       this.getKeyPairFactory(),
     )
-    if (Config.getCache()) {
+    if (this.config.cache) {
       this.keyPairProvider = new CachedKeyPairProvider(
         this.keyPairProvider,
         this.getCacheProvider(),
@@ -189,8 +196,8 @@ export default class CompositionRoot {
 
   protected getPresignedUrlProvider(): IPresignedUrlProvider {
     this.presignedUrlProvider ??= new S3PresignedUrlProvider(
-      Config.getMediaFileBucket(),
-      Config.getS3Client(),
+      this.config.mediaFileBucket,
+      this.config.s3Client,
     )
     return this.presignedUrlProvider
   }
@@ -199,7 +206,7 @@ export default class CompositionRoot {
     if (this.authorizationProvider != null) {
       return this.authorizationProvider
     }
-    if (Config.useMockWebApis()) {
+    if (this.config.useMockWebApis) {
       this.authorizationProvider = new MockAuthorizationProvider()
     } else {
       this.authorizationProvider = new AuthorizationProvider(
@@ -207,7 +214,7 @@ export default class CompositionRoot {
         this.getPermissionApi(),
       )
     }
-    if (Config.getCache()) {
+    if (this.config.cache) {
       this.authorizationProvider = new CachedAuthorizationProvider(
         this.authorizationProvider,
         this.getCacheProvider(),
@@ -217,7 +224,7 @@ export default class CompositionRoot {
   }
 
   protected getCacheProvider(): ICacheProvider {
-    if (Config.getCache() === 'redis') {
+    if (this.config.cache === 'redis') {
       return new RedisCacheProvider(this.getRedisClient())
     }
     const memoryCache = new MemoryCacheProvider(Date)
@@ -228,19 +235,20 @@ export default class CompositionRoot {
 
   protected getRedisClient() {
     this.redis ??= new RedisClient({
-      port: Config.getRedisPort(),
-      host: Config.getRedisHost(),
+      port: this.config.redisPort,
+      host: this.config.redisHost,
       keyPrefix: 'media:',
     })
+    //this.redis.ping((e, message) => console.log('message:' + message, e))
     return this.redis
   }
 
   protected getScheduleApi(): ScheduleApi {
-    return new ScheduleApi(axios, Config.getCmsApiUrl())
+    return new ScheduleApi(axios, this.config.cmsApiUrl)
   }
 
   protected getPermissionApi(): PermissionApi {
-    return new PermissionApi(new GraphQLClient(Config.getUserServiceEndpoint()))
+    return new PermissionApi(new GraphQLClient(this.config.userServiceEndpoint))
   }
 
   protected getSymmetricKeyProvider(): ISymmetricKeyProvider {
@@ -251,7 +259,7 @@ export default class CompositionRoot {
       this.getKeyPairProvider(),
       this.getDecryptionProvider(),
     )
-    if (Config.getCache()) {
+    if (this.config.cache) {
       this.symmetricKeyProvider = new CachedSymmetricKeyProvider(
         this.symmetricKeyProvider,
         this.getCacheProvider(),
@@ -265,11 +273,11 @@ export default class CompositionRoot {
   }
 
   protected getPublicKeyStorage(): IKeyStorage {
-    return new S3KeyStorage(Config.getPublicKeyBucket(), Config.getS3Client())
+    return new S3KeyStorage(this.config.publicKeyBucket, this.config.s3Client)
   }
 
   protected getPrivateKeyStorage(): IKeyStorage {
-    return new S3KeyStorage(Config.getPrivateKeyBucket(), Config.getS3Client())
+    return new S3KeyStorage(this.config.privateKeyBucket, this.config.s3Client)
   }
 
   protected getKeyPairFactory(): () => KeyPair {
@@ -291,7 +299,7 @@ export default class CompositionRoot {
     this.metadataRepository = new TypeormMetadataRepository(
       this.typeorm.getRepository(MediaMetadata),
     )
-    if (Config.getCache()) {
+    if (this.config.cache) {
       this.metadataRepository = new CachedMetadataRepository(
         this.metadataRepository,
         this.getCacheProvider(),
@@ -303,27 +311,25 @@ export default class CompositionRoot {
   protected getUploadValidator(): IUploadValidator {
     this.uploadValidator ??= new UploadValidator(
       this.getMediaFileStorageChecker(),
-      Config.getFileValidationDelayMs(),
+      this.config.fileValidationDelayMs,
     )
     return this.uploadValidator
   }
 
   protected getMediaFileStorageChecker(): MediaFileStorageChecker {
     return new MediaFileStorageChecker(
-      Config.getS3Client(),
-      Config.getMediaFileBucket(),
+      this.config.s3Client,
+      this.config.mediaFileBucket,
     )
   }
 
   protected startPeriodicScheduler() {
-    const nextStartDate = new Date().setHours(24, 0, 0, 0)
-    const currentDate = Date.now()
-    const offset = nextStartDate - currentDate
+    const { offset, period } = this.config.statsLogConfig
     this.periodicScheduler ??= setTimeout(() => {
       this.schedulerCallbacks.forEach((cb) => cb())
       this.periodicScheduler = setInterval(() => {
         this.schedulerCallbacks.forEach((cb) => cb())
-      }, 24 * 60 * 60 * 1000)
+      }, period)
     }, offset)
   }
 

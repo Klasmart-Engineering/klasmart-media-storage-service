@@ -2,7 +2,7 @@ import '../../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import Config from '../../../src/config/config'
+import AppConfig from '../../../src/config/config'
 import { clearS3Buckets } from '../../utils/s3BucketUtil'
 import { MediaMetadata } from '../../../src/entities/mediaMetadata'
 import MediaMetadataBuilder from '../../builders/mediaMetadataBuilder'
@@ -28,7 +28,7 @@ describe('downloadResolver.getRequiredDownloadInfo', () => {
     const service = await bootstrap(compositionRoot)
     request = supertest(service.server)
     requestPath = service.path
-    s3Client = Config.getS3Client()
+    s3Client = AppConfig.default.s3Client
   })
 
   after(async () => {
@@ -64,21 +64,21 @@ describe('downloadResolver.getRequiredDownloadInfo', () => {
 
         await s3Client.send(
           new PutObjectCommand({
-            Bucket: Config.getPublicKeyBucket(),
+            Bucket: AppConfig.default.publicKeyBucket,
             Key: roomId,
             Body: Buffer.from(serverKeyPair.publicKey),
           }),
         )
         await s3Client.send(
           new PutObjectCommand({
-            Bucket: Config.getPrivateKeyBucket(),
+            Bucket: AppConfig.default.privateKeyBucket,
             Key: roomId,
             Body: Buffer.from(serverKeyPair.secretKey),
           }),
         )
         await s3Client.send(
           new PutObjectCommand({
-            Bucket: Config.getMediaFileBucket(),
+            Bucket: AppConfig.default.mediaFileBucket,
             Key: `audio/${mediaId}`,
             Body: Buffer.from([1, 2, 3]),
           }),
