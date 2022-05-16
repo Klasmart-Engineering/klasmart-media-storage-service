@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.1.31 (2022-05-16)
+
+
+### Features
+
+* **DAS-361:** add optional CDN_URL environment variable ([3e81543](https://github.com/KL-Engineering/kidsloop-media-storage-service/commit/3e81543d684e5af8b57c589b5a84f426ea386a82))
+
 ### 0.1.30 (2022-05-04)
 
 ### 0.1.29 (2022-05-04)
