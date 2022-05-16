@@ -61,7 +61,25 @@ describe('StatsProvider', () => {
         }
         expect(output1).to.deep.equal(expected)
         expect(output2).to.deep.equal(expected)
+        const keyCount = await redis.dbsize()
+        expect(keyCount).to.equal(0)
       })
     },
   )
+
+  context('input is empty', () => {
+    let output: StatsOutput
+
+    before(async () => {
+      const sut = new StatsProvider(redis, 50)
+      output = await sut.calculateTotals({})
+    })
+
+    it('output is empty', async () => {
+      const expected: StatsOutput = {}
+      expect(output).to.deep.equal(expected)
+      const keyCount = await redis.dbsize()
+      expect(keyCount).to.equal(0)
+    })
+  })
 })

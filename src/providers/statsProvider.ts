@@ -10,11 +10,11 @@ export class StatsProvider {
 
   public async calculateTotals(statsInput: StatsInput): Promise<StatsOutput> {
     await this.appendToSharedStorage(statsInput)
-    // GIVE THE OTHER CONTAINER INSTANCES TIME TO WRITE TO REDIS.
+    // Give the other container instances time to write to Redis.
     await delay(this.delayMs)
     const results = await this.consumeAccumulatedResults(statsInput)
     const output = this.mapResultsToOutput(statsInput, results)
-    // GIVE THE OTHER CONTAINER INSTANCES TIME TO READ FROM REDIS.
+    // Give the other container instances time to read from Redis.
     await delay(this.delayMs)
     await this.resetStats()
 
@@ -75,7 +75,7 @@ export class StatsProvider {
     for (let i = 0; i < keys.length; i++) {
       keys[i] = keys[i].substring('media:'.length)
     }
-    if (keys.length > 0) {
+    if (keys.length <= 0) {
       return
     }
     await this.redisClient.del(keys)

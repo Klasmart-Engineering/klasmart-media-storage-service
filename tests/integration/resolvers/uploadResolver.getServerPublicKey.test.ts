@@ -19,6 +19,7 @@ import s3BodyToBuffer from '../../../src/helpers/s3BodyToBuffer'
 import bootstrap from '../../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
 import { GET_SERVER_PUBLIC_KEY } from '../../../helpers/queries'
+import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
 
 describe('uploadResolver.getServerPublicKey', () => {
   let request: SuperTest<supertest.Test>
@@ -26,26 +27,22 @@ describe('uploadResolver.getServerPublicKey', () => {
   let s3Client: S3Client
   let requestPath: string
 
-  before(async () => {
+  async function setup() {
     compositionRoot = new TestCompositionRoot()
     const service = await bootstrap(compositionRoot)
     request = supertest(service.server)
     requestPath = service.path
     s3Client = AppConfig.default.s3Client
-  })
-
-  after(async () => {
-    await compositionRoot.cleanUp()
-  })
+    await clearS3Buckets(s3Client)
+    // TODO: Clear Redis and Typeorm like compositionRoot.reset does.
+  }
 
   context('server key pair does not exist in storage', () => {
     let result: string
     const roomId = 'room1'
 
     before(async () => {
-      // Clean slate
-      await clearS3Buckets(s3Client)
-      await compositionRoot.reset()
+      await setup()
 
       // Arrange
       const roomId = 'room1'
@@ -66,6 +63,10 @@ describe('uploadResolver.getServerPublicKey', () => {
           query: GET_SERVER_PUBLIC_KEY,
         })
       result = response.body.data.getServerPublicKey as string
+    })
+
+    after(async () => {
+      await compositionRoot.cleanUp()
     })
 
     it('result is not nullish', () => {
@@ -93,15 +94,78 @@ describe('uploadResolver.getServerPublicKey', () => {
     })
   })
 
+  context(
+    'SERVER_IMPL = apollo; server key pair does not exist in storage',
+    () => {
+      let result: string
+      const roomId = 'room1'
+      let originalServerImpl: string | undefined
+
+      before(async () => {
+        originalServerImpl = setEnvVar('SERVER_IMPL', 'apollo-express')
+        await setup()
+
+        // Arrange
+        const roomId = 'room1'
+        const endUserId = v4()
+
+        // Act
+        const response = await request
+          .post(requestPath)
+          .set({
+            ContentType: 'application/json',
+            cookie: `access=${generateAuthenticationToken(endUserId)}`,
+            'live-authorization': generateLiveAuthorizationToken(
+              endUserId,
+              roomId,
+            ),
+          })
+          .send({
+            query: GET_SERVER_PUBLIC_KEY,
+          })
+        result = response.body.data.getServerPublicKey as string
+      })
+
+      after(async () => {
+        restoreEnvVar('SERVER_IMPL', originalServerImpl)
+        await compositionRoot.cleanUp()
+      })
+
+      it('result is not nullish', () => {
+        expect(result == null).to.be.false
+      })
+
+      it('server public key is saved in S3 bucket', async () => {
+        const publicKeyBucket = await s3Client.send(
+          new ListObjectsCommand({ Bucket: AppConfig.default.publicKeyBucket }),
+        )
+        expect(publicKeyBucket.Contents == null).to.be.false
+        expect(publicKeyBucket.Contents).to.have.lengthOf(1)
+        expect(publicKeyBucket.Contents?.[0].Size).to.equal(32)
+        expect(publicKeyBucket.Contents?.[0].Key).to.equal(roomId)
+      })
+
+      it('server private key is saved in S3 bucket', async () => {
+        const privateKeyBucket = await s3Client.send(
+          new ListObjectsCommand({
+            Bucket: AppConfig.default.privateKeyBucket,
+          }),
+        )
+        expect(privateKeyBucket.Contents == null).to.be.false
+        expect(privateKeyBucket.Contents).to.have.lengthOf(1)
+        expect(privateKeyBucket.Contents?.[0].Size).to.equal(32)
+        expect(privateKeyBucket.Contents?.[0].Key).to.equal(roomId)
+      })
+    },
+  )
+
   context('server key pair exists in storage', () => {
     let result: string
     const roomId = 'room1'
     const serverKeyPair = box.keyPair()
 
     before(async () => {
-      // Clean slate
-      await clearS3Buckets(s3Client)
-      await compositionRoot.reset()
+      await setup()
 
       // Arrange
       const roomId = 'room1'
@@ -121,6 +185,10 @@ describe('uploadResolver.getServerPublicKey', () => {
           Body: Buffer.from(serverKeyPair.secretKey),
         }),
       )
+
+      after(async () => {
+        await compositionRoot.cleanUp()
+      })
 
       // Act
       const response = await request

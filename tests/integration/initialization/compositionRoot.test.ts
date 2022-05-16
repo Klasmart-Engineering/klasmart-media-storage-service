@@ -140,6 +140,16 @@ describe('compositionRoot', () => {
         })
       },
     )
+
+    context('call cleanUp without building object graph', () => {
+      before(async () => {
+        compositionRoot = new CompositionRoot()
+      })
+
+      it('no errors are thrown', async () => {
+        await compositionRoot.cleanUp()
+      })
+    })
   })
 
   describe('periodicScheduler', () => {
@@ -219,6 +229,7 @@ describe('compositionRoot', () => {
         })
         compositionRoot = new StatsCompositionRoot(config)
         await compositionRoot.buildObjectGraph()
+        compositionRoot.getTokenParser()
         await delay(200)
       })
     })

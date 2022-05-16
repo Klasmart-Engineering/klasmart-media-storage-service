@@ -2,7 +2,7 @@ import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import AppConfig from '../config/config'
 import { GraphQLSchema } from 'graphql'
 import Fastify, { FastifyReply, FastifyRequest, LogLevel } from 'fastify'
-import mercurius from 'mercurius'
+import mercurius, { MercuriusContext } from 'mercurius'
 import cors from 'fastify-cors'
 import compression from 'fastify-compress'
 import healthcheck from 'fastify-healthcheck'
@@ -12,6 +12,7 @@ import getContext from './getContext'
 import getCorsOptions from '../config/getCorsOptions'
 import { error2Obj } from '../errors/errorUtil'
 import CompositionRoot from './compositionRoot'
+import { ExecutionResult } from 'graphql'
 
 const logger = withLogger('createMercuriusService')
 
@@ -43,14 +44,7 @@ export default async function createMercuriusService(
     context: async (request: FastifyRequest, reply: FastifyReply) => {
       return getContext(request.headers, tokenParser)
     },
-    errorFormatter: (error, ...args) => {
-      if (error.errors) {
-        const parsedErrors = error.errors.map((x) => error2Obj(x.originalError))
-        logger.error(parsedErrors)
-      }
-      const formattedError = mercurius.defaultErrorFormatter(error, ...args)
-      return formattedError
-    },
+    errorFormatter,
   })
 
   await app.ready()
@@ -64,4 +58,24 @@ export default async function createMercuriusService(
     },
     close: () => app.close(),
   }
+}
+
+export const errorFormatter = <TContext = MercuriusContext>(
+  executionResult: ExecutionResult<
+    { [key: string]: unknown },
+    { [key: string]: unknown }
+  >,
+  context: TContext,
+) => {
+  if (executionResult.errors) {
+    const parsedErrors = executionResult.errors.map((x) =>
+      error2Obj(x.originalError),
+    )
+    logger.error(parsedErrors)
+  }
+  const formattedError = mercurius.defaultErrorFormatter(
+    executionResult,
+    context,
+  )
+  return formattedError
 }

@@ -37,4 +37,22 @@ describe('getContext', () => {
       })
     },
   )
+
+  context('cookie is undefined', () => {
+    it('returns an empty context object', async () => {
+      const roomId = 'room1'
+      const tokenParser = new TokenParser()
+
+      const headers = {
+        ContentType: 'application/json',
+        cookie: undefined,
+      }
+
+      // Act
+      const actual = await getContext(headers, tokenParser)
+
+      // Assert
+      expect(actual).to.deep.equal({})
+    })
+  })
 })

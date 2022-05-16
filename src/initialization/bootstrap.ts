@@ -32,11 +32,7 @@ export default async function bootstrap(compositionRoot: CompositionRoot) {
 }
 
 async function exitHandler(compositionRoot: CompositionRoot) {
-  try {
-    await compositionRoot.shutDown()
-  } catch (error) {
-    logger.error('EXIT HANDLER ERROR', { error: error2Obj(error) })
-  }
+  await compositionRoot.shutDown()
   process.exit(0)
 }
 

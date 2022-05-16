@@ -47,6 +47,7 @@ import DownloadInfoProvider from '../providers/downloadInfoProvider'
 import CachedDownloadInfoProvider from '../caching/cachedDownloadInfoProvider'
 import { StatsInput, StatsProvider } from '../providers/statsProvider'
 import { error2Obj } from '../errors/errorUtil'
+import { RaceConditionCacheProvider } from '../caching/RaceConditionCacheProvider'
 
 const logger = withLogger('CompositionRoot')
 
@@ -114,7 +115,7 @@ export default class CompositionRoot {
     return this.uploadResolver
   }
 
-  public getDownloadInfoProvider(): IDownloadInfoProvider {
+  protected getDownloadInfoProvider(): IDownloadInfoProvider {
     let downloadInfoProvider: IDownloadInfoProvider = new DownloadInfoProvider(
       this.getMetadataRepository(),
       this.getSymmetricKeyProvider(),
@@ -188,7 +189,7 @@ export default class CompositionRoot {
     if (this.config.cache) {
       this.keyPairProvider = new CachedKeyPairProvider(
         this.keyPairProvider,
-        this.getCacheProvider(),
+        new RaceConditionCacheProvider(this.getCacheProvider()),
       )
     }
     return this.keyPairProvider

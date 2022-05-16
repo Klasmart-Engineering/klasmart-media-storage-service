@@ -1,10 +1,5 @@
-import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
-import { ApplicationError } from '../errors/applicationError'
-import delay from '../helpers/delay'
 import ICacheProvider from '../interfaces/cacheProvider'
 import IKeyPairProvider from '../interfaces/keyPairProvider'
-
-const logger = withLogger('CachedKeyPairProvider')
 
 export default class CachedKeyPairProvider implements IKeyPairProvider {
   public static getPublicKeyCacheKey(objectKey: string) {
@@ -12,9 +7,6 @@ export default class CachedKeyPairProvider implements IKeyPairProvider {
   }
   public static getPrivateKeyCacheKey(objectKey: string) {
     return `CachedKeyPairProvider.privateKey:${objectKey}`
-  }
-  public static getKeyPairCacheKey(objectKey: string) {
-    return `CachedKeyPairProvider.keyPairLock:${objectKey}`
   }
 
   public constructor(
@@ -27,11 +19,6 @@ export default class CachedKeyPairProvider implements IKeyPairProvider {
     const cacheKey = CachedKeyPairProvider.getPublicKeyCacheKey(objectKey)
     let base64PublicKey = await this.cache.get(cacheKey)
     if (!base64PublicKey) {
-      const lockCacheKey = CachedKeyPairProvider.getKeyPairCacheKey(objectKey)
-      const lockObtained = await this.cache.set(lockCacheKey, 'true', 5)
-      if (!lockObtained) {
-        return this.awaitResultFromOtherRequest(objectKey, cacheKey)
-      }
       base64PublicKey = await this.keyPairProvider.getPublicKeyOrCreatePair(
         objectKey,
       )
@@ -52,28 +39,5 @@ export default class CachedKeyPairProvider implements IKeyPairProvider {
       return privateKey
     }
     return Buffer.from(base64PrivateKey, 'base64')
-  }
-
-  private async awaitResultFromOtherRequest(
-    objectKey: string,
-    cacheKey: string,
-  ) {
-    logger.debug(
-      `[getPublicKeyOrCreatePair] Another request is already creating a key pair for object key (${objectKey}).` +
-        `Now awaiting result from that request...`,
-    )
-    let i = 0
-    // Try for a max of 2s.
-    while (i < 20) {
-      await delay(100)
-      const base64PublicKey = await this.cache.get(cacheKey)
-      if (base64PublicKey) {
-        return base64PublicKey
-      }
-      i += 1
-    }
-    throw new ApplicationError(
-      `[getPublicKeyOrCreatePair] Unable to obtain the lock to create a key pair for object key (${objectKey}).`,
-    )
   }
 }
