@@ -22,5 +22,9 @@ declare namespace NodeJS {
     CACHE?: string
     MOCK_WEB_APIS?: string
     LOG_LEVEL?: string
+    CDN_URL?: string
+    AWS_REGION?: string
+    AWS_ACCESS_KEY_ID?: string
+    AWS_SECRET_ACCESS_KEY?: string
   }
 }

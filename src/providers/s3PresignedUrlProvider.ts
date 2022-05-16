@@ -12,6 +12,7 @@ export default class S3PresignedUrlProvider implements IPresignedUrlProvider {
   public constructor(
     private readonly bucketName: string,
     private readonly s3Client: S3Client,
+    private readonly downloadUrl?: URL,
   ) {}
 
   public getUploadUrl(objectKey: string, mimeType: string): Promise<string> {
@@ -25,6 +26,10 @@ export default class S3PresignedUrlProvider implements IPresignedUrlProvider {
   }
 
   public getDownloadUrl(objectKey: string): Promise<string> {
+    if (this.downloadUrl) {
+      this.downloadUrl.pathname = objectKey
+      return Promise.resolve(this.downloadUrl.toString())
+    }
     const params: GetObjectCommandInput = {
       Bucket: this.bucketName,
       Key: objectKey,

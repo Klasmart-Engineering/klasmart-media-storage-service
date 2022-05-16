@@ -109,4 +109,15 @@ export default class AppConfig {
     }
     return port
   }
+
+  /**
+   * This is used in place of presigned download URLs in regions that don't
+   * support AWS. Apparently, presigned upload URLs are fine.
+   */
+  public get cdnUrl(): URL | undefined {
+    if (!process.env.CDN_URL) {
+      return undefined
+    }
+    return new URL(process.env.CDN_URL)
+  }
 }

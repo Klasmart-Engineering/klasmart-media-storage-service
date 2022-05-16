@@ -13,7 +13,18 @@ describe('config', () => {
       CMS_API_URL: () => AppConfig.default.cmsApiUrl,
       USER_SERVICE_ENDPOINT: () => AppConfig.default.userServiceEndpoint,
     }
-    for (const [envVar, fn] of Object.entries(testCases)) {
+    for (const [key, fn] of Object.entries(testCases)) {
+      let original: string | undefined
+      const envVar = key as keyof NodeJS.ProcessEnv
+
+      before(() => {
+        original = setEnvVar(envVar, undefined)
+      })
+
+      after(() => {
+        restoreEnvVar(envVar, original)
+      })
+
       context(`${envVar} is not defined`, () => {
         it('throws error with specified message', async () => {
           // Arrange
@@ -170,6 +181,28 @@ describe('config', () => {
 
         // Assert
         expect(fn).to.throw('REDIS_PORT is NaN')
+      })
+    })
+  })
+
+  describe('getCdnUrl', () => {
+    context('CDN_URL is defined', () => {
+      let original: string | undefined
+
+      before(() => {
+        original = setEnvVar('CDN_URL', 'https://mycdn.dev')
+      })
+
+      after(() => {
+        restoreEnvVar('CDN_URL', original)
+      })
+
+      it('returns expected value', async () => {
+        // Act
+        const actual = AppConfig.default.cdnUrl
+
+        // Assert
+        expect(actual).to.deep.equal(new URL('https://mycdn.dev'))
       })
     })
   })

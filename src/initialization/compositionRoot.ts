@@ -199,6 +199,7 @@ export default class CompositionRoot {
     this.presignedUrlProvider ??= new S3PresignedUrlProvider(
       this.config.mediaFileBucket,
       this.config.s3Client,
+      this.config.cdnUrl,
     )
     return this.presignedUrlProvider
   }

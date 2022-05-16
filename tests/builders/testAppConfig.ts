@@ -127,4 +127,18 @@ export default class TestAppConfig extends AppConfig {
     this._redisPort = value
     return this
   }
+
+  private _cdnUrl?: URL
+  private _cdnUrlOverwritten = false
+  get cdnUrl(): URL | undefined {
+    if (this._cdnUrlOverwritten) {
+      return this._cdnUrl
+    }
+    return super.cdnUrl
+  }
+  withCdnUrl(value: URL | undefined) {
+    this._cdnUrlOverwritten = true
+    this._cdnUrl = value
+    return this
+  }
 }
