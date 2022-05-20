@@ -9,7 +9,7 @@ export function error2Json(
 
 export function error2Obj(
   error: Error | unknown | null | undefined,
-): string | undefined {
+): Record<string, unknown> | undefined {
   const json = error2Json(error)
   if (json == null) {
     return undefined
