@@ -37,14 +37,17 @@ type MediaMetadata {
 
 type Query {
   """Returns a list of audio metadata matching the provided arguments."""
-  audioMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [MediaMetadata!]!
+  audioMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [MediaMetadata!]! @deprecated(reason: "Use the more generic mediaMetadata query.")
 
   """
-  Returns a presigned download URL and the base64 encoded symmetric key
-  that was used to encrypt the media file when it was uploaded.
-  The symmetric key can be used to decrypt the media file after downloading.
+  Returns a presigned download URL and the base64 encoded symmetric key that was used to encrypt the media file when it was uploaded. The symmetric key can be used to decrypt the media file after downloading.
   """
   getRequiredDownloadInfo(mediaId: String!, roomId: String!): RequiredDownloadInfo!
+
+  """
+  Returns a presigned download URL and the base64 encoded symmetric key that was used to encrypt the media file when it was uploaded. The symmetric key can be used to decrypt the media file after downloading. If more than one file matches the provided criteria, the one with the earliest timestamp is selected.
+  """
+  getRequiredDownloadInfoForMetadata(h5pId: String!, h5pSubId: String, mediaType: String!, roomId: String!, userId: String!): RequiredDownloadInfo!
 
   """Returns a generated media ID and a presigned upload URL."""
   getRequiredUploadInfo(
@@ -63,7 +66,10 @@ type Query {
   getServerPublicKey: String!
 
   """Returns a list of image metadata matching the provided arguments."""
-  imageMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [MediaMetadata!]!
+  imageMetadata(h5pId: String!, h5pSubId: String, roomId: String!, userId: String!): [MediaMetadata!]! @deprecated(reason: "Use the more generic mediaMetadata query.")
+
+  """Returns a list of image metadata matching the provided arguments."""
+  mediaMetadata(h5pId: String!, h5pSubId: String, mediaType: String!, roomId: String!, userId: String!): [MediaMetadata!]!
 }
 
 """The info required to download a media file."""

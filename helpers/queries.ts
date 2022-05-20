@@ -51,6 +51,31 @@ export const AUDIO_METADATA = `
   }
 `
 
+export const MEDIA_METADATA = `
+  query mediaMetadata(
+    $userId: String!
+    $roomId: String!
+    $h5pId: String!
+    $h5pSubId: String
+    $mediaType: String!
+  ) {
+    mediaMetadata(
+      userId: $userId
+      roomId: $roomId
+      h5pId: $h5pId
+      h5pSubId: $h5pSubId
+      mediaType: $mediaType
+    ) {
+      id
+      userId
+      roomId
+      h5pId
+      h5pSubId
+      createdAt
+    }
+  }
+`
+
 export const GET_REQUIRED_DOWNLOAD_INFO = `
 query getRequiredDownloadInfo($mediaId: String!, $roomId: String!) {
   getRequiredDownloadInfo(
@@ -61,4 +86,25 @@ query getRequiredDownloadInfo($mediaId: String!, $roomId: String!) {
     presignedUrl
   }
 }
+`
+
+export const GET_REQUIRED_DOWNLOAD_INFO_FOR_METADATA = `
+  query getRequiredDownloadInfoForMetadata(
+    $userId: String!
+    $roomId: String!
+    $h5pId: String!
+    $h5pSubId: String
+    $mediaType: String!
+  ) {
+    getRequiredDownloadInfoForMetadata(
+      userId: $userId
+      roomId: $roomId
+      h5pId: $h5pId
+      h5pSubId: $h5pSubId
+      mediaType: $mediaType
+    ) {
+      base64SymmetricKey
+      presignedUrl
+    }
+  }
 `

@@ -4,6 +4,8 @@ import { UserID } from '../auth/context'
 import { withLogger } from '@kl-engineering/kidsloop-nodejs-logger'
 import IMetadataRepository from '../interfaces/metadataRepository'
 import { ResolverStatsInput, StatsInput } from '../providers/statsProvider'
+import { ApplicationError } from '../errors/applicationError'
+import ErrorMessage from '../errors/errorMessages'
 
 const logger = withLogger('MetadataResolver')
 
@@ -16,6 +18,7 @@ export default class MetadataResolver {
   @Query(() => [MediaMetadata], {
     description:
       'Returns a list of audio metadata matching the provided arguments.',
+    deprecationReason: 'Use the more generic mediaMetadata query.',
   })
   public async audioMetadata(
     @Arg('userId') userId: string,
@@ -48,6 +51,7 @@ export default class MetadataResolver {
   @Query(() => [MediaMetadata], {
     description:
       'Returns a list of image metadata matching the provided arguments.',
+    deprecationReason: 'Use the more generic mediaMetadata query.',
   })
   public async imageMetadata(
     @Arg('userId') userId: string,
@@ -75,6 +79,35 @@ export default class MetadataResolver {
       mediaType: 'image',
     })
     return results
+  }
+
+  @Query(() => [MediaMetadata], {
+    description:
+      'Returns a list of image metadata matching the provided arguments.',
+  })
+  public async mediaMetadata(
+    @Arg('userId') userId: string,
+    @Arg('roomId') roomId: string,
+    @Arg('h5pId') h5pId: string,
+    @Arg('h5pSubId', () => String, { nullable: true }) h5pSubId: string | null,
+    @Arg('mediaType') mediaType: 'audio' | 'image',
+    @UserID() endUserId?: string,
+  ): Promise<MediaMetadata[]> {
+    logger.debug(
+      `[mediaMetadata] endUserId: ${endUserId}; roomId: ${roomId}; userId: ${userId}; h5pId: ${h5pId}; h5pSubId: ${h5pSubId}`,
+    )
+    if (!endUserId) {
+      throw new UnauthorizedError()
+    }
+    if (mediaType === 'audio') {
+      return this.audioMetadata(userId, roomId, h5pId, h5pSubId, endUserId)
+    }
+    if (mediaType === 'image') {
+      return this.imageMetadata(userId, roomId, h5pId, h5pSubId, endUserId)
+    }
+    throw new ApplicationError(ErrorMessage.unsupportedMediaType, undefined, {
+      mediaType,
+    })
   }
 
   public getStatsAndReset(): StatsInput {

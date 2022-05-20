@@ -20,7 +20,7 @@ import { getSampleEncryptedData } from '../helpers/getSampleEncryptionData'
 import getRequiredDownloadInfo from './requests/getRequiredDownloadInfo'
 import getServerPublicKey from './requests/getServerPublicKey'
 import getRequiredUploadInfo from './requests/getRequiredUploadInfo'
-import audioMetadata from './requests/audioMetadata'
+import mediaMetadata from './requests/mediaMetadata'
 import { getRepository } from 'typeorm'
 import { MediaMetadata } from '../src/entities/mediaMetadata'
 import { v4 } from 'uuid'
@@ -85,6 +85,7 @@ async function getRequests() {
   const roomId = v4()
   const userId = v4()
   const mimeType = 'audio/webm'
+  const mediaType = 'audio'
   const h5pId = v4()
   const h5pSubId = v4()
   const description = 'some description'
@@ -177,7 +178,14 @@ async function getRequests() {
     }),
   )
   const queries = [
-    audioMetadata(userId, roomId, h5pId, h5pSubId, authenticationToken),
+    mediaMetadata(
+      userId,
+      roomId,
+      h5pId,
+      h5pSubId,
+      mediaType,
+      authenticationToken,
+    ),
     getRequiredDownloadInfo(mediaId, roomId, authenticationToken),
     getServerPublicKey(authenticationToken, liveAuthorizationToken),
     // Put getRequiredUploadInfo last because it writes a bunch of entries to the db.

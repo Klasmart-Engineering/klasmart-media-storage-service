@@ -1,24 +1,26 @@
 import { LoadTestRequest } from '../loadTest'
-import { AUDIO_METADATA } from '../../helpers/queries'
+import { MEDIA_METADATA } from '../../helpers/queries'
 
-export default function audioMetadata(
+export default function mediaMetadata(
   userId: string,
   roomId: string,
   h5pId: string,
   h5pSubId: string,
+  mediaType: string,
   authenticationToken: string,
 ): LoadTestRequest {
   return {
-    title: 'audioMetadata',
-    query: AUDIO_METADATA,
+    title: 'mediaMetadata',
+    query: MEDIA_METADATA,
     method: 'POST',
     body: JSON.stringify({
-      query: AUDIO_METADATA,
+      query: MEDIA_METADATA,
       variables: {
         userId,
         roomId,
         h5pId,
         h5pSubId,
+        mediaType,
       },
     }),
     headers: {

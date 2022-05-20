@@ -23,4 +23,7 @@ export default class ErrorMessage {
   static unsupportedMimeType(mimeType: string): string {
     return `Only audio and image mime types are permitted. Received: ${mimeType}`
   }
+
+  static readonly unsupportedMediaType =
+    'Only audio and image media types are supported'
 }

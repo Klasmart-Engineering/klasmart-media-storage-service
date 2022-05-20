@@ -19,8 +19,8 @@ export default class DownloadResolver {
 
   @Query(() => RequiredDownloadInfo, {
     description:
-      'Returns a presigned download URL and the base64 encoded symmetric key\n' +
-      'that was used to encrypt the media file when it was uploaded.\n' +
+      'Returns a presigned download URL and the base64 encoded symmetric key ' +
+      'that was used to encrypt the media file when it was uploaded. ' +
       'The symmetric key can be used to decrypt the media file after downloading.',
   })
   public async getRequiredDownloadInfo(
