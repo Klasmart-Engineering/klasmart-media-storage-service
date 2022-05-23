@@ -1,0 +1,65 @@
+name: GitHub Release (job)
+
+on:
+  workflow_call:
+    inputs:
+      previous_version:
+        required: true
+        type: string
+      release_name:
+        required: true
+        type: string
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+      body:
+        required: true
+        type: string
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upsert release
+        uses: actions/github-script@v6.1.0
+        env:
+          PREVIOUS_VERSION: ${{ inputs.previous_version }}
+          RELEASE_NAME: ${{ inputs.release_name }}
+          PRERELEASE: ${{ inputs.prerelease }}
+          BODY: ${{ inputs.body }}
+        with:
+          script: |
+            const { PREVIOUS_VERSION, RELEASE_NAME, PRERELEASE, BODY } = process.env
+            const { owner, repo } = context.repo
+            const { data } = await github.rest.repos.listReleases({ owner, repo, per_page: 1 })
+            const release = data.length > 0 ? data[0] : undefined
+            let updateExisting = false
+            if (release) {
+              const regex = /^(v[0-9]+\.[0-9]+\.[0-9]+)-.*$/
+              const match = regex.exec(PREVIOUS_VERSION)
+              if (match) {
+                const previousBaseVersion = match[1]
+                updateExisting = release.tag_name.startsWith(previousBaseVersion)
+              }
+            }
+            if (updateExisting) {
+              await github.rest.repos.updateRelease({
+                owner,
+                repo,
+                release_id: release.id,
+                prerelease: PRERELEASE === 'true',
+                name: RELEASE_NAME,
+                tag_name: RELEASE_NAME,
+                body: BODY,
+              })
+            } else {
+              await github.rest.repos.createRelease({
+                owner,
+                repo,
+                prerelease: PRERELEASE === 'true',
+                name: RELEASE_NAME,
+                tag_name: RELEASE_NAME,
+                body: BODY,
+              })
+            }
