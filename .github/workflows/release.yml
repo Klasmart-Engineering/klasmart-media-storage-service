@@ -40,16 +40,6 @@ jobs:
       ECR_AWS_ACCESS_KEY_ID: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
       ECR_AWS_SECRET_ACCESS_KEY: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
 
-  # loadtest:
-  #   needs: [create-release]
-  #   uses: ./.github/workflows/job-loadtest.yml
-  #   with:
-  #     ecr_repository: audio-storage
-  #   secrets:
-  #     ECR_AWS_ACCESS_KEY_ID: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
-  #     ECR_AWS_SECRET_ACCESS_KEY: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
-  #     NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
-
   deploy-alpha:
     needs: [create-release]
     uses: ./.github/workflows/job-deploy-alpha.yml

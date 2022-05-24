@@ -13,11 +13,11 @@ export AWS_SECRET_ACCESS_KEY=minio123
 
 iterations=$1
 if [ -z "$1" ]; then
-    iterations=1
+    iterations=3
 fi
 duration=$2
 if [ -z "$2" ]; then
-    duration=30
+    duration=10
 fi
 
 exit_if_failed() {
@@ -66,12 +66,3 @@ while [ "$i" -le $iterations ]; do
 done
 mv ./node_modules_$CURR_VERSION_TAG ./node_modules
 npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG baseConfig
-
-# =========================================================
-# NO CACHING CONFIG
-# =========================================================
-
-run_load_test $PREV_VERSION_TAG noCaching ./loadTesting/.env.noCaching
-run_load_test $CURR_VERSION_TAG noCaching ./loadTesting/.env.noCaching
-mv ./node_modules_$CURR_VERSION_TAG ./node_modules
-npm run loadtest:compare $PREV_VERSION_TAG $CURR_VERSION_TAG noCaching

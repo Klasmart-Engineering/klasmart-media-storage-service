@@ -84,4 +84,6 @@ jobs:
           git config user.email "<>"
           git add ./loadTesting
           git commit -m "chore(loadtest): ${VERSION_TAG:1} [skip ci]"
-          git push origin main
+          git rebase origin/main
+          git branch -u origin/main
+          git push origin HEAD:main

@@ -10,12 +10,12 @@ on:
         description: If you want to commit the results to git
       iterations:
         required: false
-        default: '1'
+        default: '3'
         type: string
         description: number of iterations
       duration:
         required: false
-        default: '30'
+        default: '10'
         type: string
         description: seconds per iteration
 
