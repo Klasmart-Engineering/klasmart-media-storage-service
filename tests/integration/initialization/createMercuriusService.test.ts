@@ -7,6 +7,7 @@ import IMediaStorageService from '../../../src/interfaces/mediaStorageService'
 import { TestCompositionRoot } from '../testCompositionRoot'
 import { version } from '../../../package.json'
 import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
+import { posix } from 'path'
 
 describe('createMercuriusService', () => {
   context('call service.listen and service.close', () => {
@@ -48,9 +49,10 @@ describe('createMercuriusService', () => {
       const schema = await buildDefaultSchema(compositionRoot)
       const service = await createMercuriusService(schema, compositionRoot)
       const request = supertest(service.server)
+      const versionPath = posix.join(process.env.ROUTE_PREFIX ?? '', '/version')
 
       // Act
-      const response = await request.get('/version').send().expect(200)
+      const response = await request.get(versionPath).send().expect(200)
 
       // Assert
       expect(response.body.version).to.equal(version)

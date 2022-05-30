@@ -10,6 +10,7 @@ import IMediaStorageService from '../interfaces/mediaStorageService'
 import cors from 'cors'
 import CompositionRoot from './compositionRoot'
 import { Server } from 'http'
+import { posix } from 'path'
 
 const logger = withLogger('createApolloExpressService')
 
@@ -29,16 +30,18 @@ export default async function createApolloExpressService(
   app.use(cors(getCorsOptions(domain)))
   app.use(express.json({ limit: '1mb' }))
   app.use(express.urlencoded({ limit: '1mb', extended: true }))
+  const graphqlPath = posix.join(routePrefix, '/graphql')
   server.applyMiddleware({
     app,
     disableHealthCheck: true,
     cors: false,
-    path: routePrefix,
+    path: graphqlPath,
   })
   app.get('/health', (req, res) => {
     res.sendStatus(200)
   })
-  app.get('/version', (req, res) => {
+  const versionPath = posix.join(routePrefix, '/version')
+  app.get(versionPath, (req, res) => {
     res.send({ version: process.env.npm_package_version })
   })
 

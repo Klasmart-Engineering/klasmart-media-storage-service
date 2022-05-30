@@ -8,6 +8,7 @@ import createApolloExpressService from '../../../src/initialization/createApollo
 import supertest from 'supertest'
 import { version } from '../../../package.json'
 import IMediaStorageService from '../../../src/interfaces/mediaStorageService'
+import { posix } from 'path'
 
 describe('createApolloExpressService', () => {
   let originalServerImpl: string | undefined
@@ -75,9 +76,10 @@ describe('createApolloExpressService', () => {
       const schema = await buildDefaultSchema(compositionRoot)
       const service = await createApolloExpressService(schema, compositionRoot)
       const request = supertest(service.server)
+      const versionPath = posix.join(process.env.ROUTE_PREFIX ?? '', '/version')
 
       // Act
-      const response = await request.get('/version').send().expect(200)
+      const response = await request.get(versionPath).send().expect(200)
 
       // Assert
       expect(response.body.version).to.equal(version)
