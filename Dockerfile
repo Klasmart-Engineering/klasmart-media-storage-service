@@ -6,4 +6,4 @@ COPY ./node_modules ./node_modules
 ENV HUSKY=0
 ENV PORT=8080
 EXPOSE 8080
-CMD node dist/index.js
+CMD node dist/src/index.js

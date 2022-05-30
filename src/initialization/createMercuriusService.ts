@@ -14,6 +14,7 @@ import getCorsOptions from '../config/getCorsOptions'
 import { error2Obj } from '../errors/errorUtil'
 import CompositionRoot from './compositionRoot'
 import { ExecutionResult } from 'graphql'
+import { version } from '../../package.json'
 
 const logger = withLogger('createMercuriusService')
 
@@ -35,7 +36,7 @@ export default async function createMercuriusService(
   })
   const versionPath = posix.join(routePrefix, '/version')
   app.get(versionPath, function (request, reply) {
-    reply.send({ version: process.env.npm_package_version })
+    reply.send({ version })
   })
 
   const tokenParser = compositionRoot.getTokenParser()
