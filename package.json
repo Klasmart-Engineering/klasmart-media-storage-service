@@ -1,6 +1,6 @@
 {
   "name": "kidsloop-media-storage-service",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "A service for uploading and downloading media files.",
   "main": "index.js",
   "scripts": {
