@@ -6,6 +6,7 @@ import mercurius, { MercuriusContext } from 'mercurius'
 import cors from 'fastify-cors'
 import compression from 'fastify-compress'
 import healthcheck from 'fastify-healthcheck'
+import helmet from '@fastify/helmet'
 import IMediaStorageService from '../interfaces/mediaStorageService'
 import { posix } from 'path'
 import getContext from './getContext'
@@ -28,6 +29,7 @@ export default async function createMercuriusService(
   app.register(healthcheck)
   app.register(compression)
   app.register(cors, getCorsOptions(domain))
+  app.register(helmet)
   const versionPath = posix.join(routePrefix, '/version')
   app.get(versionPath, function (request, reply) {
     reply.send({ version: process.env.npm_package_version })
