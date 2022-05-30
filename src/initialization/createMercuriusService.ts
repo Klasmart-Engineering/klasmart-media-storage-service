@@ -29,7 +29,10 @@ export default async function createMercuriusService(
   app.register(healthcheck)
   app.register(compression)
   app.register(cors, getCorsOptions(domain))
-  app.register(helmet)
+  app.register(helmet, {
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: false,
+  })
   const versionPath = posix.join(routePrefix, '/version')
   app.get(versionPath, function (request, reply) {
     reply.send({ version: process.env.npm_package_version })
