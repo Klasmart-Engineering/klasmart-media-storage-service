@@ -177,6 +177,8 @@ class GetRequiredUploadInfoStats implements ResolverStatsInput {
     callCount: 0,
     noRoomCount: 0,
     failedUploadCount: 0,
+    audioCount: 0,
+    imageCount: 0,
   }
   public sets = {
     users: new Set<string>(),
