@@ -50,13 +50,13 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
 
-      - name: npm build
-        run: npm run build
-
       - name: Generate release version
         run: npx standard-version --skip.changelog
           ${{ inputs.prerelease != '' && format('--prerelease {0}', inputs.prerelease) || '' }}
           ${{ inputs.release_as != 'auto' && format('--release-as {0}', inputs.release_as) || '' }}
+
+      - name: npm build
+        run: npm run build
 
       - name: Get versions
         id: get-versions
