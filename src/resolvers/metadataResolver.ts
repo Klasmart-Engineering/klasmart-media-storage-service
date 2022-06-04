@@ -34,8 +34,8 @@ export default class MetadataResolver {
     if (!endUserId) {
       throw new UnauthorizedError()
     }
-    this.stats.imageMetadata.sets.users.add(endUserId)
-    this.stats.imageMetadata.sets.rooms.add(roomId)
+    this.stats.audioMetadata.sets.users.add(endUserId)
+    this.stats.audioMetadata.sets.rooms.add(roomId)
 
     h5pSubId ??= null
     const results = await this.metadataRepository.find({
