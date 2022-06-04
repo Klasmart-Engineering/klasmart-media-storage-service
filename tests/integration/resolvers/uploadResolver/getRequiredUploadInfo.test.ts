@@ -1,26 +1,26 @@
-import '../../utils/globalIntegrationTestHooks'
+import '../../../utils/globalIntegrationTestHooks'
 import fetch from 'node-fetch'
 import { expect } from 'chai'
-import AppConfig from '../../../src/config/config'
+import AppConfig from '../../../../src/config/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
-} from '../../../helpers/generateToken'
+} from '../../../../helpers/generateToken'
 import { box } from 'tweetnacl'
 import { v4 } from 'uuid'
-import { RequiredUploadInfo } from '../../../src/graphqlResultTypes/requiredUploadInfo'
-import { clearS3Buckets } from '../../utils/s3BucketUtil'
-import { TestCompositionRoot } from '../testCompositionRoot'
+import { RequiredUploadInfo } from '../../../../src/graphqlResultTypes/requiredUploadInfo'
+import { clearS3Buckets } from '../../../utils/s3BucketUtil'
+import { TestCompositionRoot } from '../../testCompositionRoot'
 import { S3Client } from '@aws-sdk/client-s3'
-import bootstrap from '../../../src/initialization/bootstrap'
+import bootstrap from '../../../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
 import { getRepository } from 'typeorm'
-import { MediaMetadata } from '../../../src/entities/mediaMetadata'
-import UploadValidator from '../../../src/providers/uploadValidator'
-import MediaFileStorageChecker from '../../../src/providers/mediaFileStorageChecker'
+import { MediaMetadata } from '../../../../src/entities/mediaMetadata'
+import UploadValidator from '../../../../src/providers/uploadValidator'
+import MediaFileStorageChecker from '../../../../src/providers/mediaFileStorageChecker'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
-import delay from '../../../src/helpers/delay'
-import { GET_REQUIRED_UPLOAD_INFO } from '../../../helpers/queries'
+import delay from '../../../../src/helpers/delay'
+import { GET_REQUIRED_UPLOAD_INFO } from '../../../../helpers/queries'
 
 describe('uploadResolver.getRequiredUploadInfo', () => {
   let request: SuperTest<supertest.Test>

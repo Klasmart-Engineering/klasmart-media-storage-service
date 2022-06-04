@@ -1,25 +1,25 @@
-import '../../utils/globalIntegrationTestHooks'
+import '../../../utils/globalIntegrationTestHooks'
 import { expect } from 'chai'
-import AppConfig from '../../../src/config/config'
+import AppConfig from '../../../../src/config/config'
 import {
   generateAuthenticationToken,
   generateLiveAuthorizationToken,
-} from '../../../helpers/generateToken'
+} from '../../../../helpers/generateToken'
 import { box } from 'tweetnacl'
 import { v4 } from 'uuid'
-import { clearS3Buckets } from '../../utils/s3BucketUtil'
-import { TestCompositionRoot } from '../testCompositionRoot'
+import { clearS3Buckets } from '../../../utils/s3BucketUtil'
+import { TestCompositionRoot } from '../../testCompositionRoot'
 import {
   GetObjectCommand,
   ListObjectsCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
-import s3BodyToBuffer from '../../../src/helpers/s3BodyToBuffer'
-import bootstrap from '../../../src/initialization/bootstrap'
+import s3BodyToBuffer from '../../../../src/helpers/s3BodyToBuffer'
+import bootstrap from '../../../../src/initialization/bootstrap'
 import supertest, { SuperTest } from 'supertest'
-import { GET_SERVER_PUBLIC_KEY } from '../../../helpers/queries'
-import { restoreEnvVar, setEnvVar } from '../../utils/setAndRestoreEnvVar'
+import { GET_SERVER_PUBLIC_KEY } from '../../../../helpers/queries'
+import { restoreEnvVar, setEnvVar } from '../../../utils/setAndRestoreEnvVar'
 
 describe('uploadResolver.getServerPublicKey', () => {
   let request: SuperTest<supertest.Test>
