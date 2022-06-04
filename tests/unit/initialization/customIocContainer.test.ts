@@ -17,7 +17,7 @@ describe('CustomIocContainer.get', () => {
       compositionRoot.getMetadataResolver().returns(metadataResolver)
 
       // Act
-      const actual = await sut.get(MetadataResolver)
+      const actual = sut.get(MetadataResolver)
 
       // Assert
       expect(actual).to.equal(metadataResolver)
@@ -34,7 +34,7 @@ describe('CustomIocContainer.get', () => {
       compositionRoot.getUploadResolver().returns(uploadResolver)
 
       // Act
-      const actual = await sut.get(UploadResolver)
+      const actual = sut.get(UploadResolver)
 
       // Assert
       expect(actual).to.equal(uploadResolver)
@@ -51,7 +51,7 @@ describe('CustomIocContainer.get', () => {
       compositionRoot.getDownloadResolver().returns(downloadResolver)
 
       // Act
-      const actual = await sut.get(DownloadResolver)
+      const actual = sut.get(DownloadResolver)
 
       // Assert
       expect(actual).to.equal(downloadResolver)
@@ -59,7 +59,7 @@ describe('CustomIocContainer.get', () => {
   })
 
   context('objectType is not a known resolver', () => {
-    it('returns undefined', async () => {
+    it('throws a registration error', async () => {
       //Arrange
       const compositionRoot = Substitute.for<CompositionRoot>()
       const sut = new CustomIocContainer(compositionRoot)
@@ -68,10 +68,15 @@ describe('CustomIocContainer.get', () => {
       compositionRoot.getDownloadResolver().returns(downloadResolver)
 
       // Act
-      const actual = await sut.get(CompositionRoot)
+      const fn = () => sut.get(CompositionRoot)
 
       // Assert
-      expect(actual).to.be.undefined
+      expect(fn)
+        .to.throw(
+          '[CustomIocContainer] Oops, you forgot to register a resolver.',
+        )
+        .with.property('meta')
+        .deep.equal({ objectType: CompositionRoot })
     })
   })
 })

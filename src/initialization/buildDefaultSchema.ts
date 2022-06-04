@@ -5,6 +5,8 @@ import DownloadResolver from '../resolvers/downloadResolver'
 import CompositionRoot from './compositionRoot'
 import UploadResolver from '../resolvers/uploadResolver'
 import MetadataResolver from '../resolvers/metadataResolver'
+import { DownloadResolverExtended } from '../resolvers/downloadResolverExtended'
+import { ApplicationError } from '../errors/applicationError'
 
 export default function buildDefaultSchema(
   compositionRoot: CompositionRoot,
@@ -24,15 +26,23 @@ export default function buildDefaultSchema(
 export class CustomIocContainer {
   public constructor(private readonly compositionRoot: CompositionRoot) {}
 
-  async get(objectType: ClassType): Promise<unknown> {
+  get(objectType: ClassType): unknown {
     if (objectType === DownloadResolver) {
-      return await this.compositionRoot.getDownloadResolver()
+      return this.compositionRoot.getDownloadResolver()
     }
     if (objectType === MetadataResolver) {
-      return await this.compositionRoot.getMetadataResolver()
+      return this.compositionRoot.getMetadataResolver()
     }
     if (objectType === UploadResolver) {
-      return await this.compositionRoot.getUploadResolver()
+      return this.compositionRoot.getUploadResolver()
     }
+    if (objectType === DownloadResolverExtended) {
+      return this.compositionRoot.getDownloadResolverExtended()
+    }
+    throw new ApplicationError(
+      '[CustomIocContainer] Oops, you forgot to register a resolver.',
+      undefined,
+      { objectType },
+    )
   }
 }

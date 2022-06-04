@@ -48,6 +48,7 @@ import CachedDownloadInfoProvider from '../caching/cachedDownloadInfoProvider'
 import { StatsInput, StatsProvider } from '../providers/statsProvider'
 import { error2Obj } from '../errors/errorUtil'
 import { RaceConditionCacheProvider } from '../caching/RaceConditionCacheProvider'
+import { DownloadResolverExtended } from '../resolvers/downloadResolverExtended'
 
 const logger = withLogger('CompositionRoot')
 
@@ -58,6 +59,7 @@ const logger = withLogger('CompositionRoot')
 export default class CompositionRoot {
   // Resolvers
   protected downloadResolver?: DownloadResolver
+  protected downloadResolverExtended?: DownloadResolverExtended
   protected metadataResolver?: MetadataResolver
   protected uploadResolver?: UploadResolver
   // Resolver dependencies
@@ -98,6 +100,14 @@ export default class CompositionRoot {
       this.getAuthorizationProvider(),
     )
     return this.downloadResolver
+  }
+
+  public getDownloadResolverExtended(): DownloadResolverExtended {
+    this.downloadResolverExtended ??= new DownloadResolverExtended(
+      this.getMetadataResolver(),
+      this.getDownloadResolver(),
+    )
+    return this.downloadResolverExtended
   }
 
   public getMetadataResolver(): MetadataResolver {
