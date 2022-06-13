@@ -47,7 +47,7 @@ type Query {
   """
   Returns a presigned download URL and the base64 encoded symmetric key that was used to encrypt the media file when it was uploaded. The symmetric key can be used to decrypt the media file after downloading. If more than one file matches the provided criteria, the one with the earliest timestamp is selected.
   """
-  getRequiredDownloadInfoForMetadata(h5pId: String!, h5pSubId: String, mediaType: String!, roomId: String!, userId: String!): RequiredDownloadInfo!
+  getRequiredDownloadInfoForMetadata(h5pId: String!, h5pSubId: String, mediaType: String!, roomId: String!, userId: String!): RequiredDownloadInfo
 
   """Returns a generated media ID and a presigned upload URL."""
   getRequiredUploadInfo(

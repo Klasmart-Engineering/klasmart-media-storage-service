@@ -23,6 +23,7 @@ export class DownloadResolverExtended {
       'The symmetric key can be used to decrypt the media file after downloading. ' +
       'If more than one file matches the provided criteria, the one with the ' +
       'earliest timestamp is selected.',
+    nullable: true,
   })
   public async getRequiredDownloadInfoForMetadata(
     @Arg('userId') userId: string,

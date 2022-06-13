@@ -155,4 +155,60 @@ describe('downloadResolverExtended.getRequiredDownloadInfoForMetadata', () => {
       })
     },
   )
+
+  context('0 matching media files', () => {
+    let result: RequiredDownloadInfo
+    let errors: unknown
+
+    before(async () => {
+      // Clean slate
+      await clearS3Buckets(s3Client)
+      await compositionRoot.reset()
+
+      // Arrange
+      const endUserId = v4()
+      const roomId = 'room1'
+      const userId = v4()
+      const h5pId = 'h5p1'
+      const h5pSubId = 'h5pSub1'
+      const mediaType = 'audio'
+
+      const authenticationToken = generateAuthenticationToken(endUserId)
+
+      const authorizationProvider = Substitute.for<AuthorizationProvider>()
+      compositionRoot.authorizationProvider = authorizationProvider
+      authorizationProvider
+        .isAuthorized(endUserId, roomId, authenticationToken)
+        .resolves(true)
+
+      // Act
+      const response = await request
+        .post(requestPath)
+        .set({
+          ContentType: 'application/json',
+          cookie: `access=${authenticationToken}`,
+        })
+        .send({
+          query: GET_REQUIRED_DOWNLOAD_INFO_FOR_METADATA,
+          variables: {
+            userId,
+            roomId,
+            h5pId,
+            h5pSubId,
+            mediaType,
+          },
+        })
+      result = response.body.data
+        ?.getRequiredDownloadInfoForMetadata as RequiredDownloadInfo
+      errors = response.body.errors
+    })
+
+    it('result is null', () => {
+      expect(result).to.be.null
+    })
+
+    it('errors is undefined', () => {
+      expect(errors).to.be.undefined
+    })
+  })
 })
