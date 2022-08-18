@@ -91,7 +91,7 @@
     "@fastify/helmet": "^8.1.0",
     "@kl-engineering/kidsloop-nodejs-logger": "^0.3.2",
     "@kl-engineering/kidsloop-token-validation": "1.5.2",
-    "apollo-server-core": "^3.6.2",
+    "apollo-server-core": "^3.10.1",
     "apollo-server-express": "^3.6.2",
     "axios": "^0.26.0",
     "class-validator": "^0.13.1",
