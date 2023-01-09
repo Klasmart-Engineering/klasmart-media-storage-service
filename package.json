@@ -106,7 +106,7 @@
     "fastify-healthcheck": "^3.1.0",
     "graphql-request": "^4.0.0",
     "ioredis": "^4.28.5",
-    "mercurius": "^8.12.1",
+    "mercurius": "^11.5.0",
     "newrelic": "^8.7.1",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
